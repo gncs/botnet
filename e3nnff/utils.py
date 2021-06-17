@@ -1,9 +1,16 @@
 import logging
 import os
 import sys
-from typing import Tuple, Union, Optional
+from typing import Sequence, Iterable
+from typing import Tuple, Union, Optional, Dict
 
+import ase.data
+import ase.io
+import numpy as np
 import scipy.constants
+import torch
+
+TensorDict = Dict[str, torch.Tensor]
 
 
 # noinspection PyPep8Naming
@@ -34,3 +41,35 @@ def setup_logger(level: Union[int, str] = logging.INFO, tag: Optional[str] = Non
         fh.setFormatter(formatter)
 
         logger.addHandler(fh)
+
+
+class AtomicNumberTable:
+    def __init__(self, zs: Sequence[int]):
+        self.zs = zs
+
+    def __len__(self) -> int:
+        return len(self.zs)
+
+    def __str__(self):
+        return f'AtomicNumberTable: {tuple(s for s in self.zs)}'
+
+    def index_to_z(self, index: Union[int, np.int64]) -> int:
+        return self.zs[index]
+
+    def z_to_index(self, atomic_number: str) -> int:
+        return self.zs.index(atomic_number)
+
+
+def get_symbol_table_from_symbols(symbols: Iterable[str]) -> AtomicNumberTable:
+    atomic_numbers = list(set(ase.data.atomic_numbers[symbol] for symbol in symbols))
+    return AtomicNumberTable(zs=sorted(atomic_numbers))
+
+
+def get_symbol_table_from_atoms(atoms: Iterable[ase.Atom]) -> AtomicNumberTable:
+    symbols = []
+    for atom in atoms:
+        if atom.symbol not in symbols:
+            symbols.append(atom.symbol)
+    return get_symbol_table_from_symbols(symbols)
+
+
