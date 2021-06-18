@@ -73,3 +73,6 @@ def get_symbol_table_from_atoms(atoms: Iterable[ase.Atom]) -> AtomicNumberTable:
     return get_symbol_table_from_symbols(symbols)
 
 
+def atomic_numbers_to_indices(atomic_numbers: np.ndarray, table: AtomicNumberTable) -> np.ndarray:
+    to_index_fn = np.vectorize(lambda z: table.z_to_index(z))
+    return to_index_fn(atomic_numbers)

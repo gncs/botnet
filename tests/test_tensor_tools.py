@@ -1,12 +1,18 @@
 import numpy as np
-import pytest
 import torch
 
-from e3nnff.keys import ATOMIC_NUMBERS_KEY
-
 from e3nnff.data import Configuration
-from e3nnff.tensor_tools import config_to_tensor_dict, atomic_numbers_to_one_hot
-from e3nnff.utils import AtomicNumberTable
+from e3nnff.tensor_tools import config_to_tensor_dict
+from e3nnff.utils import AtomicNumberTable, atomic_numbers_to_indices
+
+
+class TestAtomicNumberTable:
+    def test_conversion(self):
+        table = AtomicNumberTable(zs=[1, 8])
+        array = np.array([8, 8, 1])
+        indices = atomic_numbers_to_indices(array, table=table)
+        expected = np.array([1, 1, 0], dtype=int)
+        assert np.allclose(expected, indices)
 
 
 class TestConversions:
@@ -27,12 +33,5 @@ class TestConversions:
         )
 
         tensor_dict = config_to_tensor_dict(config)
-
-        with pytest.raises(Exception):
-            table = AtomicNumberTable(zs=[1, 6])
-            atomic_numbers_to_one_hot(tensor_dict[ATOMIC_NUMBERS_KEY], table=table)
-
-        table = AtomicNumberTable(zs=[1, 8])
-        one_hot = atomic_numbers_to_one_hot(tensor_dict[ATOMIC_NUMBERS_KEY], table=table)
-        expected = torch.tensor([[0., 1.], [1., 0.], [1., 0.]])
-        assert torch.allclose(input=one_hot, other=expected)
+        assert len(tensor_dict) == 4
+        assert all(isinstance(t, torch.Tensor) for t in tensor_dict.values())

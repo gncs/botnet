@@ -2,7 +2,7 @@ import torch
 
 from e3nnff.data import Configuration
 from e3nnff.keys import POSITIONS_KEY, FORCES_KEY, ENERGY_KEY, ATOMIC_NUMBERS_KEY
-from e3nnff.utils import TensorDict, AtomicNumberTable
+from e3nnff.utils import TensorDict
 
 
 def to_one_hot(indices: torch.Tensor, num_classes: int, device=None) -> torch.Tensor:
@@ -36,9 +36,3 @@ def config_to_tensor_dict(config: Configuration) -> TensorDict:
         d[ENERGY_KEY] = torch.tensor(config.energy, dtype=torch.get_default_dtype())
 
     return d
-
-
-def atomic_numbers_to_one_hot(atomic_numbers: torch.Tensor, table: AtomicNumberTable) -> torch.Tensor:
-    tmp = torch.clone(atomic_numbers)
-    tmp.apply_(lambda z: table.z_to_index(z))
-    return to_one_hot(tmp.unsqueeze(-1), num_classes=len(table))
