@@ -1,8 +1,6 @@
 import numpy as np
-import torch
 
 from e3nnff.data import Configuration
-from e3nnff.tensor_tools import config_to_tensor_dict
 from e3nnff.utils import AtomicNumberTable, atomic_numbers_to_indices
 
 
@@ -31,7 +29,4 @@ class TestConversions:
             ]),
             energy=-1.5,
         )
-
-        tensor_dict = config_to_tensor_dict(config)
-        assert len(tensor_dict) == 4
-        assert all(isinstance(t, torch.Tensor) for t in tensor_dict.values())
+        assert config

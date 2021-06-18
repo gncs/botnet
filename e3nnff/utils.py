@@ -53,7 +53,7 @@ class AtomicNumberTable:
     def __str__(self):
         return f'AtomicNumberTable: {tuple(s for s in self.zs)}'
 
-    def index_to_z(self, index: Union[int, np.int64]) -> int:
+    def index_to_z(self, index: int) -> int:
         return self.zs[index]
 
     def z_to_index(self, atomic_number: str) -> int:
