@@ -5,6 +5,8 @@ import torch
 
 
 class AtomicEnergiesBlock(torch.nn.Module):
+    atomic_energies: torch.Tensor
+
     def __init__(self, atomic_energies: Union[np.ndarray, torch.Tensor]):
         super().__init__()
         assert len(atomic_energies.shape) == 1

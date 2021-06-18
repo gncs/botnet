@@ -41,7 +41,7 @@ class TestCutoff:
         d = torch.linspace(start=0.5, end=5.5, steps=10)
         cutoff_fn = PolynomialCutoff(r_max=5.0)
         output = cutoff_fn(d)
-        assert output.shape == (10,)
+        assert output.shape == (10, )
 
 
 class TestAtomicEnergies:

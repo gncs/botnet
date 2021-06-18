@@ -6,8 +6,8 @@ class BesselBasis(torch.nn.Module):
     def __init__(self, r_max: float, num_basis=8):
         super().__init__()
 
-        bessel_weights = np.pi * torch.linspace(start=1.0, end=num_basis, steps=num_basis,
-                                                dtype=torch.get_default_dtype())
+        bessel_weights = np.pi * torch.linspace(
+            start=1.0, end=num_basis, steps=num_basis, dtype=torch.get_default_dtype())
         r_max_tensor = torch.tensor(r_max, dtype=torch.get_default_dtype())
 
         self.register_buffer('bessel_weights', bessel_weights)
