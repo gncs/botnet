@@ -37,7 +37,7 @@ class InteractionBlock(torch.nn.Module):
 
         mid_irreps = node_edge_combined_irreps(node_feats_irreps_in, edge_feats_irreps_in, node_feats_irreps_out)
         self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps_in, edge_feats_irreps_in, mid_irreps)
-        self.linear = o3.Linear(mid_irreps, node_feats_irreps_out)
+        self.linear = o3.Linear(mid_irreps, mid_irreps)
         self.skip_tp = o3.FullyConnectedTensorProduct(node_feats_irreps_out, node_attrs_irreps_in,
                                                       node_feats_irreps_out)
 
@@ -51,9 +51,13 @@ class InteractionBlock(torch.nn.Module):
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]
 
-        edge_info = self.conv_tp(node_feats[sender], edge_feats)
-        x = scatter(edge_info, index=receiver, dim=0, dim_size=num_nodes, reduce='sum')
-        x = self.linear(x)
-        x_skip = self.skip_tp(x, node_attrs)
+        # Message
+        mji = self.conv_tp(node_feats[sender], edge_feats)
+        mji = self.linear(mji)
+        m = scatter(mji, index=receiver, dim=0, dim_size=num_nodes, reduce='sum')
 
-        return x + x_skip
+        # Update
+        x_skip = self.skip_tp(m, node_attrs)
+        update = m + x_skip
+
+        return update
