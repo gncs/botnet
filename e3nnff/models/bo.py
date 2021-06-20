@@ -5,8 +5,8 @@ import torch.nn
 from e3nn import o3
 from torch_scatter import scatter
 
-from e3nnff.atomic_data import AtomicData
-from e3nnff.nn.modules import AtomicEnergiesBlock, InteractionBlock, EdgeEmbeddingBlock, ReadoutBlock, ScaleShiftBlock
+from e3nnff.data import AtomicData
+from e3nnff.modules import AtomicEnergiesBlock, InteractionBlock, EdgeEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock
 
 
 class BondOrderModel(torch.nn.Module):
@@ -42,7 +42,7 @@ class BondOrderModel(torch.nn.Module):
             edge_feats_irreps=self.edge_embedding.irreps_out,
         )
         self.interactions = [inter]
-        self.read_outs = [ReadoutBlock(inter.irreps_out)]
+        self.read_outs = [LinearReadoutBlock(inter.irreps_out)]
 
         for _ in range(num_interactions - 1):
             inter = InteractionBlock(max_ell=max_ell,
@@ -51,7 +51,7 @@ class BondOrderModel(torch.nn.Module):
                                      node_attrs_irreps=node_attr_irreps,
                                      edge_feats_irreps=self.edge_embedding.irreps_out)
             self.interactions.append(inter)
-            self.read_outs.append(ReadoutBlock(inter.irreps_out))
+            self.read_outs.append(LinearReadoutBlock(inter.irreps_out))
 
         self.scale_shift = ScaleShiftBlock(scale=1.0, shift=0.0)
 

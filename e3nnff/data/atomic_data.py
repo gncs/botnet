@@ -3,10 +3,9 @@ from typing import Sequence
 import torch.utils.data
 import torch_geometric
 
-from e3nnff.data import Configuration
-from e3nnff.neighborhood import get_neighborhood
-from e3nnff.tensor_tools import to_one_hot
-from e3nnff.utils import AtomicNumberTable, atomic_numbers_to_indices
+from e3nnff.tools import to_one_hot, AtomicNumberTable, atomic_numbers_to_indices
+from .neighborhood import get_neighborhood
+from .utils import Configuration
 
 
 class AtomicData(torch_geometric.data.Data):

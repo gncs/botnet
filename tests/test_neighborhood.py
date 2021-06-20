@@ -1,6 +1,6 @@
 import numpy as np
 
-from e3nnff.neighborhood import get_neighborhood
+from e3nnff.data import get_neighborhood
 
 
 class TestNeighborhood:

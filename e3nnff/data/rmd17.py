@@ -8,7 +8,7 @@ from typing import List, Sequence, Dict, Any, Tuple
 
 import numpy as np
 
-from e3nnff.utils import get_split_sizes, kcal_to_kJ
+from e3nnff.tools.tools import get_split_sizes, kcal_to_kJ
 from .utils import Configuration, Configurations
 
 

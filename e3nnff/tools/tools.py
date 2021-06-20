@@ -60,17 +60,17 @@ class AtomicNumberTable:
         return self.zs.index(atomic_number)
 
 
-def get_symbol_table_from_symbols(symbols: Iterable[str]) -> AtomicNumberTable:
+def get_atomic_number_table_from_symbols(symbols: Iterable[str]) -> AtomicNumberTable:
     atomic_numbers = list(set(ase.data.atomic_numbers[symbol] for symbol in symbols))
     return AtomicNumberTable(zs=sorted(atomic_numbers))
 
 
-def get_symbol_table_from_atoms(atoms: Iterable[ase.Atom]) -> AtomicNumberTable:
+def get_atomic_number_table_from_atoms(atoms: Iterable[ase.Atom]) -> AtomicNumberTable:
     symbols = []
     for atom in atoms:
         if atom.symbol not in symbols:
             symbols.append(atom.symbol)
-    return get_symbol_table_from_symbols(symbols)
+    return get_atomic_number_table_from_symbols(symbols)
 
 
 def atomic_numbers_to_indices(atomic_numbers: np.ndarray, table: AtomicNumberTable) -> np.ndarray:

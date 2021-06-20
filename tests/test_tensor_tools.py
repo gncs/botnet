@@ -1,7 +1,7 @@
 import numpy as np
 
 from e3nnff.data import Configuration
-from e3nnff.utils import AtomicNumberTable, atomic_numbers_to_indices
+from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices
 
 
 class TestAtomicNumberTable:

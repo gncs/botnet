@@ -5,9 +5,9 @@ import torch
 from e3nn import o3
 from torch_scatter import scatter
 
-from e3nnff.e3nn_tools import tp_combine_irreps
-from e3nnff.nn.cutoff import PolynomialCutoff
-from e3nnff.nn.radial_basis import BesselBasis
+from e3nnff.tools import tp_combine_irreps
+from .cutoff import PolynomialCutoff
+from .radial_basis import BesselBasis
 
 
 class EdgeEmbeddingBlock(torch.nn.Module):
@@ -45,7 +45,7 @@ class ScaleShiftBlock(torch.nn.Module):
         return self.scale * x + self.shift
 
 
-class ReadoutBlock(torch.nn.Module):
+class LinearReadoutBlock(torch.nn.Module):
     def __init__(self, irreps_in: o3.Irreps):
         super().__init__()
         self.linear = o3.Linear(irreps_in=irreps_in, irreps_out=o3.Irreps('0e'))

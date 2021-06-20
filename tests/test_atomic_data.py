@@ -1,8 +1,7 @@
 import numpy as np
 
-from e3nnff.atomic_data import AtomicData, get_data_loader
-from e3nnff.data import Configuration
-from e3nnff.utils import AtomicNumberTable
+from e3nnff.data import Configuration, AtomicData, get_data_loader
+from e3nnff.tools import AtomicNumberTable
 
 config = Configuration(
     atomic_numbers=np.array([8, 1, 1]),
