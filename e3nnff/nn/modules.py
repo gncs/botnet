@@ -6,6 +6,33 @@ from e3nn import o3
 from torch_scatter import scatter
 
 from e3nnff.e3nn_tools import node_edge_combined_irreps
+from e3nnff.nn.cutoff import PolynomialCutoff
+from e3nnff.nn.radial_basis import BesselBasis
+
+
+class EdgeEmbeddingBlock(torch.nn.Module):
+    def __init__(self, max_ell: int, r_max: float, num_bessel: int, num_polynomial_cutoff: int):
+        super().__init__()
+        sh_irreps = o3.Irreps.spherical_harmonics(max_ell)
+        self.sh = o3.SphericalHarmonics(sh_irreps, normalize=True, normalization='component')
+        self.bessel_fn = BesselBasis(r_max=r_max, num_basis=num_bessel)
+        self.cutoff_fn = PolynomialCutoff(r_max=r_max, p=num_polynomial_cutoff)
+
+        radial_irreps = o3.Irreps(f'{num_bessel}x0e')
+        self.edge_embedding_tp = o3.FullTensorProduct(radial_irreps, sh_irreps)
+        self.irreps_out = self.edge_embedding_tp.irreps_out
+
+    def forward(
+            self,
+            edge_vectors: torch.Tensor,  # [n_edges, 3]
+            edge_lengths: torch.Tensor,  # [n_edges, 1]
+    ):
+        bessel = self.bessel_fn(edge_lengths)  # [n_edges, n_basis]
+        cutoff = self.cutoff_fn(edge_lengths).unsqueeze(-1)  # [n_edges, 1]
+        radial = bessel * cutoff  # [n_edges, n_basis]
+
+        edge_coeffs = self.sh(edge_vectors)  # [n_edges, sh_irreps]
+        return self.edge_embedding_tp(radial, edge_coeffs)  # [n_edges, n_basis x sh_irreps]
 
 
 class AtomicEnergiesBlock(torch.nn.Module):

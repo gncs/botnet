@@ -9,7 +9,7 @@ def node_edge_combined_irreps(node_irreps: o3.Irreps, edge_irreps: o3.Irreps, ou
                 if ir_out in out_irreps:
                     combined.append((mul, ir_out))
 
-    combined = o3.Irreps(combined)
-    combined, p, _ = combined.sort()
+    combined_irreps = o3.Irreps(combined)
+    sorted_irreps, p, _ = combined_irreps.sort()
 
-    return combined
+    return sorted_irreps
