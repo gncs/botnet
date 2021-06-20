@@ -5,7 +5,7 @@ import torch_geometric
 
 from e3nnff.data import Configuration
 from e3nnff.neighborhood import get_neighborhood
-from e3nnff.tensor_tools import compute_norm, to_one_hot
+from e3nnff.tensor_tools import to_one_hot
 from e3nnff.utils import AtomicNumberTable, atomic_numbers_to_indices
 
 
@@ -39,7 +39,7 @@ class AtomicData(torch_geometric.data.Data):
             'edge_index': edge_index,
             'node_attrs': node_attrs,
             'edge_vectors': edge_vectors,
-            'edge_lengths': compute_norm(edge_vectors),
+            'edge_lengths': torch.linalg.norm(edge_vectors, dim=-1),
             'forces': forces,
             'energy': energy,
         }

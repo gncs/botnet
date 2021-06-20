@@ -5,7 +5,7 @@ import torch
 from e3nn import o3
 from torch_scatter import scatter
 
-from e3nnff.e3nn_tools import node_edge_combined_irreps
+from e3nnff.e3nn_tools import tp_combine_irreps
 from e3nnff.nn.cutoff import PolynomialCutoff
 from e3nnff.nn.radial_basis import BesselBasis
 
@@ -35,6 +35,28 @@ class EdgeEmbeddingBlock(torch.nn.Module):
         return self.edge_embedding_tp(radial, edge_coeffs)  # [n_edges, n_basis x sh_irreps]
 
 
+class ScaleShiftBlock(torch.nn.Module):
+    def __init__(self, scale: float, shift: float):
+        super().__init__()
+        self.scale = torch.tensor(scale, dtype=torch.get_default_dtype())
+        self.shift = torch.tensor(shift, dtype=torch.get_default_dtype())
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.scale * x + self.shift
+
+
+class ReadoutBlock(torch.nn.Module):
+    def __init__(self, irreps_in: o3.Irreps):
+        super().__init__()
+        self.linear = o3.Linear(irreps_in=irreps_in, irreps_out=o3.Irreps('0e'))
+
+    def forward(
+            self,
+            x: torch.Tensor  # [n_nodes, irreps]
+    ) -> torch.Tensor:  # [..., ]
+        return self.linear(x)  # [n_nodes, 1]
+
+
 class AtomicEnergiesBlock(torch.nn.Module):
     atomic_energies: torch.Tensor
 
@@ -55,18 +77,21 @@ class AtomicEnergiesBlock(torch.nn.Module):
 class InteractionBlock(torch.nn.Module):
     def __init__(
         self,
-        node_feats_irreps_in: o3.Irreps,
-        node_attrs_irreps_in: o3.Irreps,
-        edge_feats_irreps_in: o3.Irreps,
-        node_feats_irreps_out: o3.Irreps,
+        max_ell: int,
+        num_channels: int,
+        node_feats_irreps: o3.Irreps,
+        node_attrs_irreps: o3.Irreps,
+        edge_feats_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
 
-        mid_irreps = node_edge_combined_irreps(node_feats_irreps_in, edge_feats_irreps_in, node_feats_irreps_out)
-        self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps_in, edge_feats_irreps_in, mid_irreps)
-        self.linear = o3.Linear(mid_irreps, mid_irreps)
-        self.skip_tp = o3.FullyConnectedTensorProduct(node_feats_irreps_out, node_attrs_irreps_in,
-                                                      node_feats_irreps_out)
+        self.irreps_out = tp_combine_irreps(node_feats_irreps,
+                                            edge_feats_irreps,
+                                            max_ell=max_ell,
+                                            num_channels=num_channels)
+        self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps, edge_feats_irreps, self.irreps_out)
+        self.linear = o3.Linear(self.irreps_out, self.irreps_out)
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)
 
     def forward(
         self,

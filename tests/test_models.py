@@ -42,5 +42,5 @@ class TestModels:
         data_loader = get_data_loader([data, data], batch_size=2)
         batch = next(iter(data_loader))
 
-        output = model(batch)
-        print(output)
+        energy, aux = model(batch)
+        assert energy.shape == (2,)

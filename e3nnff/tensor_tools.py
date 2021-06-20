@@ -20,10 +20,5 @@ def to_one_hot(indices: torch.Tensor, num_classes: int, device=None) -> torch.Te
     return oh.view(*shape)
 
 
-def compute_norm(vectors: torch.Tensor) -> torch.Tensor:
-    assert vectors.shape[-1] == 3
-    return torch.linalg.norm(vectors, dim=-1)
-
-
 def to_numpy(t: torch.Tensor) -> np.ndarray:
     return t.cpu().detach().numpy()
