@@ -11,6 +11,10 @@ import numpy as np
 from e3nnff.tools.tools import get_split_sizes, kcal_to_kJ
 from .utils import Configuration, Configurations
 
+# "On the role of gradients for machine learning of molecular energies and forces"
+# Anders S. Christensen, O. Anatole von Lilienfeld
+# https://arxiv.org/abs/2007.09593
+
 
 def download_url(url: str, save_path: str) -> None:
     with urllib.request.urlopen(url) as download_file:
@@ -32,8 +36,8 @@ def extract_configs(data: Dict[str, np.ndarray], indices: Sequence[int]) -> List
         Configuration(
             atomic_numbers=np.array(data['nuclear_charges'], dtype=int),
             positions=np.array(coords, dtype=float),
-            forces=kcal_to_kJ(np.array(forces, dtype=float)),  # convert kcal/mol/Ang to kJ/mol/Ang
-            energy=kcal_to_kJ(np.array(energy, dtype=float)),  # convert kcal/mol to kJ/mol
+            forces=kcal_to_kJ(np.array(forces, dtype=float)),  # kJ/mol/Ang
+            energy=kcal_to_kJ(np.array(energy, dtype=float)),  # kJ/mol
         ) for coords, forces, energy
         in zip(data['coords'][indices], data['forces'][indices], data['energies'][indices])
     ]
@@ -44,6 +48,15 @@ subsets = {
     'aspirin', 'azobenzene', 'ethanol', 'malonaldehyde', 'naphthalene', 'paracetamol', 'salicylic', 'toluene', 'uracil'
 }
 splits = list(range(1, 6))
+
+# Atomic energies (in eV)
+# Calculated with ORCA
+atomic_energies = [
+    (1, -13.568422383046626),
+    (6, -1025.2770951782686),
+    (7, -1479.0665594928669),
+    (8, -2035.5709809589698),
+]
 
 
 def unpack_configs(
