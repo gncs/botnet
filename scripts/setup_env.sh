@@ -5,6 +5,7 @@ CUDA="cpu"  # or, for instance, "cu102"
 python3 -m venv e3nn-ff-venv
 source e3nn-ff-venv/bin/activate
 
+# Install packages
 pip install pip --upgrade
 pip install wheel pytest pyyaml mypy flake8 yapf
 
