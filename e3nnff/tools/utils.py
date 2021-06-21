@@ -81,8 +81,6 @@ def atomic_numbers_to_indices(atomic_numbers: np.ndarray, z_table: AtomicNumberT
     return to_index_fn(atomic_numbers)
 
 
-
-
 def get_optimizer(name: str, learning_rate: float, parameters: Iterable[torch.Tensor]) -> torch.optim.Optimizer:
     if name == 'adam':
         amsgrad = False
