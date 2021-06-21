@@ -3,6 +3,7 @@ from typing import Dict
 
 import numpy as np
 import torch
+from e3nn import o3
 
 TensorDict = Dict[str, torch.Tensor]
 
@@ -16,13 +17,17 @@ def to_one_hot(indices: torch.Tensor, num_classes: int, device=None) -> torch.Te
     :param device: torch device
     :return: (N x num_classes) tensor
     """
-    shape = indices.shape[:-1] + (num_classes, )
+    shape = indices.shape[:-1] + (num_classes,)
     oh = torch.zeros(shape, device=device).view(shape)
 
     # scatter_ is the in-place version of scatter
     oh.scatter_(dim=-1, index=indices, value=1)
 
     return oh.view(*shape)
+
+
+def count_parameters(module: torch.nn.Module) -> int:
+    return int(sum(np.prod(p.shape) for p in module.parameters()))
 
 
 def set_seeds(seed: int) -> None:
@@ -32,6 +37,14 @@ def set_seeds(seed: int) -> None:
 
 def to_numpy(t: torch.Tensor) -> np.ndarray:
     return t.cpu().detach().numpy()
+
+
+def get_num_e0_channels(irreps: o3.Irreps) -> int:
+    for channels, (ell, p) in irreps:
+        if ell == 0 and p == 1:
+            return channels
+
+    raise RuntimeError(f'Could not find e0 irrep in {irreps}')
 
 
 def init_device(device_str: str) -> torch.device:

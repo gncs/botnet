@@ -81,8 +81,6 @@ def atomic_numbers_to_indices(atomic_numbers: np.ndarray, z_table: AtomicNumberT
     return to_index_fn(atomic_numbers)
 
 
-def count_parameters(module: torch.nn.Module) -> int:
-    return int(sum(np.prod(p.shape) for p in module.parameters()))
 
 
 def get_optimizer(name: str, learning_rate: float, parameters: Iterable[torch.Tensor]) -> torch.optim.Optimizer:

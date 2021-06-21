@@ -7,7 +7,7 @@ import torch
 import torch_geometric
 from torch.utils.data import DataLoader
 
-from .tools import ModelIO, ProgressLogger
+from .utils import ModelIO, ProgressLogger
 from .torch_tools import to_numpy
 
 
