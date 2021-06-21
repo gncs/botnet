@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+import torch.nn
 from e3nn import o3
 
 from e3nnff import data, tools, models, modules
@@ -92,8 +93,8 @@ def main() -> None:
     )
 
     # Evaluation on test dataset
-    model, step = model_io.load_latest(device)
-    test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
+    loaded_model, step = model_io.load_latest(device)
+    test_loss, test_metrics = tools.evaluate(loaded_model, loss_fn=loss_fn, data_loader=test_loader, device=device)
     logger.log(test_metrics)
     logging.info(f'Test loss: {test_loss:.3f}')
 
