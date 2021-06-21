@@ -18,6 +18,11 @@ def kcal_to_kJ(x):
     return x * scipy.constants.calorie
 
 
+# noinspection PyPep8Naming
+def eV_to_kJ_per_mol(x):
+    return x * scipy.constants.electron_volt * scipy.constants.Avogadro / 1000
+
+
 def get_tag(name: str, seed: int) -> str:
     return f'{name}_run-{seed}'
 
