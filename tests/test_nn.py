@@ -44,8 +44,8 @@ class TestAtomicEnergies:
     def test_simple(self):
         energies_block = AtomicEnergiesBlock(atomic_energies=np.array([1.0, 3.0]))
 
-        data1 = AtomicData.from_config(config, table=table, cutoff=3.0)
-        data2 = AtomicData.from_config(config, table=table, cutoff=3.0)
+        data1 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
+        data2 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
         data_loader = get_data_loader([data1, data2], batch_size=2)
         batch = next(iter(data_loader))

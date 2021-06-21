@@ -45,10 +45,10 @@ class AtomicData(torch_geometric.data.Data):
         super().__init__(**data)
 
     @classmethod
-    def from_config(cls, config: Configuration, table: AtomicNumberTable, cutoff: float) -> 'AtomicData':
+    def from_config(cls, config: Configuration, z_table: AtomicNumberTable, cutoff: float) -> 'AtomicData':
         edge_index, _, _ = get_neighborhood(positions=config.positions, cutoff=cutoff)
-        indices = atomic_numbers_to_indices(config.atomic_numbers, table=table)
-        one_hot = to_one_hot(torch.tensor(indices).unsqueeze(-1), num_classes=len(table))
+        indices = atomic_numbers_to_indices(config.atomic_numbers, z_table=z_table)
+        one_hot = to_one_hot(torch.tensor(indices).unsqueeze(-1), num_classes=len(z_table))
 
         positions = torch.tensor(config.positions, dtype=torch.get_default_dtype())
         edge_vec = positions[edge_index[1]] - positions[edge_index[0]]

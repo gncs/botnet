@@ -1,5 +1,5 @@
-from .bo import BondOrderModel
+from .bo import BodyOrderModel
 
 __all__ = [
-    'BondOrderModel',
+    'BodyOrderModel',
 ]

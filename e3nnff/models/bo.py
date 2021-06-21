@@ -6,10 +6,11 @@ from e3nn import o3
 from torch_scatter import scatter
 
 from e3nnff.data import AtomicData
-from e3nnff.modules import AtomicEnergiesBlock, InteractionBlock, EdgeEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock
+from e3nnff.modules import (AtomicEnergiesBlock, SkipInteractionBlock, EdgeEmbeddingBlock, LinearReadoutBlock,
+                            ScaleShiftBlock)
 
 
-class BondOrderModel(torch.nn.Module):
+class BodyOrderModel(torch.nn.Module):
     def __init__(
         self,
         r_max: float,
@@ -34,24 +35,27 @@ class BondOrderModel(torch.nn.Module):
 
         self.atomic_energies_fn = AtomicEnergiesBlock(atomic_energies)
 
-        inter = InteractionBlock(
+        self.interactions = torch.nn.ModuleList()
+        self.readouts = torch.nn.ModuleList()
+
+        inter = SkipInteractionBlock(
             max_ell=max_ell,
             num_channels=num_channels_hidden,
             node_feats_irreps=node_embed_irreps,
             node_attrs_irreps=node_attr_irreps,
             edge_feats_irreps=self.edge_embedding.irreps_out,
         )
-        self.interactions = [inter]
-        self.read_outs = [LinearReadoutBlock(inter.irreps_out)]
+        self.interactions.append(inter)
+        self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
         for _ in range(num_interactions - 1):
-            inter = InteractionBlock(max_ell=max_ell,
-                                     num_channels=num_channels_hidden,
-                                     node_feats_irreps=inter.irreps_out,
-                                     node_attrs_irreps=node_attr_irreps,
-                                     edge_feats_irreps=self.edge_embedding.irreps_out)
+            inter = SkipInteractionBlock(max_ell=max_ell,
+                                         num_channels=num_channels_hidden,
+                                         node_feats_irreps=inter.irreps_out,
+                                         node_attrs_irreps=node_attr_irreps,
+                                         edge_feats_irreps=self.edge_embedding.irreps_out)
             self.interactions.append(inter)
-            self.read_outs.append(LinearReadoutBlock(inter.irreps_out))
+            self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
         self.scale_shift = ScaleShiftBlock(scale=1.0, shift=0.0)
 
@@ -64,9 +68,9 @@ class BondOrderModel(torch.nn.Module):
         node_feats = self.node_embedding(data.node_attrs)
 
         # Interactions
-        for interaction, read_out in zip(self.interactions, self.read_outs):
+        for interaction, readout in zip(self.interactions, self.readouts):
             node_feats = interaction(node_feats, data.node_attrs, edge_feats, data.edge_index)
-            node_energy = read_out(node_feats)
+            node_energy = readout(node_feats)
             node_energies.append(self.scale_shift(node_energy).squeeze(-1))
 
         # Compute graph energies

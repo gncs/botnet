@@ -22,6 +22,8 @@ class EdgeEmbeddingBlock(torch.nn.Module):
         self.edge_embedding_tp = o3.FullTensorProduct(radial_irreps, sh_irreps)
         self.irreps_out = self.edge_embedding_tp.irreps_out
 
+        self.linear = o3.Linear(self.irreps_out, self.irreps_out)
+
     def forward(
             self,
             edge_vectors: torch.Tensor,  # [n_edges, 3]
@@ -32,7 +34,8 @@ class EdgeEmbeddingBlock(torch.nn.Module):
         radial = bessel * cutoff  # [n_edges, n_basis]
 
         edge_coeffs = self.sh(edge_vectors)  # [n_edges, sh_irreps]
-        return self.edge_embedding_tp(radial, edge_coeffs)  # [n_edges, n_basis x sh_irreps]
+        combined = self.edge_embedding_tp(radial, edge_coeffs)  # [n_edges, n_basis x sh_irreps]
+        return self.linear(combined)  # [n_edges, n_basis x sh_irreps]
 
 
 class ScaleShiftBlock(torch.nn.Module):
@@ -74,7 +77,7 @@ class AtomicEnergiesBlock(torch.nn.Module):
         return torch.matmul(x, self.atomic_energies)
 
 
-class InteractionBlock(torch.nn.Module):
+class SkipInteractionBlock(torch.nn.Module):
     def __init__(
         self,
         max_ell: int,
@@ -90,8 +93,9 @@ class InteractionBlock(torch.nn.Module):
                                             max_ell=max_ell,
                                             num_channels=num_channels)
         self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps, edge_feats_irreps, self.irreps_out)
-        self.linear = o3.Linear(self.irreps_out, self.irreps_out)
+        self.linear_1 = o3.Linear(self.irreps_out, self.irreps_out)
         self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)
+        self.linear_2 = o3.Linear(self.irreps_out, self.irreps_out)
 
     def forward(
         self,
@@ -104,12 +108,13 @@ class InteractionBlock(torch.nn.Module):
         num_nodes = node_feats.shape[0]
 
         # Message
-        mji = self.conv_tp(node_feats[sender], edge_feats)
-        mji = self.linear(mji)
-        m = scatter(mji, index=receiver, dim=0, dim_size=num_nodes, reduce='sum')
+        mji = self.conv_tp(node_feats[sender], edge_feats)  # [n_edges, irreps]
+        mji = self.linear_1(mji)
+        m = scatter(mji, index=receiver, dim=0, dim_size=num_nodes, reduce='sum')  # [n_nodes, irreps]
 
         # Update
-        x_skip = self.skip_tp(m, node_attrs)
-        update = m + x_skip
+        x_skip = self.skip_tp(m, node_attrs)  # [n_nodes, irreps]
+        x_skip = self.linear_2(x_skip)
+        new_node_feats = m + x_skip
 
-        return update
+        return new_node_feats

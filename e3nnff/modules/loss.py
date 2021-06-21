@@ -1,6 +1,6 @@
 from typing import Tuple
 
-import torch.nn
+import torch
 from torch_geometric.data import Batch
 
 from e3nnff.tools import TensorDict

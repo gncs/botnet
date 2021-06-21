@@ -23,15 +23,15 @@ table = AtomicNumberTable([1, 8])
 
 class TestAtomicData:
     def test_atomic_data(self):
-        data = AtomicData.from_config(config, table=table, cutoff=3.0)
+        data = AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
         assert data.edge_index.shape == (2, 4)
         assert data.forces.shape == (3, 3)
         assert data.node_attrs.shape == (3, 2)
 
     def test_collate(self):
-        data1 = AtomicData.from_config(config, table=table, cutoff=3.0)
-        data2 = AtomicData.from_config(config, table=table, cutoff=3.0)
+        data1 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
+        data2 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
         data_loader = get_data_loader([data1, data2], batch_size=32)
 
