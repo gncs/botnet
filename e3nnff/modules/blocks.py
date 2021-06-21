@@ -5,7 +5,6 @@ import torch
 from e3nn import o3
 from torch_scatter import scatter
 
-from e3nnff.tools import tp_combine_irreps
 from .cutoff import PolynomialCutoff
 from .radial_basis import BesselBasis
 
@@ -80,18 +79,14 @@ class AtomicEnergiesBlock(torch.nn.Module):
 class SkipInteractionBlock(torch.nn.Module):
     def __init__(
         self,
-        max_ell: int,
-        num_channels: int,
         node_feats_irreps: o3.Irreps,
         node_attrs_irreps: o3.Irreps,
         edge_feats_irreps: o3.Irreps,
+        out_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
 
-        self.irreps_out = tp_combine_irreps(node_feats_irreps,
-                                            edge_feats_irreps,
-                                            max_ell=max_ell,
-                                            num_channels=num_channels)
+        self.irreps_out = out_irreps
         self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps, edge_feats_irreps, self.irreps_out)
         self.linear_1 = o3.Linear(self.irreps_out, self.irreps_out)
         self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)

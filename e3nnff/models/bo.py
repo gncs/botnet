@@ -5,6 +5,7 @@ import torch.nn
 from e3nn import o3
 from torch_scatter import scatter
 
+from e3nnff import tools
 from e3nnff.data import AtomicData
 from e3nnff.modules import (AtomicEnergiesBlock, SkipInteractionBlock, EdgeEmbeddingBlock, LinearReadoutBlock,
                             ScaleShiftBlock)
@@ -19,41 +20,46 @@ class BodyOrderModel(torch.nn.Module):
         max_ell: int,
         num_interactions: int,
         num_channels_input: int,
-        num_channels_hidden: int,
+        hidden_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
     ):
         super().__init__()
 
-        self.edge_embedding = EdgeEmbeddingBlock(max_ell=max_ell,
-                                                 r_max=r_max,
-                                                 num_bessel=num_bessel,
-                                                 num_polynomial_cutoff=num_polynomial_cutoff)
+        # Embedding
+        self.edge_embedding = EdgeEmbeddingBlock(
+            max_ell=max_ell,
+            r_max=r_max,
+            num_bessel=num_bessel,
+            num_polynomial_cutoff=num_polynomial_cutoff,
+        )
 
         node_attr_irreps = o3.Irreps(f'{num_channels_input}x0e')
-        node_embed_irreps = o3.Irreps(f'{num_channels_hidden}x0e')
+        num_e0_channels = tools.get_num_e0_channels(hidden_irreps)
+        node_embed_irreps = o3.Irreps(f'{num_e0_channels}x0e')
         self.node_embedding = o3.Linear(node_attr_irreps, node_embed_irreps, internal_weights=True)
 
+        # Interactions and readouts
         self.atomic_energies_fn = AtomicEnergiesBlock(atomic_energies)
 
         self.interactions = torch.nn.ModuleList()
         self.readouts = torch.nn.ModuleList()
 
         inter = SkipInteractionBlock(
-            max_ell=max_ell,
-            num_channels=num_channels_hidden,
             node_feats_irreps=node_embed_irreps,
             node_attrs_irreps=node_attr_irreps,
             edge_feats_irreps=self.edge_embedding.irreps_out,
+            out_irreps=hidden_irreps,
         )
         self.interactions.append(inter)
         self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
         for _ in range(num_interactions - 1):
-            inter = SkipInteractionBlock(max_ell=max_ell,
-                                         num_channels=num_channels_hidden,
-                                         node_feats_irreps=inter.irreps_out,
-                                         node_attrs_irreps=node_attr_irreps,
-                                         edge_feats_irreps=self.edge_embedding.irreps_out)
+            inter = SkipInteractionBlock(
+                node_feats_irreps=inter.irreps_out,
+                node_attrs_irreps=node_attr_irreps,
+                edge_feats_irreps=self.edge_embedding.irreps_out,
+                out_irreps=hidden_irreps,
+            )
             self.interactions.append(inter)
             self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 

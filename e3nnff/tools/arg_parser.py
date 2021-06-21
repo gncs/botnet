@@ -24,7 +24,10 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--num_cutoff_basis', help='number of basis functions for smooth cutoff', type=int, default=8)
     parser.add_argument('--max_ell', help=r'maximum \ell in spherical harmonics series expansion', type=int, default=2)
     parser.add_argument('--num_interactions', help='number of interactions', type=int, default=4)
-    parser.add_argument('--num_channels', help='number of channels in hidden layers', type=int, default=10)
+    parser.add_argument('--hidden_irreps',
+                        help='irreps for hidden node states',
+                        type=str,
+                        default='10x0e + 10x0o + 10x1e + 10x1o + 10x2e + 10x2o')
 
     # Optimizer
     parser.add_argument('--optimizer',

@@ -1,7 +1,9 @@
 import numpy as np
+import pytest
+from e3nn import o3
 
 from e3nnff.data import Configuration
-from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices
+from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices, get_num_e0_channels
 
 
 class TestAtomicNumberTable:
@@ -30,3 +32,14 @@ class TestConversions:
             energy=-1.5,
         )
         assert config
+
+
+class TestE3NNTools:
+    def test_e0_channels(self):
+        irreps = o3.Irreps('4x1e + 7x0e + 2x2o')
+        e0_channels = get_num_e0_channels(irreps)
+        assert e0_channels == 7
+
+        irreps = o3.Irreps('4x1e + 7x0o + 2x2o')
+        with pytest.raises(RuntimeError):
+            get_num_e0_channels(irreps)

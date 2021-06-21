@@ -1,6 +1,6 @@
 import numpy as np
 
-from e3nnff.data import Configuration, AtomicData, get_data_loader
+from e3nnff.data import Configuration, AtomicData, get_data_loader, get_neighborhood
 from e3nnff.tools import AtomicNumberTable
 
 config = Configuration(
@@ -37,3 +37,17 @@ class TestAtomicData:
 
         for i in data_loader:
             print(i)
+
+
+class TestNeighborhood:
+    def test_basic(self):
+        positions = np.array([
+            [-1.0, 0.0, 0.0],
+            [+0.0, 0.0, 0.0],
+            [+1.0, 0.0, 0.0],
+        ])
+
+        indices, shifts, cell = get_neighborhood(positions, cutoff=1.5)
+        assert indices.shape == (2, 4)
+        assert shifts.shape == (4, 3)
+        assert cell.shape == (3, 3)
