@@ -1,4 +1,4 @@
-from typing import Tuple, Dict
+from typing import Dict, Any
 
 import numpy as np
 import torch.nn
@@ -65,7 +65,7 @@ class BodyOrderModel(torch.nn.Module):
 
         self.scale_shift = ScaleShiftBlock(scale=1.0, shift=0.0)
 
-    def forward(self, data: AtomicData) -> Tuple[torch.Tensor, Dict]:
+    def forward(self, data: AtomicData) -> Dict[str, Any]:
         # Atomic energies
         node_energies = [self.atomic_energies_fn(data.node_attrs)]
 
@@ -87,6 +87,7 @@ class BodyOrderModel(torch.nn.Module):
 
         total_energy = torch.sum(torch.stack(energies, dim=0), dim=0)
 
-        return total_energy, {
+        return {
+            'energy': total_energy,
             'energies': energies,
         }
