@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-import torch.nn
 from e3nn import o3
 
 from e3nnff import data, tools, models, modules
