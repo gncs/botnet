@@ -8,7 +8,7 @@ from typing import List, Sequence, Dict, Any, Tuple
 
 import numpy as np
 
-from e3nnff.tools.tools import get_split_sizes, kcal_to_kJ
+from e3nnff.tools import get_split_sizes, kcal_to_kJ, eV_to_kJ_per_mol
 from .utils import Configuration, Configurations
 
 # "On the role of gradients for machine learning of molecular energies and forces"
@@ -49,13 +49,13 @@ subsets = {
 }
 splits = list(range(1, 6))
 
-# Atomic energies (in eV)
+# Atomic energies (in kJ/mol)
 # Calculated with ORCA
 atomic_energies = {
-    1: -13.568422383046626,
-    6: -1025.2770951782686,
-    7: -1479.0665594928669,
-    8: -2035.5709809589698,
+    1: eV_to_kJ_per_mol(-13.568422383046626),
+    6: eV_to_kJ_per_mol(-1025.2770951782686),
+    7: eV_to_kJ_per_mol(-1479.0665594928669),
+    8: eV_to_kJ_per_mol(-2035.5709809589698),
 }
 
 
