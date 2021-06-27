@@ -47,7 +47,6 @@ class TestNeighborhood:
             [+1.0, 0.0, 0.0],
         ])
 
-        indices, shifts, cell = get_neighborhood(positions, cutoff=1.5)
+        indices, shifts = get_neighborhood(positions, cutoff=1.5)
         assert indices.shape == (2, 4)
         assert shifts.shape == (4, 3)
-        assert cell.shape == (3, 3)

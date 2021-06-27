@@ -20,7 +20,8 @@ class AtomicData(torch_geometric.data.Data):
             self,
             edge_index: torch.Tensor,  # [2, n_edges]
             node_attrs: torch.Tensor,  # [n_nodes, n_node_feats]
-            edge_vectors: torch.Tensor,  # [n_edges, 3]
+            positions: torch.Tensor,  # [n_nodes, 3]
+            shifts: torch.Tensor,  # [n_edges, 3], real shifts in X, Y, Z
             forces: torch.Tensor,  # [n_nodes, 3]
             energy: torch.Tensor,  # [, ]
     ):
@@ -29,6 +30,8 @@ class AtomicData(torch_geometric.data.Data):
 
         assert edge_index.shape[0] == 2 and len(edge_index.shape) == 2
         assert len(node_attrs.shape) == 2
+        assert positions.shape == (num_nodes, 3)
+        assert shifts.shape[1] == 3
         assert forces.shape == (num_nodes, 3)
         assert len(energy.shape) == 0
 
@@ -37,8 +40,8 @@ class AtomicData(torch_geometric.data.Data):
             'num_nodes': num_nodes,
             'edge_index': edge_index,
             'node_attrs': node_attrs,
-            'edge_vectors': edge_vectors,
-            'edge_lengths': torch.linalg.norm(edge_vectors, dim=-1),
+            'positions': positions,
+            'shifts': shifts,
             'forces': forces,
             'energy': energy,
         }
@@ -46,17 +49,16 @@ class AtomicData(torch_geometric.data.Data):
 
     @classmethod
     def from_config(cls, config: Configuration, z_table: AtomicNumberTable, cutoff: float) -> 'AtomicData':
-        edge_index, _, _ = get_neighborhood(positions=config.positions, cutoff=cutoff)
         indices = atomic_numbers_to_indices(config.atomic_numbers, z_table=z_table)
-        one_hot = to_one_hot(torch.tensor(indices).unsqueeze(-1), num_classes=len(z_table))
+        one_hot_attrs = to_one_hot(torch.tensor(indices).unsqueeze(-1), num_classes=len(z_table))
 
-        positions = torch.tensor(config.positions, dtype=torch.get_default_dtype())
-        edge_vec = positions[edge_index[1]] - positions[edge_index[0]]
+        edge_index, shifts = get_neighborhood(positions=config.positions, cutoff=cutoff)
 
         return cls(
             edge_index=torch.tensor(edge_index, dtype=torch.long),
-            node_attrs=one_hot,
-            edge_vectors=edge_vec,
+            node_attrs=one_hot_attrs,
+            positions=torch.tensor(config.positions, dtype=torch.get_default_dtype()),
+            shifts=torch.tensor(shifts, dtype=torch.get_default_dtype()),
             forces=torch.tensor(config.forces, dtype=torch.get_default_dtype()),
             energy=torch.tensor(config.energy, dtype=torch.get_default_dtype()),
         )
