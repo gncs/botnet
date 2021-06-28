@@ -55,7 +55,7 @@ def main() -> None:
 
     # Build model
     logging.info('Building model')
-    model = models.BodyOrderModel(
+    model = models.BodyOrderedModel(
         r_max=args.r_max,
         num_bessel=args.num_radial_basis,
         num_polynomial_cutoff=args.num_cutoff_basis,

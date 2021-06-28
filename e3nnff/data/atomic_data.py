@@ -11,8 +11,8 @@ from .utils import Configuration
 class AtomicData(torch_geometric.data.Data):
     edge_index: torch.Tensor
     node_attrs: torch.Tensor
-    edge_vectors: torch.Tensor
-    edge_lengths: torch.Tensor
+    positions: torch.Tensor
+    shifts: torch.Tensor
     forces: torch.Tensor
     energy: torch.Tensor
 

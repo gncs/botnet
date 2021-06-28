@@ -3,38 +3,26 @@ from typing import Union
 import numpy as np
 import torch
 from e3nn import o3
-from torch_scatter import scatter
+from torch_scatter import scatter_sum
 
 from .cutoff import PolynomialCutoff
 from .radial_basis import BesselBasis
 
 
-class EdgeEmbeddingBlock(torch.nn.Module):
-    def __init__(self, max_ell: int, r_max: float, num_bessel: int, num_polynomial_cutoff: int):
+class RadialEmbeddingBlock(torch.nn.Module):
+    def __init__(self, r_max: float, num_bessel: int, num_polynomial_cutoff: int):
         super().__init__()
-        sh_irreps = o3.Irreps.spherical_harmonics(max_ell)
-        self.sh = o3.SphericalHarmonics(sh_irreps, normalize=True, normalization='component')
         self.bessel_fn = BesselBasis(r_max=r_max, num_basis=num_bessel)
         self.cutoff_fn = PolynomialCutoff(r_max=r_max, p=num_polynomial_cutoff)
-
-        radial_irreps = o3.Irreps(f'{num_bessel}x0e')
-        self.edge_embedding_tp = o3.FullTensorProduct(radial_irreps, sh_irreps)
-        self.irreps_out = self.edge_embedding_tp.irreps_out
-
-        self.linear = o3.Linear(self.irreps_out, self.irreps_out)
+        self.irreps_out = o3.Irreps(f'{num_bessel}x0e')
 
     def forward(
             self,
-            edge_vectors: torch.Tensor,  # [n_edges, 3]
             edge_lengths: torch.Tensor,  # [n_edges, 1]
     ):
         bessel = self.bessel_fn(edge_lengths)  # [n_edges, n_basis]
         cutoff = self.cutoff_fn(edge_lengths).unsqueeze(-1)  # [n_edges, 1]
-        radial = bessel * cutoff  # [n_edges, n_basis]
-
-        edge_coeffs = self.sh(edge_vectors)  # [n_edges, sh_irreps]
-        combined = self.edge_embedding_tp(radial, edge_coeffs)  # [n_edges, n_basis x sh_irreps]
-        return self.linear(combined)  # [n_edges, n_basis x sh_irreps]
+        return bessel * cutoff  # [n_edges, n_basis]
 
 
 class ScaleShiftBlock(torch.nn.Module):
@@ -79,23 +67,34 @@ class AtomicEnergiesBlock(torch.nn.Module):
 class SkipInteractionBlock(torch.nn.Module):
     def __init__(
         self,
-        node_feats_irreps: o3.Irreps,
         node_attrs_irreps: o3.Irreps,
+        node_feats_irreps: o3.Irreps,
+        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
         edge_feats_irreps: o3.Irreps,
         out_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
 
         self.irreps_out = out_irreps
-        self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps, edge_feats_irreps, self.irreps_out)
+
+        self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps,
+                                                      edge_attrs_irreps,
+                                                      self.irreps_out,
+                                                      shared_weights=False,
+                                                      internal_weights=False)
+        weights_irreps = o3.Irreps(f'{self.conv_tp.weight_numel}x0e')
+        self.conv_tp_weights = o3.Linear(edge_feats_irreps, weights_irreps)
+
         self.linear_1 = o3.Linear(self.irreps_out, self.irreps_out)
+
         self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)
         self.linear_2 = o3.Linear(self.irreps_out, self.irreps_out)
 
     def forward(
         self,
-        node_feats: torch.Tensor,
         node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
         edge_feats: torch.Tensor,
         edge_index: torch.Tensor,
     ) -> torch.Tensor:
@@ -103,9 +102,10 @@ class SkipInteractionBlock(torch.nn.Module):
         num_nodes = node_feats.shape[0]
 
         # Message
-        mji = self.conv_tp(node_feats[sender], edge_feats)  # [n_edges, irreps]
+        tp_weights = self.conv_tp_weights(edge_feats)
+        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         mji = self.linear_1(mji)
-        m = scatter(mji, index=receiver, dim=0, dim_size=num_nodes, reduce='sum')  # [n_nodes, irreps]
+        m = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
 
         # Update
         x_skip = self.skip_tp(m, node_attrs)  # [n_nodes, irreps]

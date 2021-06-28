@@ -50,3 +50,15 @@ class TestNeighborhood:
         indices, shifts = get_neighborhood(positions, cutoff=1.5)
         assert indices.shape == (2, 4)
         assert shifts.shape == (4, 3)
+
+    def test_signs(self):
+        positions = np.array([
+            [+0.5, 0.5, 0.0],
+            [+1.0, 1.0, 0.0],
+        ])
+
+        cell = np.array([[2.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+        edge_index, shifts = get_neighborhood(positions, cutoff=3.5, pbc=(True, False, False), cell=cell)
+        num_edges = 10
+        assert edge_index.shape == (2, num_edges)
+        assert shifts.shape == (num_edges, 3)

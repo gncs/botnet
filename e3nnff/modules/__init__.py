@@ -1,9 +1,9 @@
-from .blocks import AtomicEnergiesBlock, SkipInteractionBlock, EdgeEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock
+from .blocks import AtomicEnergiesBlock, SkipInteractionBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock
 from .cutoff import PolynomialCutoff
-from .radial_basis import BesselBasis
 from .loss import EnergyForcesLoss
+from .radial_basis import BesselBasis
 
 __all__ = [
-    'AtomicEnergiesBlock', 'SkipInteractionBlock', 'EdgeEmbeddingBlock', 'LinearReadoutBlock', 'ScaleShiftBlock',
+    'AtomicEnergiesBlock', 'SkipInteractionBlock', 'RadialEmbeddingBlock', 'LinearReadoutBlock', 'ScaleShiftBlock',
     'PolynomialCutoff', 'BesselBasis', 'EnergyForcesLoss'
 ]
