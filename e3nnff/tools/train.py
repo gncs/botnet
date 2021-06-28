@@ -73,7 +73,7 @@ def take_step(
     optimizer.zero_grad()
     batch.to(device)
     output = model(batch)
-    loss = loss_fn(predictions=output, batch=batch)
+    loss = loss_fn(pred=output, ref=batch)
     optimizer.step()
 
     loss_dict = {
@@ -96,7 +96,7 @@ def evaluate(
     for batch in data_loader:
         batch.to(device)
         output = model(batch)
-        loss = loss_fn(predictions=output, batch=batch)
+        loss = loss_fn(pred=output, ref=batch)
         total_loss += to_numpy(loss)
 
     loss_dict = {
