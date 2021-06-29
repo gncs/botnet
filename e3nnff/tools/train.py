@@ -69,9 +69,8 @@ def take_step(
     device: torch.device,
 ) -> Tuple[float, Dict[str, Any]]:
     start_time = time.time()
-
+    batch = batch.to(device)
     optimizer.zero_grad()
-    batch.to(device)
     output = model(batch)
     loss = loss_fn(pred=output, ref=batch)
     optimizer.step()
@@ -96,10 +95,10 @@ def evaluate(
 
     start_time = time.time()
     for batch in data_loader:
-        batch.to(device)
+        batch = batch.to(device)
         output = model(batch, training=False)
-        batch.cpu()
-        tensor_dict_to_device(output, device=torch.device('cpu'))
+        batch = batch.cpu()
+        output = tensor_dict_to_device(output, device=torch.device('cpu'))
 
         loss = loss_fn(pred=output, ref=batch)
         total_loss += to_numpy(loss).item()

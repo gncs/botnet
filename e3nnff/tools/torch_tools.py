@@ -17,7 +17,7 @@ def to_one_hot(indices: torch.Tensor, num_classes: int, device=None) -> torch.Te
     :param device: torch device
     :return: (N x num_classes) tensor
     """
-    shape = indices.shape[:-1] + (num_classes, )
+    shape = indices.shape[:-1] + (num_classes,)
     oh = torch.zeros(shape, device=device).view(shape)
 
     # scatter_ is the in-place version of scatter
@@ -30,9 +30,8 @@ def count_parameters(module: torch.nn.Module) -> int:
     return int(sum(np.prod(p.shape) for p in module.parameters()))
 
 
-def tensor_dict_to_device(d: TensorDict, device: torch.device):
-    for v in d.values():
-        v.to(device)
+def tensor_dict_to_device(td: TensorDict, device: torch.device) -> TensorDict:
+    return {k: v.to(device) for k, v in td.items()}
 
 
 def set_seeds(seed: int) -> None:
