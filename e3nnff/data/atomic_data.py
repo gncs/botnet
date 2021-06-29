@@ -50,13 +50,16 @@ class AtomicData(torch_geometric.data.Data):
     @classmethod
     def from_config(cls, config: Configuration, z_table: AtomicNumberTable, cutoff: float) -> 'AtomicData':
         indices = atomic_numbers_to_indices(config.atomic_numbers, z_table=z_table)
-        one_hot_attrs = to_one_hot(torch.tensor(indices).unsqueeze(-1), num_classes=len(z_table))
+        one_hot_attrs = to_one_hot(
+            indices=torch.tensor(indices, dtype=torch.long).unsqueeze(-1),
+            num_classes=len(z_table),
+        )
 
         edge_index, shifts = get_neighborhood(positions=config.positions, cutoff=cutoff)
 
         return cls(
             edge_index=torch.tensor(edge_index, dtype=torch.long),
-            node_attrs=one_hot_attrs,
+            node_attrs=one_hot_attrs.to(torch.get_default_dtype()),
             positions=torch.tensor(config.positions, dtype=torch.get_default_dtype()),
             shifts=torch.tensor(shifts, dtype=torch.get_default_dtype()),
             forces=torch.tensor(config.forces, dtype=torch.get_default_dtype()),

@@ -11,9 +11,9 @@ Forces = np.ndarray  # [..., 3]
 @dataclass
 class Configuration:
     atomic_numbers: np.ndarray
-    positions: Positions  # Angstrom
-    energy: Optional[float] = None  # kJ/mol
-    forces: Optional[Forces] = None  # kJ/mol/Angstrom
+    positions: Positions  # Bohr
+    energy: Optional[float] = None  # Hartree
+    forces: Optional[Forces] = None  # Hartree/Bohr
 
 
 Configurations = List[Configuration]

@@ -43,5 +43,4 @@ class TestModels:
 
         output = model(batch, include_forces=True)
         assert output['energy'].shape == (2, )
-        assert len(output['energies']) == 3
         assert output['forces'].shape == (6, 3)

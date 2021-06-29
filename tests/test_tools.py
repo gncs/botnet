@@ -3,7 +3,8 @@ import pytest
 from e3nn import o3
 
 from e3nnff.data import Configuration
-from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices, get_num_e0_channels
+from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices, get_num_e0_channels, ev_to_hartree, \
+    kcalpmol_to_hartree, angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr
 
 
 class TestAtomicNumberTable:
@@ -43,3 +44,11 @@ class TestE3NNTools:
         irreps = o3.Irreps('4x1e + 7x0o + 2x2o')
         with pytest.raises(RuntimeError):
             get_num_e0_channels(irreps)
+
+
+class TestUnits:
+    def test_standard_units(self):
+        assert np.isclose(ev_to_hartree(1.0), 0.036749)
+        assert np.isclose(kcalpmol_to_hartree(1.0), 0.0015936)
+        assert np.isclose(angstrom_to_bohr(1.0), 1.88973)
+        assert np.isclose(kcalpmol_per_angstrom_to_hartree_per_bohr(1.0), 0.0015936 / 1.88973)

@@ -12,15 +12,29 @@ import torch
 
 from .torch_tools import to_numpy
 
+_bohr_per_angstrom = scipy.constants.angstrom / scipy.constants.value('Bohr radius')
+_angstrom_per_bohr = 1 / _bohr_per_angstrom
+_joule_per_hartree = scipy.constants.value('Hartree energy')
+_hartree_per_joule = 1 / _joule_per_hartree
+_hartree_per_kjpmol = _hartree_per_joule * 1_000 / scipy.constants.Avogadro
+_kj_per_kcal = scipy.constants.calorie
+_hartree_per_ev = 1 / scipy.constants.value('Hartree energy in eV')
 
-# noinspection PyPep8Naming
-def kcal_to_kJ(x):
-    return x * scipy.constants.calorie
+
+def ev_to_hartree(x):
+    return x * _hartree_per_ev
 
 
-# noinspection PyPep8Naming
-def eV_to_kJ_per_mol(x):
-    return x * scipy.constants.electron_volt * scipy.constants.Avogadro / 1000
+def kcalpmol_to_hartree(x):
+    return x * _kj_per_kcal * _hartree_per_kjpmol
+
+
+def angstrom_to_bohr(x):
+    return x * _bohr_per_angstrom
+
+
+def kcalpmol_per_angstrom_to_hartree_per_bohr(x):
+    return kcalpmol_to_hartree(x) * _angstrom_per_bohr
 
 
 def get_tag(name: str, seed: int) -> str:

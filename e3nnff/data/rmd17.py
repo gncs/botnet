@@ -8,7 +8,8 @@ from typing import List, Sequence, Dict, Any, Tuple
 
 import numpy as np
 
-from e3nnff.tools import get_split_sizes, kcal_to_kJ, eV_to_kJ_per_mol
+from e3nnff.tools import (get_split_sizes, ev_to_hartree, angstrom_to_bohr, kcalpmol_to_hartree,
+                          kcalpmol_per_angstrom_to_hartree_per_bohr)
 from .utils import Configuration, Configurations
 
 # "On the role of gradients for machine learning of molecular energies and forces"
@@ -35,9 +36,9 @@ def extract_configs(data: Dict[str, np.ndarray], indices: Sequence[int]) -> List
     return [
         Configuration(
             atomic_numbers=np.array(data['nuclear_charges'], dtype=int),
-            positions=np.array(coords, dtype=float),  # Ang
-            forces=kcal_to_kJ(np.array(forces, dtype=float)),  # kJ/mol/Ang
-            energy=kcal_to_kJ(np.array(energy, dtype=float)),  # kJ/mol
+            positions=angstrom_to_bohr(np.array(coords, dtype=float)),  # Bohr
+            forces=kcalpmol_per_angstrom_to_hartree_per_bohr(np.array(forces, dtype=float)),  # Hartree/Bohr
+            energy=kcalpmol_to_hartree(np.array(energy, dtype=float)),  # Hartree
         ) for coords, forces, energy
         in zip(data['coords'][indices], data['forces'][indices], data['energies'][indices])
     ]
@@ -49,13 +50,13 @@ subsets = {
 }
 splits = list(range(1, 6))
 
-# Atomic energies (in kJ/mol)
+# Atomic energies (in Hartree)
 # Calculated with ORCA
 atomic_energies = {
-    1: eV_to_kJ_per_mol(-13.568422383046626),
-    6: eV_to_kJ_per_mol(-1025.2770951782686),
-    7: eV_to_kJ_per_mol(-1479.0665594928669),
-    8: eV_to_kJ_per_mol(-2035.5709809589698),
+    1: ev_to_hartree(-13.568422383046626),
+    6: ev_to_hartree(-1025.2770951782686),
+    7: ev_to_hartree(-1479.0665594928669),
+    8: ev_to_hartree(-2035.5709809589698),
 }
 
 
