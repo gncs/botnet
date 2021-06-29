@@ -46,7 +46,7 @@ def train(
             eval_metrics['epoch'] = epoch
             logger.log(eval_metrics)
 
-            logging.info(f'Step {epoch}: {valid_loss:.3f}')
+            logging.info(f'Epoch {epoch}: {valid_loss:.4f}')
 
             if valid_loss > lowest_loss:
                 patience_counter += 1
