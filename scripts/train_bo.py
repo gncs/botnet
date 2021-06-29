@@ -53,6 +53,8 @@ def main() -> None:
     )
     # yapf: enable
 
+    mean_atom_inter, std_atom_inter = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
+
     # Build model
     logging.info('Building model')
     model = models.BodyOrderedModel(
@@ -64,6 +66,8 @@ def main() -> None:
         num_channels_input=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
+        atomic_inter_scale=std_atom_inter,
+        atomic_inter_shift=mean_atom_inter,
     )
     model.to(device)
     logging.info(f'Number of model parameters: {tools.count_parameters(model)}')

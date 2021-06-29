@@ -25,14 +25,18 @@ table = tools.AtomicNumberTable([1, 8])
 class TestModels:
     def test_bo_model(self):
         atomic_energies = np.array([1.0, 3.0], dtype=float)
-        model = models.BodyOrderedModel(r_max=2.0,
-                                        num_bessel=7,
-                                        num_polynomial_cutoff=5,
-                                        max_ell=2,
-                                        num_channels_input=len(table),
-                                        num_interactions=2,
-                                        atomic_energies=atomic_energies,
-                                        hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'))
+        model = models.BodyOrderedModel(
+            r_max=2.0,
+            num_bessel=7,
+            num_polynomial_cutoff=5,
+            max_ell=2,
+            num_channels_input=len(table),
+            num_interactions=2,
+            atomic_energies=atomic_energies,
+            hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),
+            atomic_inter_shift=0.0,
+            atomic_inter_scale=1.0,
+        )
 
         assert count_parameters(model) == 14372
 
