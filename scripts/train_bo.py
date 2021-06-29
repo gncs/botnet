@@ -78,7 +78,7 @@ def main() -> None:
                                     parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
 
-    loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=1.0)
+    loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
 
     tools.train(
         model=model,
