@@ -30,6 +30,11 @@ def count_parameters(module: torch.nn.Module) -> int:
     return int(sum(np.prod(p.shape) for p in module.parameters()))
 
 
+def tensor_dict_to_device(d: TensorDict, device: torch.device):
+    for v in d.values():
+        v.to(device)
+
+
 def set_seeds(seed: int) -> None:
     np.random.seed(seed)
     torch.manual_seed(seed)

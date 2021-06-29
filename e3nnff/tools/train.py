@@ -7,8 +7,8 @@ import torch
 import torch_geometric
 from torch.utils.data import DataLoader
 
+from .torch_tools import to_numpy, tensor_dict_to_device
 from .utils import ModelIO, ProgressLogger
-from .torch_tools import to_numpy
 
 
 def train(
@@ -77,7 +77,7 @@ def take_step(
     optimizer.step()
 
     loss_dict = {
-        'total_loss': to_numpy(loss),
+        'loss': to_numpy(loss),
         'time': time.time() - start_time,
     }
 
@@ -92,16 +92,30 @@ def evaluate(
 ) -> Tuple[float, Dict[str, Any]]:
     total_loss = 0.0
 
+    delta_es = []
+
     start_time = time.time()
     for batch in data_loader:
         batch.to(device)
-        output = model(batch)
+        output = model(batch, training=False)
+        batch.cpu()
+        tensor_dict_to_device(output, device=torch.device('cpu'))
+
         loss = loss_fn(pred=output, ref=batch)
-        total_loss += to_numpy(loss)
+        total_loss += to_numpy(loss).item()
+
+        delta_es.append(torch.abs(batch.energy - output['energy']))
+
+    loss = total_loss / len(data_loader)
+
+    # MAE energy
+    delta_e = torch.cat(delta_es)  # [n_graphs, ]
+    mae_e = torch.mean(delta_e)
 
     loss_dict = {
-        'total_loss': total_loss,
+        'loss': loss,
+        'mae_e': mae_e.item(),
         'time': time.time() - start_time,
     }
 
-    return total_loss, loss_dict
+    return loss, loss_dict
