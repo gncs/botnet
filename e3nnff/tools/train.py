@@ -31,6 +31,7 @@ def train(
 
     logging.info('Started training')
     for epoch in range(start_epoch, max_num_epochs):
+        # Train
         for batch in train_loader:
             _, opt_metrics = take_step(model=model, loss_fn=loss_fn, batch=batch, optimizer=optimizer, device=device)
             opt_metrics['mode'] = 'opt'
@@ -39,6 +40,7 @@ def train(
             logger.log(opt_metrics)
             step += 1
 
+        # Validate
         if epoch % eval_interval == 0:
             valid_loss, eval_metrics = evaluate(model=model, loss_fn=loss_fn, data_loader=valid_loader, device=device)
             eval_metrics['mode'] = 'eval'
