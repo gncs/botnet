@@ -14,6 +14,12 @@ def mean_squared_error_forces(ref: Batch, pred: TensorDict) -> torch.Tensor:
     return torch.mean(torch.square(ref['forces'] - pred['forces']))  # []
 
 
+class EnergyLoss(torch.nn.Module):
+    @staticmethod
+    def forward(ref: Batch, pred: TensorDict) -> torch.Tensor:
+        return mean_squared_error_energy(ref, pred)
+
+
 class EnergyForcesLoss(torch.nn.Module):
     def __init__(self, energy_weight=1.0, forces_weight=1.0) -> None:
         super().__init__()

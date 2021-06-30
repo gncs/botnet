@@ -68,6 +68,7 @@ def main() -> None:
         atomic_energies=atomic_energies,
         atomic_inter_scale=std_atom_inter,
         atomic_inter_shift=mean_atom_inter,
+        include_forces=False,
     )
     model.to(device)
     logging.info(f'Number of model parameters: {tools.count_parameters(model)}')
@@ -78,7 +79,8 @@ def main() -> None:
                                     parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
 
-    loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
+    # loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
+    loss_fn = modules.EnergyLoss()
 
     tools.train(
         model=model,

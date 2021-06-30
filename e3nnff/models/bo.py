@@ -48,6 +48,7 @@ class BodyOrderedModel(torch.nn.Module):
         atomic_energies: np.ndarray,
         atomic_inter_scale: float,
         atomic_inter_shift: float,
+        include_forces=True,
     ):
         super().__init__()
 
@@ -94,10 +95,11 @@ class BodyOrderedModel(torch.nn.Module):
             self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
         self.scale_shift = ScaleShiftBlock(scale=atomic_inter_scale, shift=atomic_inter_shift)
+        self.include_forces = include_forces
 
-    def forward(self, data: AtomicData, training=False, include_forces=True) -> Dict[str, Any]:
+    def forward(self, data: AtomicData, training=False) -> Dict[str, Any]:
         # Setup
-        if include_forces:
+        if self.include_forces:
             data.positions.requires_grad = True
 
         # Atomic energies
@@ -139,7 +141,7 @@ class BodyOrderedModel(torch.nn.Module):
             'interaction_energy': inter_energy,
         }
 
-        if include_forces:
+        if self.include_forces:
             output['forces'] = compute_forces(energy=total_energy, positions=data.positions, training=training)
 
         return output
