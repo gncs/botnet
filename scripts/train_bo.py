@@ -100,6 +100,7 @@ def main() -> None:
     # Evaluation on test dataset
     loaded_model, step = model_io.load_latest(device)
     test_loss, test_metrics = tools.evaluate(loaded_model, loss_fn=loss_fn, data_loader=test_loader, device=device)
+    test_metrics['mode'] = 'test'
     logger.log(test_metrics)
     logging.info(f'Test loss: {test_loss:.3f}')
 
