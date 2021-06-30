@@ -73,6 +73,7 @@ def take_step(
     optimizer.zero_grad()
     output = model(batch)
     loss = loss_fn(pred=output, ref=batch)
+    loss.backward()
     optimizer.step()
 
     loss_dict = {
