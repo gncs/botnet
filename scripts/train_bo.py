@@ -53,6 +53,12 @@ def main() -> None:
     )
     # yapf: enable
 
+    include_forces = True
+    if include_forces:
+        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
+    else:
+        loss_fn = modules.EnergyLoss()
+
     mean_atom_inter, std_atom_inter = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
 
     # Build model
@@ -68,7 +74,7 @@ def main() -> None:
         atomic_energies=atomic_energies,
         atomic_inter_scale=std_atom_inter,
         atomic_inter_shift=mean_atom_inter,
-        include_forces=False,
+        include_forces=include_forces,
     )
     model.to(device)
     logging.info(f'Number of model parameters: {tools.count_parameters(model)}')
@@ -78,9 +84,6 @@ def main() -> None:
                                     learning_rate=args.learning_rate,
                                     parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
-
-    # loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
-    loss_fn = modules.EnergyLoss()
 
     tools.train(
         model=model,
