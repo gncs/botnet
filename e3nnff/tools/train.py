@@ -71,7 +71,7 @@ def take_step(
     start_time = time.time()
     batch = batch.to(device)
     optimizer.zero_grad()
-    output = model(batch)
+    output = model(batch, training=True)
     loss = loss_fn(pred=output, ref=batch)
     loss.backward()
     optimizer.step()
