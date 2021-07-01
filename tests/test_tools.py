@@ -1,10 +1,16 @@
+import tempfile
+
 import numpy as np
 import pytest
+import torch
+import torch.nn.functional
 from e3nn import o3
+from torch import nn, optim
 
 from e3nnff.data import Configuration
-from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices, get_num_e0_channels, ev_to_hartree, \
-    kcalpmol_to_hartree, angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr
+from e3nnff.tools import (AtomicNumberTable, atomic_numbers_to_indices, get_num_e0_channels, ev_to_hartree,
+                          kcalpmol_to_hartree, angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr)
+from e3nnff.tools import CheckpointIO, CheckpointHandler, CheckpointBuilder
 
 
 class TestAtomicNumberTable:
@@ -52,3 +58,34 @@ class TestUnits:
         assert np.isclose(kcalpmol_to_hartree(1.0), 0.0015936)
         assert np.isclose(angstrom_to_bohr(1.0), 1.88973)
         assert np.isclose(kcalpmol_per_angstrom_to_hartree_per_bohr(1.0), 0.0015936 / 1.88973)
+
+
+class MyModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear = torch.nn.Linear(3, 4)
+
+    def forward(self, x):
+        return torch.nn.functional.relu(self.linear(x))
+
+
+class TestStateIO:
+    def test_save_load(self):
+        model = MyModel()
+        initial_lr = 0.001
+        optimizer = optim.SGD(model.parameters(), lr=initial_lr, momentum=0.9)
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=100)
+
+        directory = tempfile.TemporaryDirectory()
+
+        io = CheckpointIO(directory=directory.name, tag='test', keep=True)
+        builder = CheckpointBuilder(model=model, optimizer=optimizer)
+        handler = CheckpointHandler(builder, io)
+        handler.save(50)
+
+        optimizer.step()
+        scheduler.step()
+        assert not np.isclose(optimizer.param_groups[0]['lr'], initial_lr)
+
+        handler.load_latest()
+        assert np.isclose(optimizer.param_groups[0]['lr'], initial_lr)

@@ -8,7 +8,8 @@ import torch_geometric
 from torch.utils.data import DataLoader
 
 from .torch_tools import to_numpy, tensor_dict_to_device
-from .utils import ModelIO, ProgressLogger
+from .utils import ProgressLogger
+from .checkpoint import CheckpointHandler
 
 
 def train(
@@ -20,7 +21,7 @@ def train(
     start_epoch: int,
     max_num_epochs: int,
     patience: int,
-    model_io: ModelIO,
+    checkpoint_handler: CheckpointHandler,
     logger: ProgressLogger,
     eval_interval: int,
     device: torch.device,
@@ -58,7 +59,7 @@ def train(
             else:
                 lowest_loss = valid_loss
                 patience_counter = 0
-                model_io.save(model, steps=epoch)
+                checkpoint_handler.save(epoch)
 
     logging.info('Training complete')
 

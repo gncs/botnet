@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+import torch.nn
 from e3nn import o3
 
 from e3nnff import data, tools, models, modules
@@ -54,6 +55,7 @@ def main() -> None:
     # yapf: enable
 
     include_forces = True
+    loss_fn: torch.nn.Module
     if include_forces:
         loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
     else:
@@ -79,11 +81,14 @@ def main() -> None:
     model.to(device)
     logging.info(f'Number of model parameters: {tools.count_parameters(model)}')
 
-    model_io = tools.ModelIO(directory=args.models_dir, tag=tag, keep=args.keep_models)
     optimizer = tools.get_optimizer(name=args.optimizer,
                                     learning_rate=args.learning_rate,
                                     parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
+
+    io = tools.CheckpointIO(directory=args.models_dir, tag='test', keep=True)
+    builder = tools.CheckpointBuilder(model=model, optimizer=optimizer)
+    handler = tools.CheckpointHandler(builder, io)
 
     tools.train(
         model=model,
@@ -91,7 +96,7 @@ def main() -> None:
         train_loader=train_loader,
         valid_loader=valid_loader,
         optimizer=optimizer,
-        model_io=model_io,
+        checkpoint_handler=handler,
         eval_interval=args.eval_interval,
         start_epoch=0,
         max_num_epochs=args.max_num_steps,
@@ -101,8 +106,8 @@ def main() -> None:
     )
 
     # Evaluation on test dataset
-    loaded_model, step = model_io.load_latest(device)
-    test_loss, test_metrics = tools.evaluate(loaded_model, loss_fn=loss_fn, data_loader=test_loader, device=device)
+    handler.load_latest()
+    test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
     test_metrics['mode'] = 'test'
     logger.log(test_metrics)
     logging.info(f'Test loss: {test_loss:.3f}')

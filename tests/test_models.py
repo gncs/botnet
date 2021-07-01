@@ -45,6 +45,6 @@ class TestModels:
         data_loader = data.get_data_loader([atomic_data, atomic_data], batch_size=2)
         batch = next(iter(data_loader))
 
-        output = model(batch, include_forces=True)
+        output = model(batch)
         assert output['energy'].shape == (2, )
         assert output['forces'].shape == (6, 3)

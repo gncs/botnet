@@ -21,7 +21,7 @@ setup(
     classifiers=['Programming Language :: Python :: 3.7'],
     python_requires='>=3.7',
     packages=find_packages(),
-    install_requires=[],
+    install_requires=['e3nn', 'torch'],
     zip_safe=False,
     test_suite='pytest',
     tests_require=['pytest'],
