@@ -19,7 +19,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--log_level', help='log level', type=str, default='INFO')
 
     # Model
-    parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=5.0)
+    parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=4.0)
     parser.add_argument('--num_radial_basis', help='number of radial basis functions', type=int, default=8)
     parser.add_argument('--num_cutoff_basis', help='number of basis functions for smooth cutoff', type=int, default=8)
     parser.add_argument('--max_ell', help=r'maximum \ell in spherical harmonics series expansion', type=int, default=2)
