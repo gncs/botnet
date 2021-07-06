@@ -86,7 +86,7 @@ def main() -> None:
                                     parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
 
-    io = tools.CheckpointIO(directory=args.models_dir, tag='test', keep=True)
+    io = tools.CheckpointIO(directory=args.checkpoints_dir, tag='test', keep=True)
     builder = tools.CheckpointBuilder(model=model, optimizer=optimizer)
     handler = tools.CheckpointHandler(builder, io)
 

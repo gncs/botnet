@@ -11,7 +11,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
 
     # Directories
     parser.add_argument('--log_dir', help='directory for log files', type=str, default='logs')
-    parser.add_argument('--checkpoints_dir', help='directory for model files', type=str, default='checkpoints')
+    parser.add_argument('--checkpoints_dir', help='directory for checkpoint files', type=str, default='checkpoints')
     parser.add_argument('--results_dir', help='directory for results', type=str, default='results')
 
     # Device and logging
