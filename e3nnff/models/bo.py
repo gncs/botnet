@@ -77,7 +77,7 @@ class BodyOrderedModel(torch.nn.Module):
             node_attrs_irreps=node_attr_irreps,
             node_feats_irreps=node_embed_irreps,
             edge_attrs_irreps=sh_irreps,
-            edge_feats_irreps=self.radial_embedding.irreps_out,
+            edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
             out_irreps=hidden_irreps,
         )
         self.interactions.append(inter)
@@ -88,7 +88,7 @@ class BodyOrderedModel(torch.nn.Module):
                 node_feats_irreps=inter.irreps_out,
                 node_attrs_irreps=node_attr_irreps,
                 edge_attrs_irreps=sh_irreps,
-                edge_feats_irreps=self.radial_embedding.irreps_out,
+                edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
                 out_irreps=hidden_irreps,
             )
             self.interactions.append(inter)

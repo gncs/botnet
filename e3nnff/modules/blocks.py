@@ -14,7 +14,7 @@ class RadialEmbeddingBlock(torch.nn.Module):
         super().__init__()
         self.bessel_fn = BesselBasis(r_max=r_max, num_basis=num_bessel)
         self.cutoff_fn = PolynomialCutoff(r_max=r_max, p=num_polynomial_cutoff)
-        self.irreps_out = o3.Irreps(f'{num_bessel}x0e')
+        self.out_dim = num_bessel
 
     def forward(
             self,
