@@ -7,9 +7,9 @@ import torch
 import torch_geometric
 from torch.utils.data import DataLoader
 
+from .checkpoint import CheckpointHandler
 from .torch_tools import to_numpy, tensor_dict_to_device
 from .utils import ProgressLogger
-from .checkpoint import CheckpointHandler
 
 
 def train(
