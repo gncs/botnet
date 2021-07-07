@@ -65,13 +65,13 @@ def main() -> None:
 
     # Build model
     logging.info('Building model')
-    model = models.BodyOrderedModel(
+    model = models.SimpleBodyOrderedModel(
         r_max=args.r_max,
         num_bessel=args.num_radial_basis,
         num_polynomial_cutoff=args.num_cutoff_basis,
         max_ell=args.max_ell,
         num_interactions=args.num_interactions,
-        num_channels_input=len(z_table),
+        num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
         atomic_inter_scale=std_atom_inter,

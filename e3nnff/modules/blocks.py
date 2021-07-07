@@ -25,6 +25,24 @@ class RadialEmbeddingBlock(torch.nn.Module):
         return bessel * cutoff  # [n_edges, n_basis]
 
 
+class RadialElementBlock(torch.nn.Module):
+    def __init__(self, num_elements: int, num_feats_in: int, num_feats_out: int):
+        super().__init__()
+
+        weights = torch.rand((num_elements, num_elements, num_feats_in, num_feats_out), dtype=torch.get_default_dtype())
+        self.weights = torch.nn.Parameter(weights)
+
+    def forward(
+        self,
+        node_attrs,  # assumes that the node attributes are one-hot encoded
+        edge_feats,
+        edge_index: torch.Tensor,
+    ):
+        sender, receiver = edge_index
+        return torch.einsum('bn, bi, bj, ijnk -> bk', edge_feats, node_attrs[sender], node_attrs[receiver],
+                            self.weights)
+
+
 class ScaleShiftBlock(torch.nn.Module):
     def __init__(self, scale: float, shift: float):
         super().__init__()
@@ -62,6 +80,45 @@ class AtomicEnergiesBlock(torch.nn.Module):
             x: torch.Tensor  # one-hot of elements [..., n_elements]
     ) -> torch.Tensor:  # [..., ]
         return torch.matmul(x, self.atomic_energies)
+
+
+class SingleInteractionBlock(torch.nn.Module):
+    def __init__(
+        self,
+        node_feats_irreps: o3.Irreps,
+        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
+        edge_feats_irreps: o3.Irreps,
+        out_irreps: o3.Irreps,
+    ) -> None:
+        super().__init__()
+
+        self.irreps_out = out_irreps
+
+        self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps,
+                                                      edge_attrs_irreps,
+                                                      self.irreps_out,
+                                                      shared_weights=False,
+                                                      internal_weights=False)
+        weights_irreps = o3.Irreps(f'{self.conv_tp.weight_numel}x0e')
+        self.conv_tp_weights = o3.Linear(edge_feats_irreps, weights_irreps)
+
+        self.linear = o3.Linear(self.irreps_out, self.irreps_out)
+
+    def forward(
+        self,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
+    ) -> torch.Tensor:
+        sender, receiver = edge_index
+        num_nodes = node_feats.shape[0]
+
+        # Message and update is replacement
+        tp_weights = self.conv_tp_weights(edge_feats)
+        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
+        mji = self.linear(mji)
+        return scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
 
 
 class SkipInteractionBlock(torch.nn.Module):
