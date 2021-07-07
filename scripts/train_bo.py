@@ -99,7 +99,7 @@ def main() -> None:
         checkpoint_handler=handler,
         eval_interval=args.eval_interval,
         start_epoch=0,
-        max_num_epochs=args.max_num_steps,
+        max_num_epochs=args.max_num_epochs,
         logger=logger,
         patience=args.patience,
         device=device,
