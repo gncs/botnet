@@ -18,7 +18,7 @@ def get_edge_vectors_and_lengths(
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     sender, receiver = edge_index
     vectors = positions[receiver] - positions[sender] + shifts  # [n_edges, 3]
-    lengths = torch.linalg.norm(vectors, dim=-1)  # [n_edges]
+    lengths = torch.linalg.norm(vectors, dim=-1, keepdim=True)  # [n_edges, 1]
     return vectors, lengths
 
 

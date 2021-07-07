@@ -14,6 +14,9 @@ class BesselBasis(torch.nn.Module):
         self.register_buffer('r_max', r_max_tensor)
         self.register_buffer('pre_factor', 2.0 / r_max_tensor)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        numerator = torch.sin(self.bessel_weights * x.unsqueeze(-1) / self.r_max)  # [..., num_basis]
-        return self.pre_factor * (numerator / x.unsqueeze(-1))
+    def forward(
+            self,
+            x: torch.Tensor,  # [..., 1]
+    ) -> torch.Tensor:
+        numerator = torch.sin(self.bessel_weights * x / self.r_max)  # [..., num_basis]
+        return self.pre_factor * (numerator / x)
