@@ -29,7 +29,7 @@ class TestBasis:
     def test_bessel_basis(self):
         d = torch.linspace(start=0.5, end=5.5, steps=10)
         bessel_basis = BesselBasis(r_max=6.0, num_basis=5)
-        output = bessel_basis(d)
+        output = bessel_basis(d.unsqueeze(-1))
         assert output.shape == (10, 5)
 
 
