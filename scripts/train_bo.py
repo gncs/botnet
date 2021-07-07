@@ -81,13 +81,12 @@ def main() -> None:
     model.to(device)
     logging.info(f'Number of model parameters: {tools.count_parameters(model)}')
 
-    optimizer = tools.get_optimizer(name=args.optimizer,
-                                    learning_rate=args.learning_rate,
-                                    parameters=model.parameters())
+    optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
+    lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
     io = tools.CheckpointIO(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
-    builder = tools.CheckpointBuilder(model=model, optimizer=optimizer)
+    builder = tools.CheckpointBuilder(model=model, optimizer=optimizer, lr_scheduler=lr_scheduler)
     handler = tools.CheckpointHandler(builder, io)
 
     tools.train(
@@ -96,6 +95,7 @@ def main() -> None:
         train_loader=train_loader,
         valid_loader=valid_loader,
         optimizer=optimizer,
+        lr_scheduler=lr_scheduler,
         checkpoint_handler=handler,
         eval_interval=args.eval_interval,
         start_epoch=0,

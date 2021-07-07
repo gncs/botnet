@@ -20,19 +20,27 @@ Checkpoint = Dict[str, TensorDict]
 
 
 class CheckpointBuilder:
-    def __init__(self, model: torch.nn.Module, optimizer: torch.optim.Optimizer) -> None:
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        optimizer: torch.optim.Optimizer,
+        lr_scheduler: torch.optim.lr_scheduler.ExponentialLR,
+    ) -> None:
         self.model = model
         self.optimizer = optimizer
+        self.lr_scheduler = lr_scheduler
 
     def create_checkpoint(self) -> Checkpoint:
         return {
             'model': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
+            'lr_scheduler': self.lr_scheduler
         }
 
     def load_checkpoint(self, checkpoint: Checkpoint, strict: bool) -> None:
         self.model.load_state_dict(checkpoint['model'], strict=strict)  # type: ignore
         self.optimizer.load_state_dict(checkpoint['optimizer'])
+        self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
 
 
 class CheckpointIO:

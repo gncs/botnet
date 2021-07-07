@@ -36,7 +36,8 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         default='adam',
                         choices=['adam', 'amsgrad'])
     parser.add_argument('--batch_size', help='batch size', type=int, default=64)
-    parser.add_argument('--learning_rate', help='Learning rate of Adam optimizer', type=float, default=3e-4)
+    parser.add_argument('--lr', help='Learning rate of optimizer', type=float, default=3e-4)
+    parser.add_argument('--lr_scheduler_gamma', help='Gamma of learning rate scheduler', type=float, default=0.995)
     parser.add_argument('--max_num_steps', help='Maximum number of gradient steps', type=int, default=2048)
     parser.add_argument('--patience',
                         help='Maximum number of consecutive epochs of increasing loss',

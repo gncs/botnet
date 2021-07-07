@@ -18,6 +18,7 @@ def train(
     train_loader: DataLoader,
     valid_loader: DataLoader,
     optimizer: torch.optim.Optimizer,
+    lr_scheduler: torch.optim.lr_scheduler.ExponentialLR,
     start_epoch: int,
     max_num_epochs: int,
     patience: int,
@@ -60,6 +61,9 @@ def train(
                 lowest_loss = valid_loss
                 patience_counter = 0
                 checkpoint_handler.save(epoch)
+
+        # LR scheduler
+        lr_scheduler.step()
 
     logging.info('Training complete')
 
