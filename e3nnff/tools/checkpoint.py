@@ -34,7 +34,7 @@ class CheckpointBuilder:
         return {
             'model': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
-            'lr_scheduler': self.lr_scheduler
+            'lr_scheduler': self.lr_scheduler.state_dict(),
         }
 
     def load_checkpoint(self, checkpoint: Checkpoint, strict: bool) -> None:

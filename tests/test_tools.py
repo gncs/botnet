@@ -74,12 +74,12 @@ class TestStateIO:
         model = MyModel()
         initial_lr = 0.001
         optimizer = optim.SGD(model.parameters(), lr=initial_lr, momentum=0.9)
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=100)
+        scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.99)
 
         directory = tempfile.TemporaryDirectory()
 
         io = CheckpointIO(directory=directory.name, tag='test', keep=True)
-        builder = CheckpointBuilder(model=model, optimizer=optimizer)
+        builder = CheckpointBuilder(model=model, optimizer=optimizer, lr_scheduler=scheduler)
         handler = CheckpointHandler(builder, io)
         handler.save(50)
 
