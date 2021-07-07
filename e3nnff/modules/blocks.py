@@ -25,12 +25,18 @@ class RadialEmbeddingBlock(torch.nn.Module):
         return bessel * cutoff  # [n_edges, n_basis]
 
 
-class RadialElementBlock(torch.nn.Module):
+class TensorProductWeightsBlock(torch.nn.Module):
     def __init__(self, num_elements: int, num_feats_in: int, num_feats_out: int):
         super().__init__()
 
-        weights = torch.rand((num_elements, num_elements, num_feats_in, num_feats_out), dtype=torch.get_default_dtype())
-        self.weights = torch.nn.Parameter(weights)
+        weights1 = torch.empty((num_elements, num_elements, num_feats_in, num_feats_in),
+                               dtype=torch.get_default_dtype())
+        torch.nn.init.xavier_uniform_(weights1)
+        self.weights1 = torch.nn.Parameter(weights1)
+
+        weights2 = torch.empty((num_feats_in, num_feats_out), dtype=torch.get_default_dtype())
+        torch.nn.init.xavier_uniform_(weights2)
+        self.weights2 = torch.nn.Parameter(weights2)
 
     def forward(
         self,
@@ -39,8 +45,8 @@ class RadialElementBlock(torch.nn.Module):
         edge_index: torch.Tensor,
     ):
         sender, receiver = edge_index
-        return torch.einsum('bn, bi, bj, ijnk -> bk', edge_feats, node_attrs[sender], node_attrs[receiver],
-                            self.weights)
+        return torch.einsum('bn, bi, bj, ijnn, nk -> bk', edge_feats, node_attrs[sender], node_attrs[receiver],
+                            self.weights1, self.weights2)
 
 
 class ScaleShiftBlock(torch.nn.Module):
@@ -85,9 +91,10 @@ class AtomicEnergiesBlock(torch.nn.Module):
 class SingleInteractionBlock(torch.nn.Module):
     def __init__(
         self,
-        node_feats_irreps: o3.Irreps,
+        num_node_attrs: int,
+        num_edge_feats: int,
+        node_feats_irreps: o3.Irreps,  # [n_nodes, irreps]
         edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
-        edge_feats_irreps: o3.Irreps,
         out_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
@@ -99,13 +106,16 @@ class SingleInteractionBlock(torch.nn.Module):
                                                       self.irreps_out,
                                                       shared_weights=False,
                                                       internal_weights=False)
-        weights_irreps = o3.Irreps(f'{self.conv_tp.weight_numel}x0e')
-        self.conv_tp_weights = o3.Linear(edge_feats_irreps, weights_irreps)
+
+        self.tp_weights_fn = TensorProductWeightsBlock(num_elements=num_node_attrs,
+                                                       num_feats_in=num_edge_feats,
+                                                       num_feats_out=self.conv_tp.weight_numel)
 
         self.linear = o3.Linear(self.irreps_out, self.irreps_out)
 
     def forward(
         self,
+        node_attrs: torch.Tensor,
         node_feats: torch.Tensor,
         edge_attrs: torch.Tensor,
         edge_feats: torch.Tensor,
@@ -114,8 +124,7 @@ class SingleInteractionBlock(torch.nn.Module):
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]
 
-        # Message and update is replacement
-        tp_weights = self.conv_tp_weights(edge_feats)
+        tp_weights = self.tp_weights_fn(node_attrs=node_attrs, edge_feats=edge_feats, edge_index=edge_index)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         mji = self.linear(mji)
         return scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]

@@ -9,7 +9,7 @@ from e3nnff import tools
 from e3nnff.data import AtomicData
 from e3nnff.models.bo import get_edge_vectors_and_lengths, compute_forces
 from e3nnff.modules import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock,
-                            SingleInteractionBlock, RadialElementBlock)
+                            SingleInteractionBlock)
 
 
 class SimpleBodyOrderedModel(torch.nn.Module):
@@ -50,16 +50,11 @@ class SimpleBodyOrderedModel(torch.nn.Module):
         self.interactions = torch.nn.ModuleList()
         self.readouts = torch.nn.ModuleList()
 
-        self.radial_element = RadialElementBlock(num_elements=num_elements,
-                                                 num_feats_in=self.radial_embedding.out_dim,
-                                                 num_feats_out=self.radial_embedding.out_dim)
-        edge_feats_dim = self.radial_embedding.out_dim
-        edge_feats_irreps = o3.Irreps(f'{edge_feats_dim}x0e')
-
         inter = SingleInteractionBlock(
+            num_node_attrs=num_elements,
+            num_edge_feats=self.radial_embedding.out_dim,
             node_feats_irreps=node_embed_irreps,
             edge_attrs_irreps=sh_irreps,
-            edge_feats_irreps=edge_feats_irreps,
             out_irreps=hidden_irreps,
         )
         self.interactions.append(inter)
@@ -67,9 +62,10 @@ class SimpleBodyOrderedModel(torch.nn.Module):
 
         for _ in range(num_interactions - 1):
             inter = SingleInteractionBlock(
+                num_node_attrs=num_elements,
+                num_edge_feats=self.radial_embedding.out_dim,
                 node_feats_irreps=inter.irreps_out,
                 edge_attrs_irreps=sh_irreps,
-                edge_feats_irreps=edge_feats_irreps,
                 out_irreps=hidden_irreps,
             )
             self.interactions.append(inter)
@@ -94,17 +90,14 @@ class SimpleBodyOrderedModel(torch.nn.Module):
         edge_attrs = self.spherical_harmonics(vectors)
 
         # Edges features
-        radial_embedding = self.radial_embedding(lengths)
-        edge_feats = self.radial_element(node_attrs=data.node_attrs,
-                                         edge_feats=radial_embedding,
-                                         edge_index=data.edge_index)
-
+        edge_feats = self.radial_embedding(lengths)
         node_feats = self.node_embedding(data.node_attrs)
 
         # Interactions
         node_energies = []
         for interaction, readout in zip(self.interactions, self.readouts):
-            node_feats = interaction(node_feats=node_feats,
+            node_feats = interaction(node_attrs=data.node_attrs,
+                                     node_feats=node_feats,
                                      edge_attrs=edge_attrs,
                                      edge_feats=edge_feats,
                                      edge_index=data.edge_index)
