@@ -30,7 +30,7 @@ class TestModels:
             num_bessel=7,
             num_polynomial_cutoff=5,
             max_ell=2,
-            num_channels_input=len(table),
+            num_elements=len(table),
             num_interactions=2,
             atomic_energies=atomic_energies,
             hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),

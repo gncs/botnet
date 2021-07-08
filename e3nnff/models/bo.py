@@ -20,7 +20,7 @@ class BodyOrderedModel(torch.nn.Module):
         num_polynomial_cutoff: int,
         max_ell: int,
         num_interactions: int,
-        num_channels_input: int,
+        num_elements: int,
         hidden_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
         atomic_inter_scale: float,
@@ -39,7 +39,7 @@ class BodyOrderedModel(torch.nn.Module):
         sh_irreps = o3.Irreps.spherical_harmonics(max_ell)
         self.spherical_harmonics = o3.SphericalHarmonics(sh_irreps, normalize=True, normalization='component')
 
-        node_attr_irreps = o3.Irreps(f'{num_channels_input}x0e')
+        node_attr_irreps = o3.Irreps(f'{num_elements}x0e')
         num_e0_channels = tools.get_num_e0_channels(hidden_irreps)
         node_embed_irreps = o3.Irreps(f'{num_e0_channels}x0e')
         self.node_embedding = o3.Linear(node_attr_irreps, node_embed_irreps, internal_weights=True)
