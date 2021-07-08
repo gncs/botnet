@@ -98,7 +98,6 @@ def evaluate(
     device: torch.device,
 ) -> Tuple[float, Dict[str, Any]]:
     total_loss = 0.0
-
     delta_es = []
     delta_fs = []
 
@@ -115,17 +114,17 @@ def evaluate(
         delta_es.append(torch.abs(batch.energy - output['energy']))
         delta_fs.append(torch.abs(batch.forces - output['forces']))
 
-    loss = total_loss / len(data_loader)
+    avg_loss = total_loss / len(data_loader)
 
     # MAE energy and forces
     mae_e = torch.mean(torch.cat(delta_es, dim=0))
     mae_f = torch.mean(torch.cat(delta_fs, dim=0))
 
-    loss_dict = {
-        'loss': loss,
+    aux = {
+        'loss': avg_loss,
         'mae_e': mae_e.item(),
         'mae_f': mae_f.item(),
         'time': time.time() - start_time,
     }
 
-    return loss, loss_dict
+    return avg_loss, aux
