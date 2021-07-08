@@ -4,10 +4,11 @@ import e3nn.nn
 import numpy as np
 import torch
 import torch.nn.functional
-from e3nn import o3
+from e3nn import o3, nn
 from torch_scatter import scatter_sum
 
 from .cutoff import PolynomialCutoff
+from .nonlinearities import ShiftedSoftPlus
 from .radial_basis import BesselBasis
 
 
@@ -168,8 +169,10 @@ class SkipInteractionBlock(torch.nn.Module):
                                                       self.irreps_out,
                                                       shared_weights=False,
                                                       internal_weights=False)
-        weights_irreps = o3.Irreps(f'{self.conv_tp.weight_numel}x0e')
-        self.conv_tp_weights = o3.Linear(edge_feats_irreps, weights_irreps)
+        self.conv_tp_weights = nn.FullyConnectedNet(
+            [edge_feats_irreps.num_irreps, edge_feats_irreps.num_irreps, self.conv_tp.weight_numel],
+            ShiftedSoftPlus(),
+        )
 
         self.linear_1 = o3.Linear(self.irreps_out, self.irreps_out)
 
