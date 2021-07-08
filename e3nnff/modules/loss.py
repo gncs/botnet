@@ -10,7 +10,7 @@ def mean_squared_error_energy(ref: Batch, pred: TensorDict) -> torch.Tensor:
 
 
 def mean_squared_error_forces(ref: Batch, pred: TensorDict) -> torch.Tensor:
-    # energy: [n_atoms, 3]
+    # forces: [n_atoms, 3]
     return torch.mean(torch.square(ref['forces'] - pred['forces']))  # []
 
 
