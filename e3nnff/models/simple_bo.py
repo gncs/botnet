@@ -88,8 +88,6 @@ class SimpleBodyOrderedModel(torch.nn.Module):
                                                         edge_index=data.edge_index,
                                                         shifts=data.shifts)
         edge_attrs = self.spherical_harmonics(vectors)
-
-        # Edges features
         edge_feats = self.radial_embedding(lengths)
         node_feats = self.node_embedding(data.node_attrs)
 
