@@ -79,7 +79,7 @@ def main() -> None:
         include_forces=include_forces,
     )
     model.to(device)
-    logging.info(f'Number of model parameters: {tools.count_parameters(model)}')
+    logging.info(f'Number of parameters in {model.__class__.__name__}: {tools.count_parameters(model)}')
 
     optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
