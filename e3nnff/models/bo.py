@@ -1,4 +1,4 @@
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 
 import numpy as np
 import torch.nn
@@ -9,30 +9,7 @@ from e3nnff import tools
 from e3nnff.data import AtomicData
 from e3nnff.modules import (AtomicEnergiesBlock, SkipInteractionBlock, RadialEmbeddingBlock, LinearReadoutBlock,
                             ScaleShiftBlock)
-
-
-def get_edge_vectors_and_lengths(
-        positions: torch.Tensor,  # [n_nodes, 3]
-        edge_index: torch.Tensor,  # [2, n_edges]
-        shifts: torch.Tensor,  # [n_edges, 3]
-) -> Tuple[torch.Tensor, torch.Tensor]:
-    sender, receiver = edge_index
-    vectors = positions[receiver] - positions[sender] + shifts  # [n_edges, 3]
-    lengths = torch.linalg.norm(vectors, dim=-1, keepdim=True)  # [n_edges, 1]
-    return vectors, lengths
-
-
-def compute_forces(energy: torch.Tensor, positions: torch.Tensor, training=True) -> torch.Tensor:
-    gradient = torch.autograd.grad(
-        outputs=energy,  # [n_graphs, ]
-        inputs=positions,  # [n_nodes, 3]
-        grad_outputs=torch.ones_like(energy),
-        only_inputs=True,  # Diff only w.r.t. inputs
-        retain_graph=training,  # Make sure the graph is not destroyed
-        allow_unused=False,
-    )[0]  # [n_nodes, 3]
-
-    return -1 * gradient
+from .utils import get_edge_vectors_and_lengths, compute_forces
 
 
 class BodyOrderedModel(torch.nn.Module):

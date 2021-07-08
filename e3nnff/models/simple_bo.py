@@ -7,9 +7,9 @@ from torch_scatter import scatter_sum
 
 from e3nnff import tools
 from e3nnff.data import AtomicData
-from e3nnff.models.bo import get_edge_vectors_and_lengths, compute_forces
 from e3nnff.modules import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock,
                             SingleInteractionBlock)
+from .utils import get_edge_vectors_and_lengths, compute_forces
 
 
 class SimpleBodyOrderedModel(torch.nn.Module):
