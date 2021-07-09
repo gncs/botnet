@@ -15,17 +15,17 @@ def compute_mean_std_atomic_inter_energy(
 ) -> Tuple[float, float]:
     atomic_energies_fn = AtomicEnergiesBlock(atomic_energies=atomic_energies)
 
-    atom_inter_energies_list = []
+    avg_atom_inter_es_list = []
 
     for batch in data_loader:
         node_e0 = atomic_energies_fn(batch.node_attrs)
         graph_e0s = scatter_sum(src=node_e0, index=batch.batch, dim=-1, dim_size=batch.num_graphs)
         graph_sizes = batch.ptr[1:] - batch.ptr[:-1]
-        atom_inter_energies = (batch.energy - graph_e0s) / graph_sizes
-        atom_inter_energies_list.append(atom_inter_energies)
+        avg_atom_inter_es = (batch.energy - graph_e0s) / graph_sizes  # [n_graphs]
+        avg_atom_inter_es_list.append(avg_atom_inter_es)
 
-    atom_inter_energies = torch.cat(atom_inter_energies_list)  # [n_graphs]
-    mean = to_numpy(torch.mean(atom_inter_energies)).item()
-    std = to_numpy(torch.std(atom_inter_energies)).item()
+    all_avg_atom_inter_es = torch.cat(avg_atom_inter_es_list)  # [total_n_graphs]
+    mean = to_numpy(torch.mean(all_avg_atom_inter_es)).item()
+    std = to_numpy(torch.std(all_avg_atom_inter_es)).item()
 
     return mean, std
