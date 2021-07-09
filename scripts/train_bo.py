@@ -85,9 +85,7 @@ def main() -> None:
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
     lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
-    io = tools.CheckpointIO(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
-    builder = tools.CheckpointBuilder(model=model, optimizer=optimizer, lr_scheduler=lr_scheduler)
-    handler = tools.CheckpointHandler(builder, io)
+    handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
 
     tools.train(
         model=model,
@@ -106,7 +104,7 @@ def main() -> None:
     )
 
     # Evaluation on test dataset
-    handler.load_latest()
+    handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
     test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
     test_metrics['mode'] = 'test'
     logger.log(test_metrics)

@@ -7,7 +7,7 @@ import torch
 import torch_geometric
 from torch.utils.data import DataLoader
 
-from .checkpoint import CheckpointHandler
+from .checkpoint import CheckpointHandler, CheckpointState
 from .torch_tools import to_numpy, tensor_dict_to_device
 from .utils import ProgressLogger
 
@@ -60,7 +60,7 @@ def train(
             else:
                 lowest_loss = valid_loss
                 patience_counter = 0
-                checkpoint_handler.save(epoch)
+                checkpoint_handler.save(state=CheckpointState(model, optimizer, lr_scheduler), epochs=epoch)
 
         # LR scheduler
         lr_scheduler.step()

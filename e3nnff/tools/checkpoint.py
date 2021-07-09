@@ -8,39 +8,37 @@ import torch
 
 from .torch_tools import TensorDict
 
+Checkpoint = Dict[str, TensorDict]
+
+
+@dataclasses.dataclass
+class CheckpointState:
+    model: torch.nn.Module
+    optimizer: torch.optim.Optimizer
+    lr_scheduler: torch.optim.lr_scheduler.ExponentialLR
+
+
+class CheckpointBuilder:
+    @staticmethod
+    def create_checkpoint(state: CheckpointState) -> Checkpoint:
+        return {
+            'model': state.model.state_dict(),
+            'optimizer': state.optimizer.state_dict(),
+            'lr_scheduler': state.lr_scheduler.state_dict(),
+        }
+
+    @staticmethod
+    def load_checkpoint(state: CheckpointState, checkpoint: Checkpoint, strict: bool) -> None:
+        state.model.load_state_dict(checkpoint['model'], strict=strict)  # type: ignore
+        state.optimizer.load_state_dict(checkpoint['optimizer'])
+        state.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+
 
 @dataclasses.dataclass
 class CheckpointPathInfo:
     path: str
     tag: str
     epochs: int
-
-
-Checkpoint = Dict[str, TensorDict]
-
-
-class CheckpointBuilder:
-    def __init__(
-        self,
-        model: torch.nn.Module,
-        optimizer: torch.optim.Optimizer,
-        lr_scheduler: torch.optim.lr_scheduler.ExponentialLR,
-    ) -> None:
-        self.model = model
-        self.optimizer = optimizer
-        self.lr_scheduler = lr_scheduler
-
-    def create_checkpoint(self) -> Checkpoint:
-        return {
-            'model': self.model.state_dict(),
-            'optimizer': self.optimizer.state_dict(),
-            'lr_scheduler': self.lr_scheduler.state_dict(),
-        }
-
-    def load_checkpoint(self, checkpoint: Checkpoint, strict: bool) -> None:
-        self.model.load_state_dict(checkpoint['model'], strict=strict)  # type: ignore
-        self.optimizer.load_state_dict(checkpoint['optimizer'])
-        self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
 
 
 class CheckpointIO:
@@ -110,20 +108,20 @@ class CheckpointIO:
 
 
 class CheckpointHandler:
-    def __init__(self, builder: CheckpointBuilder, io: CheckpointIO) -> None:
-        self.builder = builder
-        self.io = io
+    def __init__(self, *args, **kwargs) -> None:
+        self.io = CheckpointIO(*args, **kwargs)
+        self.builder = CheckpointBuilder()
 
-    def save(self, epochs: int) -> None:
-        checkpoint = self.builder.create_checkpoint()
+    def save(self, state: CheckpointState, epochs: int) -> None:
+        checkpoint = self.builder.create_checkpoint(state)
         self.io.save(checkpoint, epochs)
 
-    def load_latest(self, strict=False):
+    def load_latest(self, state: CheckpointState, strict=False):
         checkpoint, epochs = self.io.load_latest()
-        self.builder.load_checkpoint(checkpoint, strict=strict)
+        self.builder.load_checkpoint(state=state, checkpoint=checkpoint, strict=strict)
         return epochs
 
-    def load(self, path: str, strict=False) -> int:
+    def load(self, state: CheckpointState, path: str, strict=False) -> int:
         checkpoint, epochs = self.io.load(path)
-        self.builder.load_checkpoint(checkpoint, strict=strict)
+        self.builder.load_checkpoint(state=state, checkpoint=checkpoint, strict=strict)
         return epochs
