@@ -22,3 +22,6 @@ class PolynomialCutoff(torch.nn.Module):
 
         # noinspection PyUnresolvedReferences
         return envelope * (x < self.r_max).type(torch.get_default_dtype())
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(p={self.p}, r_max={self.r_max})'
