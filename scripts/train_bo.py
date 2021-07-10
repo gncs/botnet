@@ -79,13 +79,14 @@ def main() -> None:
         include_forces=include_forces,
     )
     model.to(device)
-    logging.info(f'Number of parameters in {model.__class__.__name__}: {tools.count_parameters(model)}')
+    logging.info(model)
+    logging.info(f'Number of parameters: {tools.count_parameters(model)}')
 
     optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
     lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
-    handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
+    checkpoint_handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
 
     tools.train(
         model=model,
@@ -94,7 +95,7 @@ def main() -> None:
         valid_loader=valid_loader,
         optimizer=optimizer,
         lr_scheduler=lr_scheduler,
-        checkpoint_handler=handler,
+        checkpoint_handler=checkpoint_handler,
         eval_interval=args.eval_interval,
         start_epoch=0,
         max_num_epochs=args.max_num_epochs,
@@ -104,7 +105,7 @@ def main() -> None:
     )
 
     # Evaluation on test dataset
-    handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
+    checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
     test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
     test_metrics['mode'] = 'test'
     logger.log(test_metrics)
