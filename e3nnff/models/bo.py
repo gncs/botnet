@@ -5,7 +5,6 @@ import torch.nn
 from e3nn import o3
 from torch_scatter import scatter_sum
 
-from e3nnff import tools
 from e3nnff.data import AtomicData
 from e3nnff.modules import (AtomicEnergiesBlock, SkipInteractionBlock, RadialEmbeddingBlock, LinearReadoutBlock,
                             ScaleShiftBlock)
@@ -40,9 +39,6 @@ class BodyOrderedModel(torch.nn.Module):
         self.spherical_harmonics = o3.SphericalHarmonics(sh_irreps, normalize=True, normalization='component')
 
         node_attr_irreps = o3.Irreps(f'{num_elements}x0e')
-        num_e0_channels = tools.get_num_e0_channels(hidden_irreps)
-        node_embed_irreps = o3.Irreps(f'{num_e0_channels}x0e')
-        self.node_embedding = o3.Linear(node_attr_irreps, node_embed_irreps, internal_weights=True)
 
         # Interactions and readouts
         self.atomic_energies_fn = AtomicEnergiesBlock(atomic_energies)
@@ -52,21 +48,21 @@ class BodyOrderedModel(torch.nn.Module):
 
         inter = SkipInteractionBlock(
             node_attrs_irreps=node_attr_irreps,
-            node_feats_irreps=node_embed_irreps,
+            node_feats_irreps=node_attr_irreps,
             edge_attrs_irreps=sh_irreps,
             edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
-            out_irreps=hidden_irreps,
+            target_irreps=hidden_irreps,
         )
         self.interactions.append(inter)
         self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
         for _ in range(num_interactions - 1):
             inter = SkipInteractionBlock(
-                node_feats_irreps=inter.irreps_out,
                 node_attrs_irreps=node_attr_irreps,
+                node_feats_irreps=inter.irreps_out,
                 edge_attrs_irreps=sh_irreps,
                 edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
-                out_irreps=hidden_irreps,
+                target_irreps=hidden_irreps,
             )
             self.interactions.append(inter)
             self.readouts.append(LinearReadoutBlock(inter.irreps_out))
@@ -89,7 +85,7 @@ class BodyOrderedModel(torch.nn.Module):
                                                         shifts=data.shifts)
         edge_attrs = self.spherical_harmonics(vectors)
         edge_feats = self.radial_embedding(lengths)
-        node_feats = self.node_embedding(data.node_attrs)
+        node_feats = data.node_attrs
 
         # Interactions
         node_energies = []

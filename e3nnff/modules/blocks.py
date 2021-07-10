@@ -10,6 +10,7 @@ from torch_scatter import scatter_sum
 from .cutoff import PolynomialCutoff
 from .nonlinearities import ShiftedSoftPlus
 from .radial_basis import BesselBasis
+from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 
 
 class RadialEmbeddingBlock(torch.nn.Module):
@@ -158,26 +159,36 @@ class SkipInteractionBlock(torch.nn.Module):
         node_feats_irreps: o3.Irreps,
         edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
         edge_feats_irreps: o3.Irreps,
-        out_irreps: o3.Irreps,
+        target_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
 
-        self.irreps_out = out_irreps
+        # Simple linear
+        self.linear_1 = o3.Linear(node_feats_irreps, node_feats_irreps, internal_weights=True, shared_weights=True)
 
-        self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps,
-                                                      edge_attrs_irreps,
-                                                      self.irreps_out,
-                                                      shared_weights=False,
-                                                      internal_weights=False)
+        # Main TensorProduct
+        irreps_mid1, instructions = tp_out_irreps_with_instructions(node_feats_irreps, edge_attrs_irreps, target_irreps)
+        self.conv_tp = o3.TensorProduct(node_feats_irreps,
+                                        edge_attrs_irreps,
+                                        irreps_mid1,
+                                        instructions=instructions,
+                                        shared_weights=False,
+                                        internal_weights=False)
         self.conv_tp_weights = nn.FullyConnectedNet(
             [edge_feats_irreps.num_irreps, edge_feats_irreps.num_irreps, self.conv_tp.weight_numel],
             ShiftedSoftPlus(),
         )
 
-        self.linear_1 = o3.Linear(self.irreps_out, self.irreps_out)
+        # Main linear
+        irreps_mid1 = irreps_mid1.simplify()
+        irreps_mid2 = linear_out_irreps(irreps_mid1, target_irreps)
+        irreps_mid2 = irreps_mid2.simplify()
+        self.linear_2 = o3.Linear(irreps_mid1, irreps_mid2, internal_weights=True, shared_weights=True)
 
-        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)
-        self.linear_2 = o3.Linear(self.irreps_out, self.irreps_out)
+        # Skip-connection TensorProduct
+        self.irreps_out, _ = tp_out_irreps_with_instructions(irreps_mid2, node_attrs_irreps, target_irreps)
+        self.irreps_out.simplify()
+        self.skip_tp = o3.FullyConnectedTensorProduct(irreps_mid2, node_attrs_irreps, self.irreps_out)
 
     def forward(
         self,
@@ -191,14 +202,12 @@ class SkipInteractionBlock(torch.nn.Module):
         num_nodes = node_feats.shape[0]
 
         # Message
+        node_feats = self.linear_1(node_feats)
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
-        mji = self.linear_1(mji)
         m = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
+        m = self.linear_2(m)
 
         # Update
         x_skip = self.skip_tp(m, node_attrs)  # [n_nodes, irreps]
-        x_skip = self.linear_2(x_skip)
-        new_node_feats = m + x_skip
-
-        return new_node_feats
+        return m + x_skip
