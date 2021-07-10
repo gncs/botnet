@@ -38,7 +38,7 @@ class TestModels:
             atomic_inter_scale=1.0,
         )
 
-        assert count_parameters(model) == 14372
+        assert count_parameters(model) == 2690
 
         atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
 

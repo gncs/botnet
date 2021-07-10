@@ -9,8 +9,8 @@ from torch import nn, optim
 
 from e3nnff.data import Configuration
 from e3nnff.tools import (AtomicNumberTable, atomic_numbers_to_indices, get_num_e0_channels, ev_to_hartree,
-                          kcalpmol_to_hartree, angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr)
-from e3nnff.tools import CheckpointIO, CheckpointHandler, CheckpointBuilder
+                          kcalpmol_to_hartree, angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr,
+                          CheckpointState, CheckpointHandler)
 
 
 class TestAtomicNumberTable:
@@ -78,14 +78,12 @@ class TestStateIO:
 
         directory = tempfile.TemporaryDirectory()
 
-        io = CheckpointIO(directory=directory.name, tag='test', keep=True)
-        builder = CheckpointBuilder(model=model, optimizer=optimizer, lr_scheduler=scheduler)
-        handler = CheckpointHandler(builder, io)
-        handler.save(50)
+        handler = CheckpointHandler(directory=directory.name, tag='test', keep=True)
+        handler.save(state=CheckpointState(model, optimizer, scheduler), epochs=50)
 
         optimizer.step()
         scheduler.step()
         assert not np.isclose(optimizer.param_groups[0]['lr'], initial_lr)
 
-        handler.load_latest()
+        handler.load_latest(state=CheckpointState(model, optimizer, scheduler))
         assert np.isclose(optimizer.param_groups[0]['lr'], initial_lr)
