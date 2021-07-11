@@ -3,7 +3,6 @@ from typing import Dict
 
 import numpy as np
 import torch
-from e3nn import o3
 
 TensorDict = Dict[str, torch.Tensor]
 
@@ -41,14 +40,6 @@ def set_seeds(seed: int) -> None:
 
 def to_numpy(t: torch.Tensor) -> np.ndarray:
     return t.cpu().detach().numpy()
-
-
-def get_num_e0_channels(irreps: o3.Irreps) -> int:
-    for channels, (ell, p) in irreps:
-        if ell == 0 and p == 1:
-            return channels
-
-    raise RuntimeError(f'Could not find e0 irrep in {irreps}')
 
 
 def init_device(device_str: str) -> torch.device:

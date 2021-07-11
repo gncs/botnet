@@ -5,10 +5,9 @@ import torch.nn
 from e3nn import o3
 from torch_scatter import scatter_sum
 
-from e3nnff import tools
 from e3nnff.data import AtomicData
 from e3nnff.modules import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock,
-                            SingleInteractionBlock)
+                            SingleInteractionBlock, get_num_e0_channels)
 from .utils import get_edge_vectors_and_lengths, compute_forces
 
 
@@ -40,7 +39,7 @@ class SimpleBodyOrderedModel(torch.nn.Module):
         self.spherical_harmonics = o3.SphericalHarmonics(sh_irreps, normalize=True, normalization='component')
 
         node_attr_irreps = o3.Irreps(f'{num_elements}x0e')
-        num_e0_channels = tools.get_num_e0_channels(hidden_irreps)
+        num_e0_channels = get_num_e0_channels(hidden_irreps)
         node_embed_irreps = o3.Irreps(f'{num_e0_channels}x0e')
         self.node_embedding = o3.Linear(node_attr_irreps, node_embed_irreps)
 

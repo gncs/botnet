@@ -8,9 +8,10 @@ from e3nn import o3
 from torch import nn, optim
 
 from e3nnff.data import Configuration
-from e3nnff.tools import (AtomicNumberTable, atomic_numbers_to_indices, get_num_e0_channels, ev_to_hartree,
-                          kcalpmol_to_hartree, angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr,
-                          CheckpointState, CheckpointHandler)
+from e3nnff.modules.irreps_tools import get_num_e0_channels
+from e3nnff.tools import (AtomicNumberTable, atomic_numbers_to_indices, ev_to_hartree, kcalpmol_to_hartree,
+                          angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr, CheckpointState,
+                          CheckpointHandler)
 
 
 class TestAtomicNumberTable:
