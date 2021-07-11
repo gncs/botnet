@@ -9,25 +9,25 @@ def tp_out_irreps_with_instructions(irreps1: o3.Irreps, irreps2: o3.Irreps, targ
     trainable = True
 
     # Collect possible irreps and their instructions
-    irreps_mid = []
+    irreps_out_list: List[Tuple[int, o3.Irreps]] = []
     instructions = []
     for i, (mul, ir_in) in enumerate(irreps1):
         for j, (_, ir_edge) in enumerate(irreps2):
             for ir_out in ir_in * ir_edge:  # | l1 - l2 | <= l <= l1 + l2
                 if ir_out in target_irreps:
-                    k = len(irreps_mid)  # instruction index
-                    irreps_mid.append((mul, ir_out))
+                    k = len(irreps_out_list)  # instruction index
+                    irreps_out_list.append((mul, ir_out))
                     instructions.append((i, j, k, 'uvu', trainable))
 
     # We sort the output irreps of the tensor product so that we can simplify them
     # when they are provided to the second o3.Linear
-    irreps_mid = o3.Irreps(irreps_mid)
-    irreps_mid, permut, _ = irreps_mid.sort()
+    irreps_out = o3.Irreps(irreps_out_list)
+    irreps_out, permut, _ = irreps_out.sort()
 
     # Permute the output indexes of the instructions to match the sorted irreps:
     instructions = [(i_in1, i_in2, permut[i_out], mode, train) for i_in1, i_in2, i_out, mode, train in instructions]
 
-    return irreps_mid, instructions
+    return irreps_out, instructions
 
 
 def linear_out_irreps(irreps: o3.Irreps, target_irreps: o3.Irreps) -> o3.Irreps:
