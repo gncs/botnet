@@ -8,9 +8,9 @@ from e3nn import o3, nn
 from torch_scatter import scatter_sum
 
 from .cutoff import PolynomialCutoff
+from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .nonlinearities import ShiftedSoftPlus
 from .radial_basis import BesselBasis
-from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 
 
 class RadialEmbeddingBlock(torch.nn.Module):
@@ -74,11 +74,14 @@ class TensorProductWeightsBlock(torch.nn.Module):
 class ScaleShiftBlock(torch.nn.Module):
     def __init__(self, scale: float, shift: float):
         super().__init__()
-        self.scale = torch.tensor(scale, dtype=torch.get_default_dtype())
-        self.shift = torch.tensor(shift, dtype=torch.get_default_dtype())
+        self.register_buffer('scale', torch.tensor(scale, dtype=torch.get_default_dtype()))
+        self.register_buffer('shift', torch.tensor(shift, dtype=torch.get_default_dtype()))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.scale * x + self.shift
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(scale={self.scale:.6f}, shift={self.shift:.6f})'
 
 
 class LinearReadoutBlock(torch.nn.Module):
@@ -100,14 +103,17 @@ class AtomicEnergiesBlock(torch.nn.Module):
         super().__init__()
         assert len(atomic_energies.shape) == 1
 
-        t = torch.tensor(atomic_energies, dtype=torch.get_default_dtype())  # [n_elements, ]
-        self.register_buffer('atomic_energies', t)
+        self.register_buffer('atomic_energies', torch.tensor(atomic_energies,
+                                                             dtype=torch.get_default_dtype()))  # [n_elements, ]
 
     def forward(
             self,
             x: torch.Tensor  # one-hot of elements [..., n_elements]
     ) -> torch.Tensor:  # [..., ]
         return torch.matmul(x, self.atomic_energies)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(num_atomic_energies={len(self.atomic_energies)})'
 
 
 class SingleInteractionBlock(torch.nn.Module):
