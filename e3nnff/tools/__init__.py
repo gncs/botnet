@@ -11,5 +11,5 @@ __all__ = [
     'build_default_arg_parser', 'add_rmd17_parser', 'set_seeds', 'init_device', 'setup_logger', 'get_tag',
     'count_parameters', 'get_optimizer', 'ProgressLogger', 'get_atomic_number_table_from_zs', 'get_num_e0_channels',
     'train', 'evaluate', 'get_split_sizes', 'angstrom_to_bohr', 'ev_to_hartree', 'kcalpmol_to_hartree',
-    'kcalpmol_per_angstrom_to_hartree_per_bohr',  'CheckpointHandler', 'CheckpointIO', 'CheckpointState'
+    'kcalpmol_per_angstrom_to_hartree_per_bohr', 'CheckpointHandler', 'CheckpointIO', 'CheckpointState'
 ]
