@@ -12,14 +12,14 @@ class BesselBasis(torch.nn.Module):
 
         self.register_buffer('bessel_weights', bessel_weights)
         self.register_buffer('r_max', r_max_tensor)
-        self.register_buffer('pre_factor', 2.0 / r_max_tensor)
+        self.register_buffer('prefactor', 2.0 / r_max_tensor)
 
     def forward(
             self,
             x: torch.Tensor,  # [..., 1]
     ) -> torch.Tensor:
         numerator = torch.sin(self.bessel_weights * x / self.r_max)  # [..., num_basis]
-        return self.pre_factor * (numerator / x)
+        return self.prefactor * (numerator / x)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(r_max={self.r_max}, num_basis={len(self.bessel_weights)})'
+        return f'{self.__class__.__name__}(r_max={self.r_max}, num_basis={len(self.bessel_weights)})'  # type: ignore
