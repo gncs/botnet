@@ -88,8 +88,9 @@ def main() -> None:
 
     checkpoint_handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
 
+    start_epoch = 0
     if args.restart_latest:
-        checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
+        start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
 
     tools.train(
         model=model,
@@ -100,7 +101,7 @@ def main() -> None:
         lr_scheduler=lr_scheduler,
         checkpoint_handler=checkpoint_handler,
         eval_interval=args.eval_interval,
-        start_epoch=0,
+        start_epoch=start_epoch,
         max_num_epochs=args.max_num_epochs,
         logger=logger,
         patience=args.patience,
