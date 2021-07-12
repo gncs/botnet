@@ -54,12 +54,11 @@ def main() -> None:
     )
     # yapf: enable
 
-    include_forces = True
     loss_fn: torch.nn.Module
-    if include_forces:
-        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
-    else:
+    if args.no_forces:
         loss_fn = modules.EnergyLoss()
+    else:
+        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
 
     mean_atom_inter, std_atom_inter = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
 
@@ -76,7 +75,7 @@ def main() -> None:
         atomic_energies=atomic_energies,
         atomic_inter_scale=std_atom_inter,
         atomic_inter_shift=mean_atom_inter,
-        include_forces=include_forces,
+        include_forces=True,
     )
     model.to(device)
     logging.info(model)

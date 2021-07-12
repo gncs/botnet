@@ -28,6 +28,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         help='irreps for hidden node states',
                         type=str,
                         default='10x0e + 10x0o + 10x1e + 10x1o + 10x2e + 10x2o')
+    parser.add_argument('--no_forces', help='no forces in loss function', action='store_true', default=False)
 
     # Optimizer
     parser.add_argument('--optimizer',
