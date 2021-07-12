@@ -88,6 +88,9 @@ def main() -> None:
 
     checkpoint_handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
 
+    if args.restart_latest:
+        checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
+
     tools.train(
         model=model,
         loss_fn=loss_fn,
