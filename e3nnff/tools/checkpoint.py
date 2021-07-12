@@ -116,7 +116,7 @@ class CheckpointHandler:
         checkpoint = self.builder.create_checkpoint(state)
         self.io.save(checkpoint, epochs)
 
-    def load_latest(self, state: CheckpointState, strict=False):
+    def load_latest(self, state: CheckpointState, strict=False) -> int:
         checkpoint, epochs = self.io.load_latest()
         self.builder.load_checkpoint(state=state, checkpoint=checkpoint, strict=strict)
         return epochs
