@@ -54,7 +54,7 @@ def ev_to_kcalpmol(x):
     return x * 23.0605419
 
 
-# Atomic energies (in Hartree)
+# Atomic energies (in kcal/mol)
 # Calculated with ORCA
 atomic_energies = {
     1: ev_to_kcalpmol(-13.568422383046626),
