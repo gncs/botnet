@@ -9,6 +9,9 @@ def get_edge_vectors_and_lengths(
         shifts: torch.Tensor,  # [n_edges, 3]
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     sender, receiver = edge_index
+    # From ase.neighborlist:
+    # D = positions[j]-positions[i]+S.dot(cell)
+    # where shifts = S.dot(cell)
     vectors = positions[receiver] - positions[sender] + shifts  # [n_edges, 3]
     lengths = torch.linalg.norm(vectors, dim=-1, keepdim=True)  # [n_edges, 1]
     return vectors, lengths
