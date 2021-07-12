@@ -1,4 +1,28 @@
+import numpy as np
 import torch
+
+
+class BesselBasis(torch.nn.Module):
+    def __init__(self, r_max: float, num_basis=8):
+        super().__init__()
+
+        bessel_weights = np.pi * torch.linspace(
+            start=1.0, end=num_basis, steps=num_basis, dtype=torch.get_default_dtype())
+        r_max_tensor = torch.tensor(r_max, dtype=torch.get_default_dtype())
+
+        self.register_buffer('bessel_weights', bessel_weights)
+        self.register_buffer('r_max', r_max_tensor)
+        self.register_buffer('prefactor', 2.0 / r_max_tensor)
+
+    def forward(
+            self,
+            x: torch.Tensor,  # [..., 1]
+    ) -> torch.Tensor:
+        numerator = torch.sin(self.bessel_weights * x / self.r_max)  # [..., num_basis]
+        return self.prefactor * (numerator / x)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}(r_max={self.r_max}, num_basis={len(self.bessel_weights)})'  # type: ignore
 
 
 class PolynomialCutoff(torch.nn.Module):

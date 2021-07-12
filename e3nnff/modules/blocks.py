@@ -7,10 +7,9 @@ import torch.nn.functional
 from e3nn import o3, nn
 from torch_scatter import scatter_sum
 
-from .cutoff import PolynomialCutoff
 from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .nonlinearities import ShiftedSoftPlus
-from .radial_basis import BesselBasis
+from .radial import BesselBasis, PolynomialCutoff
 
 
 class RadialEmbeddingBlock(torch.nn.Module):

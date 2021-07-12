@@ -1,8 +1,7 @@
 from .blocks import (AtomicEnergiesBlock, SkipInteractionBlock, RadialEmbeddingBlock, LinearReadoutBlock,
                      ScaleShiftBlock, SingleInteractionBlock, TensorProductWeightsBlock)
-from .cutoff import PolynomialCutoff
 from .loss import EnergyForcesLoss, EnergyLoss
-from .radial_basis import BesselBasis
+from .radial import BesselBasis, PolynomialCutoff
 from .utils import compute_mean_std_atomic_inter_energy
 from .irreps_tools import get_num_e0_channels
 
