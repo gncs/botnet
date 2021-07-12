@@ -74,12 +74,12 @@ class AtomicEnergiesBlock(torch.nn.Module):
 
 class SkipInteractionBlock(torch.nn.Module):
     def __init__(
-            self,
-            node_attrs_irreps: o3.Irreps,
-            node_feats_irreps: o3.Irreps,
-            edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
-            edge_feats_irreps: o3.Irreps,
-            target_irreps: o3.Irreps,
+        self,
+        node_attrs_irreps: o3.Irreps,
+        node_feats_irreps: o3.Irreps,
+        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
+        edge_feats_irreps: o3.Irreps,
+        target_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
 
@@ -111,12 +111,12 @@ class SkipInteractionBlock(torch.nn.Module):
         self.skip_tp = o3.FullyConnectedTensorProduct(irreps_mid2, node_attrs_irreps, self.irreps_out)
 
     def forward(
-            self,
-            node_attrs: torch.Tensor,
-            node_feats: torch.Tensor,
-            edge_attrs: torch.Tensor,
-            edge_feats: torch.Tensor,
-            edge_index: torch.Tensor,
+        self,
+        node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
     ) -> torch.Tensor:
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]

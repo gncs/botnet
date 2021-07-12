@@ -46,4 +46,3 @@ def linear_out_irreps(irreps: o3.Irreps, target_irreps: o3.Irreps) -> o3.Irreps:
             raise RuntimeError(f'{ir_in} not in {target_irreps}')
 
     return o3.Irreps(irreps_mid)
-
