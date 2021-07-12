@@ -48,7 +48,7 @@ class CheckpointIO:
         self.keep = keep
         self.old_path: Optional[str] = None
 
-        self._epochs_string = '_step-'
+        self._epochs_string = '_epoch-'
         self._suffix = '.pt'
 
     def _get_checkpoint_filename(self, epochs: int) -> str:

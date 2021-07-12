@@ -109,11 +109,12 @@ def main() -> None:
     )
 
     # Evaluation on test dataset
-    checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
+    epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
     test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
     test_metrics['mode'] = 'test'
+    test_metrics['epoch'] = epoch
     logger.log(test_metrics)
-    logging.info(f'Test loss: {test_loss:.3f}')
+    logging.info(f'Test loss (epoch {epoch}): {test_loss:.3f}')
 
     logging.info('Done')
 
