@@ -1,6 +1,5 @@
 from typing import Union
 
-import e3nn.nn
 import numpy as np
 import torch
 import torch.nn.functional
@@ -26,48 +25,6 @@ class RadialEmbeddingBlock(torch.nn.Module):
         bessel = self.bessel_fn(edge_lengths)  # [n_edges, n_basis]
         cutoff = self.cutoff_fn(edge_lengths)  # [n_edges, 1]
         return bessel * cutoff  # [n_edges, n_basis]
-
-
-class NonlinearTensorProductWeightsBlock(torch.nn.Module):
-    def __init__(self, num_elements: int, num_feats_in: int, num_feats_out: int):
-        super().__init__()
-
-        input_dims = num_feats_in + 2 * num_elements
-        self.mlp = e3nn.nn.FullyConnectedNet([input_dims, input_dims, num_feats_out], act=torch.nn.functional.relu)
-
-    def forward(
-        self,
-        node_attrs: torch.Tensor,
-        edge_feats: torch.Tensor,
-        edge_index: torch.Tensor,
-    ):
-        sender, receiver = edge_index
-        x = torch.cat([edge_feats, node_attrs[sender], node_attrs[receiver]], dim=-1)
-        return self.mlp(x)
-
-
-class TensorProductWeightsBlock(torch.nn.Module):
-    def __init__(self, num_elements: int, num_feats_in: int, num_feats_out: int):
-        super().__init__()
-
-        weights1 = torch.empty((num_elements, num_elements, num_feats_in, num_feats_in),
-                               dtype=torch.get_default_dtype())
-        torch.nn.init.xavier_uniform_(weights1)
-        self.weights1 = torch.nn.Parameter(weights1)
-
-        weights2 = torch.empty((num_feats_in, num_feats_out), dtype=torch.get_default_dtype())
-        torch.nn.init.xavier_uniform_(weights2)
-        self.weights2 = torch.nn.Parameter(weights2)
-
-    def forward(
-        self,
-        node_attrs,  # assumes that the node attributes are one-hot encoded
-        edge_feats,
-        edge_index: torch.Tensor,
-    ):
-        sender, receiver = edge_index
-        return torch.einsum('bn, bi, bj, ijnn, nk -> bk', edge_feats, node_attrs[sender], node_attrs[receiver],
-                            self.weights1, self.weights2)
 
 
 class ScaleShiftBlock(torch.nn.Module):
@@ -115,56 +72,14 @@ class AtomicEnergiesBlock(torch.nn.Module):
         return f'{self.__class__.__name__}(num_atomic_energies={len(self.atomic_energies)})'
 
 
-class SingleInteractionBlock(torch.nn.Module):
-    def __init__(
-        self,
-        num_node_attrs: int,
-        num_edge_feats: int,
-        node_feats_irreps: o3.Irreps,  # [n_nodes, irreps]
-        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
-        out_irreps: o3.Irreps,
-    ) -> None:
-        super().__init__()
-
-        self.irreps_out = out_irreps
-
-        self.conv_tp = o3.FullyConnectedTensorProduct(node_feats_irreps,
-                                                      edge_attrs_irreps,
-                                                      self.irreps_out,
-                                                      shared_weights=False,
-                                                      internal_weights=False)
-
-        self.tp_weights_fn = NonlinearTensorProductWeightsBlock(num_elements=num_node_attrs,
-                                                                num_feats_in=num_edge_feats,
-                                                                num_feats_out=self.conv_tp.weight_numel)
-
-        self.linear = o3.Linear(self.irreps_out, self.irreps_out)
-
-    def forward(
-        self,
-        node_attrs: torch.Tensor,
-        node_feats: torch.Tensor,
-        edge_attrs: torch.Tensor,
-        edge_feats: torch.Tensor,
-        edge_index: torch.Tensor,
-    ) -> torch.Tensor:
-        sender, receiver = edge_index
-        num_nodes = node_feats.shape[0]
-
-        tp_weights = self.tp_weights_fn(node_attrs=node_attrs, edge_feats=edge_feats, edge_index=edge_index)
-        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
-        mji = self.linear(mji)
-        return scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-
-
 class SkipInteractionBlock(torch.nn.Module):
     def __init__(
-        self,
-        node_attrs_irreps: o3.Irreps,
-        node_feats_irreps: o3.Irreps,
-        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
-        edge_feats_irreps: o3.Irreps,
-        target_irreps: o3.Irreps,
+            self,
+            node_attrs_irreps: o3.Irreps,
+            node_feats_irreps: o3.Irreps,
+            edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
+            edge_feats_irreps: o3.Irreps,
+            target_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
 
@@ -196,12 +111,12 @@ class SkipInteractionBlock(torch.nn.Module):
         self.skip_tp = o3.FullyConnectedTensorProduct(irreps_mid2, node_attrs_irreps, self.irreps_out)
 
     def forward(
-        self,
-        node_attrs: torch.Tensor,
-        node_feats: torch.Tensor,
-        edge_attrs: torch.Tensor,
-        edge_feats: torch.Tensor,
-        edge_index: torch.Tensor,
+            self,
+            node_attrs: torch.Tensor,
+            node_feats: torch.Tensor,
+            edge_attrs: torch.Tensor,
+            edge_feats: torch.Tensor,
+            edge_index: torch.Tensor,
     ) -> torch.Tensor:
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]

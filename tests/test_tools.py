@@ -1,14 +1,11 @@
 import tempfile
 
 import numpy as np
-import pytest
 import torch
 import torch.nn.functional
-from e3nn import o3
 from torch import nn, optim
 
 from e3nnff.data import Configuration
-from e3nnff.modules.irreps_tools import get_num_e0_channels
 from e3nnff.tools import (AtomicNumberTable, atomic_numbers_to_indices, ev_to_hartree, kcalpmol_to_hartree,
                           angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr, CheckpointState,
                           CheckpointHandler)
@@ -40,17 +37,6 @@ class TestConversions:
             energy=-1.5,
         )
         assert config
-
-
-class TestE3NNTools:
-    def test_e0_channels(self):
-        irreps = o3.Irreps('4x1e + 7x0e + 2x2o')
-        e0_channels = get_num_e0_channels(irreps)
-        assert e0_channels == 7
-
-        irreps = o3.Irreps('4x1e + 7x0o + 2x2o')
-        with pytest.raises(RuntimeError):
-            get_num_e0_channels(irreps)
 
 
 class TestUnits:
