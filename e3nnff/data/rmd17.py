@@ -8,7 +8,7 @@ from typing import List, Sequence, Dict, Any, Tuple
 
 import numpy as np
 
-from e3nnff.tools import (get_split_sizes)
+from e3nnff.tools import get_split_sizes
 from .utils import Configuration, Configurations
 
 # "On the role of gradients for machine learning of molecular energies and forces"
@@ -30,14 +30,18 @@ def fetch_archive(path: str, url: str, force_download=False) -> None:
         logging.info(f'File {path} exists')
 
 
+def kcalpmol_to_ev(x):
+    return x * 0.04336411531
+
+
 def extract_configs(data: Dict[str, np.ndarray], indices: Sequence[int]) -> List[Configuration]:
     # yapf: disable
     return [
         Configuration(
             atomic_numbers=np.array(data['nuclear_charges'], dtype=int),
-            positions=np.array(coords, dtype=float),  # Angstrom
-            forces=np.array(forces, dtype=float),  # kcal/mol/Angstrom
-            energy=float(energy),  # kcal/mol
+            positions=np.array(coords, dtype=float),  # Ang
+            forces=kcalpmol_to_ev(np.array(forces, dtype=float)),  # kcal/mol/Ang -> eV/Ang
+            energy=kcalpmol_to_ev(float(energy)),  # kcal/mol -> Ang
         ) for coords, forces, energy
         in zip(data['coords'][indices], data['forces'][indices], data['energies'][indices])
     ]
@@ -49,18 +53,13 @@ subsets = {
 }
 splits = list(range(1, 6))
 
-
-def ev_to_kcalpmol(x):
-    return x * 23.0605419
-
-
-# Atomic energies (in kcal/mol)
+# Atomic energies (in eV)
 # Calculated with ORCA
 atomic_energies = {
-    1: ev_to_kcalpmol(-13.568422383046626),
-    6: ev_to_kcalpmol(-1025.2770951782686),
-    7: ev_to_kcalpmol(-1479.0665594928669),
-    8: ev_to_kcalpmol(-2035.5709809589698),
+    1: -13.568422383046626,
+    6: -1025.2770951782686,
+    7: -1479.0665594928669,
+    8: -2035.5709809589698,
 }
 
 
