@@ -91,6 +91,8 @@ def main() -> None:
     if args.restart_latest:
         start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
 
+    logging.info(f'Optimizer: {optimizer}')
+
     tools.train(
         model=model,
         loss_fn=loss_fn,
