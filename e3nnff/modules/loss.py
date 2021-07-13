@@ -19,6 +19,9 @@ class EnergyLoss(torch.nn.Module):
     def forward(ref: Batch, pred: TensorDict) -> torch.Tensor:
         return mean_squared_error_energy(ref, pred)
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}()'
+
 
 class EnergyForcesLoss(torch.nn.Module):
     def __init__(self, energy_weight=1.0, forces_weight=1.0) -> None:
@@ -29,3 +32,7 @@ class EnergyForcesLoss(torch.nn.Module):
     def forward(self, ref: Batch, pred: TensorDict) -> torch.Tensor:
         return (self.energy_weight * mean_squared_error_energy(ref, pred) +
                 self.forces_weight * mean_squared_error_forces(ref, pred))
+
+    def __repr__(self):
+        return (f'{self.__class__.__name__}(energy_weight={self.energy_weight:.3f}, '
+                f'forces_weight={self.forces_weight:.3f})')

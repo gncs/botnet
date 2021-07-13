@@ -59,6 +59,7 @@ def main() -> None:
         loss_fn = modules.EnergyLoss()
     else:
         loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
+    logging.info(loss_fn)
 
     mean_atom_inter, std_atom_inter = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
 
