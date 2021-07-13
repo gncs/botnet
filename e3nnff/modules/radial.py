@@ -10,8 +10,8 @@ class BesselBasis(torch.nn.Module):
     def __init__(self, r_max: float, num_basis=8, trainable=False):
         super().__init__()
 
-        bessel_weights = np.pi / r_max * torch.linspace(start=1.0, end=num_basis, steps=num_basis,
-                                                        dtype=torch.get_default_dtype())
+        bessel_weights = np.pi / r_max * torch.linspace(
+            start=1.0, end=num_basis, steps=num_basis, dtype=torch.get_default_dtype())
         if trainable:
             self.bessel_weights = torch.nn.Parameter(bessel_weights)
         else:
