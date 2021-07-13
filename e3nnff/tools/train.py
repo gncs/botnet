@@ -48,7 +48,7 @@ def train(
 
             logging.info(f'Epoch {epoch}: {valid_loss:.4f}')
 
-            if valid_loss > lowest_loss:
+            if valid_loss >= lowest_loss:
                 patience_counter += 1
                 if patience_counter >= patience:
                     logging.info(f'Stopping optimization after {patience_counter} epochs without improvement')
