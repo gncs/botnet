@@ -24,6 +24,7 @@ def compute_forces(energy: torch.Tensor, positions: torch.Tensor, training=True)
         grad_outputs=torch.ones_like(energy),
         only_inputs=True,  # Diff only w.r.t. inputs
         retain_graph=training,  # Make sure the graph is not destroyed
+        create_graph=True,
         allow_unused=False,
     )[0]  # [n_nodes, 3]
 
