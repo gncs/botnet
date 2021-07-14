@@ -82,31 +82,31 @@ def unpack_configs(
     extracted_data: Dict[str, Any] = {}
 
     # Extract files
-    zip_archive = zipfile.ZipFile(path, 'r')
-    with zip_archive.open('rmd17.tar.bz2') as tar_bz_file:
-        with tarfile.open(fileobj=tar_bz_file, mode='r|bz2') as tar_file:
-            # Find files
-            for file in tar_file:
-                if file.name in archived_files.keys():
-                    extracted_file = tar_file.extractfile(file)
-                    if extracted_file:
-                        extracted_data[archived_files[file.name]] = extracted_file.read()
-                    else:
-                        raise RuntimeError(f'Cannot read file: {file.name}')
+    with zipfile.ZipFile(path, 'r') as zip_archive:
+        with zip_archive.open('rmd17.tar.bz2') as tar_bz_file:
+            with tarfile.open(fileobj=tar_bz_file, mode='r|bz2') as tar_file:
+                # Find files
+                for file in tar_file:
+                    if file.name in archived_files.keys():
+                        extracted_file = tar_file.extractfile(file)
+                        if extracted_file:
+                            extracted_data[archived_files[file.name]] = extracted_file.read()
+                        else:
+                            raise RuntimeError(f'Cannot read file: {file.name}')
 
-                if len(extracted_data) == len(archived_files):
-                    break
+                    if len(extracted_data) == len(archived_files):
+                        break
 
-            # Process extracted splits
-            for k in ['train_split', 'test_split']:
-                extracted_data[k] = [int(i) for i in extracted_data[k].decode('ascii').splitlines()]
+                # Process extracted splits
+                for k in ['train_split', 'test_split']:
+                    extracted_data[k] = [int(i) for i in extracted_data[k].decode('ascii').splitlines()]
 
-            # Generate configurations
-            with np.load(io.BytesIO(extracted_data['npz']), mmap_mode='r') as np_load:
-                train_configs = extract_configs(data=np_load, indices=extracted_data['train_split'])
-                test_configs = extract_configs(data=np_load, indices=extracted_data['test_split'])
+                # Generate configurations
+                with np.load(io.BytesIO(extracted_data['npz']), mmap_mode='r') as np_load:
+                    train_configs = extract_configs(data=np_load, indices=extracted_data['train_split'])
+                    test_configs = extract_configs(data=np_load, indices=extracted_data['test_split'])
 
-            return train_configs, test_configs
+                return train_configs, test_configs
 
 
 def split_train_valid_configs(configs: Configurations, valid_fraction: float) -> Tuple[Configurations, Configurations]:
