@@ -7,7 +7,7 @@ class BesselBasis(torch.nn.Module):
     Klicpera, J.; Groß, J.; Günnemann, S. Directional Message Passing for Molecular Graphs; ICLR 2020.
     Equation (7)
     """
-    def __init__(self, r_max: float, num_basis=8, trainable=True):
+    def __init__(self, r_max: float, num_basis=8, trainable=False):
         super().__init__()
 
         bessel_weights = np.pi / r_max * torch.linspace(
