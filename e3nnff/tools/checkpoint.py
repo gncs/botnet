@@ -49,10 +49,10 @@ class CheckpointIO:
         self.old_path: Optional[str] = None
 
         self._epochs_string = '_epoch-'
-        self._suffix = '.pt'
+        self._filename_extension = 'pt'
 
     def _get_checkpoint_filename(self, epochs: int) -> str:
-        return self.tag + self._epochs_string + str(epochs) + self._suffix
+        return self.tag + self._epochs_string + str(epochs) + '.' + self._filename_extension
 
     def _list_file_paths(self) -> List[str]:
         all_paths = [os.path.join(self.directory, f) for f in os.listdir(self.directory)]
@@ -60,7 +60,7 @@ class CheckpointIO:
 
     def _parse_checkpoint_path(self, path: str) -> Optional[CheckpointPathInfo]:
         filename = os.path.basename(path)
-        regex = re.compile(rf'(?P<tag>.+){self._epochs_string}(?P<epochs>\d+){self._suffix}')
+        regex = re.compile(rf'^(?P<tag>.+){self._epochs_string}(?P<epochs>\d+)\.{self._filename_extension}$')
         match = regex.match(filename)
         if not match:
             return None
