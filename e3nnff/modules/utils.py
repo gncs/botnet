@@ -5,8 +5,8 @@ import torch
 from torch.utils.data import DataLoader
 from torch_scatter import scatter_sum
 
-from e3nnff.modules import AtomicEnergiesBlock
 from e3nnff.tools import to_numpy
+from .blocks import AtomicEnergiesBlock
 
 
 def compute_mean_std_atomic_inter_energy(
