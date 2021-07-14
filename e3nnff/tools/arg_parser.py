@@ -78,5 +78,5 @@ def check_int_or_none(value: str) -> Optional[int]:
         return int(value)
     except ValueError:
         if value != 'None':
-            raise argparse.ArgumentTypeError(f'{value} is an invalid value (int or None)')
+            raise argparse.ArgumentTypeError(f'{value} is an invalid value (int or None)') from None
         return None
