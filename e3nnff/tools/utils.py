@@ -105,16 +105,16 @@ def get_optimizer(name: str, learning_rate: float, parameters: Iterable[torch.Te
 
 
 class UniversalEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, torch.Tensor):
-            return to_numpy(obj)
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, np.integer):
+            return int(o)
+        if isinstance(o, np.floating):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        if isinstance(o, torch.Tensor):
+            return to_numpy(o)
+        return json.JSONEncoder.default(self, o)
 
 
 class ProgressLogger:
