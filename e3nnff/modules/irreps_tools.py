@@ -46,11 +46,3 @@ def linear_out_irreps(irreps: o3.Irreps, target_irreps: o3.Irreps) -> o3.Irreps:
             raise RuntimeError(f'{ir_in} not in {target_irreps}')
 
     return o3.Irreps(irreps_mid)
-
-
-def get_num_0e_channels(irreps: o3.Irreps) -> int:
-    for channels, (ell, p) in irreps:
-        if ell == 0 and p == 1:
-            return channels
-
-    raise RuntimeError(f'Could not find e0 irrep in {irreps}')

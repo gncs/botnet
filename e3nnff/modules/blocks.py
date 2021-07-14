@@ -6,7 +6,7 @@ import torch.nn.functional
 from e3nn import o3, nn
 from torch_scatter import scatter_sum
 
-from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps, get_num_0e_channels
+from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .nonlinearities import ShiftedSoftPlus
 from .radial import BesselBasis, PolynomialCutoff
 
@@ -43,16 +43,13 @@ class ScaleShiftBlock(torch.nn.Module):
 class LinearReadoutBlock(torch.nn.Module):
     def __init__(self, irreps_in: o3.Irreps):
         super().__init__()
-        l0e_channels = get_num_0e_channels(irreps_in)
-        inter_irreps = o3.Irreps(f'{l0e_channels}x0e')
-        self.linear_1 = o3.Linear(irreps_in=irreps_in, irreps_out=inter_irreps)
-        self.linear_2 = o3.Linear(irreps_in=inter_irreps, irreps_out=o3.Irreps('0e'))
+        self.linear = o3.Linear(irreps_in=irreps_in, irreps_out=o3.Irreps('0e'))
 
     def forward(
             self,
             x: torch.Tensor  # [n_nodes, irreps]
     ) -> torch.Tensor:  # [..., ]
-        return self.linear_2(self.linear_1(x))  # [n_nodes, 1]
+        return self.linear(x)  # [n_nodes, 1]
 
 
 class AtomicEnergiesBlock(torch.nn.Module):
