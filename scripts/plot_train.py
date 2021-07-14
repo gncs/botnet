@@ -39,36 +39,23 @@ def parse_args() -> argparse.Namespace:
 
 
 def plot(data: pd.DataFrame) -> None:
-    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=(fig_width, 2 * fig_height), constrained_layout=True,
+    fig, axes = plt.subplots(nrows=2,
+                             ncols=1,
+                             figsize=(fig_width, 2 * fig_height),
+                             constrained_layout=True,
                              sharex='col')
     valid_data = data[data['mode'] == 'eval']
 
     ax = axes[0]
-    ax.plot(
-        valid_data['epoch'],
-        valid_data['loss'],
-        color=colors[0],
-        label='Loss'
-    )
+    ax.plot(valid_data['epoch'], valid_data['loss'], color=colors[0], label='Loss')
 
     ax.legend()
     ax.set_ylim([0.0, 0.04])
     ax.set_xlim([0.0, 1000])
 
     ax = axes[1]
-    ax.plot(
-        valid_data['epoch'],
-        valid_data['mae_e'],
-        color=colors[1],
-        label='MAE Energy [eV]'
-    )
-
-    ax.plot(
-        valid_data['epoch'],
-        valid_data['mae_f'],
-        color=colors[2],
-        label='MAE Forces [eV/Å]'
-    )
+    ax.plot(valid_data['epoch'], valid_data['mae_e'], color=colors[1], label='MAE Energy [eV]')
+    ax.plot(valid_data['epoch'], valid_data['mae_f'], color=colors[2], label='MAE Forces [eV/Å]')
 
     ax.legend()
     ax.set_ylim([0.0, 0.03])
