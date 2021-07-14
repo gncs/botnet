@@ -70,6 +70,7 @@ def main() -> None:
         num_bessel=args.num_radial_basis,
         num_polynomial_cutoff=args.num_cutoff_basis,
         max_ell=args.max_ell,
+        interaction_cls=modules.interactions[args.interaction],
         num_interactions=args.num_interactions,
         num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),

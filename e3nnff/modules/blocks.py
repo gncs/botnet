@@ -131,3 +131,51 @@ class SkipInteractionBlock(torch.nn.Module):
         # Update
         x_skip = self.skip_tp(m, node_attrs)  # [n_nodes, irreps]
         return m + x_skip
+
+
+class SimpleInteractionBlock(torch.nn.Module):
+    def __init__(
+        self,
+        node_attrs_irreps: o3.Irreps,
+        node_feats_irreps: o3.Irreps,
+        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
+        edge_feats_irreps: o3.Irreps,
+        target_irreps: o3.Irreps,
+    ) -> None:
+        super().__init__()
+
+        # TensorProduct
+        irreps_mid, instructions = tp_out_irreps_with_instructions(node_feats_irreps, edge_attrs_irreps, target_irreps)
+        self.conv_tp = o3.TensorProduct(node_feats_irreps,
+                                        edge_attrs_irreps,
+                                        irreps_mid,
+                                        instructions=instructions,
+                                        shared_weights=False,
+                                        internal_weights=False)
+        self.conv_tp_weights = o3.Linear(edge_feats_irreps, o3.Irreps(f'{self.conv_tp.weight_numel}x0e'))
+
+        # Linear
+        irreps_mid = irreps_mid.simplify()
+        self.irreps_out = linear_out_irreps(irreps_mid, target_irreps)
+        self.irreps_out = self.irreps_out.simplify()
+        self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
+
+        # Selector TensorProduct
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)
+
+    def forward(
+        self,
+        node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
+    ) -> torch.Tensor:
+        sender, receiver = edge_index
+        num_nodes = node_feats.shape[0]
+
+        tp_weights = self.conv_tp_weights(edge_feats)
+        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
+        message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
+        message = self.linear(message)
+        return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]

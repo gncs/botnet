@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, TypeVar
 
 import numpy as np
 import torch.nn
@@ -6,9 +6,10 @@ from e3nn import o3
 from torch_scatter import scatter_sum
 
 from e3nnff.data import AtomicData
-from e3nnff.modules import (AtomicEnergiesBlock, SkipInteractionBlock, RadialEmbeddingBlock, LinearReadoutBlock,
-                            ScaleShiftBlock)
+from e3nnff.modules import AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock
 from .utils import get_edge_vectors_and_lengths, compute_forces
+
+InteractionType = TypeVar('InteractionType', bound=torch.nn.Module)
 
 
 class BodyOrderedModel(torch.nn.Module):
@@ -18,6 +19,7 @@ class BodyOrderedModel(torch.nn.Module):
         num_bessel: int,
         num_polynomial_cutoff: int,
         max_ell: int,
+        interaction_cls: InteractionType,
         num_interactions: int,
         num_elements: int,
         hidden_irreps: o3.Irreps,
@@ -46,7 +48,7 @@ class BodyOrderedModel(torch.nn.Module):
         self.interactions = torch.nn.ModuleList()
         self.readouts = torch.nn.ModuleList()
 
-        inter = SkipInteractionBlock(
+        inter = interaction_cls(
             node_attrs_irreps=node_attr_irreps,
             node_feats_irreps=node_attr_irreps,
             edge_attrs_irreps=sh_irreps,
@@ -57,7 +59,7 @@ class BodyOrderedModel(torch.nn.Module):
         self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
         for _ in range(num_interactions - 1):
-            inter = SkipInteractionBlock(
+            inter = interaction_cls(
                 node_attrs_irreps=node_attr_irreps,
                 node_feats_irreps=inter.irreps_out,
                 edge_attrs_irreps=sh_irreps,
