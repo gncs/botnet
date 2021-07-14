@@ -22,9 +22,9 @@ def compute_forces(energy: torch.Tensor, positions: torch.Tensor, training=True)
         outputs=energy,  # [n_graphs, ]
         inputs=positions,  # [n_nodes, 3]
         grad_outputs=torch.ones_like(energy),
+        retain_graph=training,  # Make sure the graph is not destroyed during training
+        create_graph=training,  # Create graph for second derivative
         only_inputs=True,  # Diff only w.r.t. inputs
-        retain_graph=training,  # Make sure the graph is not destroyed
-        create_graph=True,
         allow_unused=False,
     )[0]  # [n_nodes, 3]
 
