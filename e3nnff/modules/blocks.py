@@ -197,7 +197,7 @@ class TensorProductWeightsBlock(torch.nn.Module):
         return torch.einsum('be, ba, aek -> bk', edge_feats, sender_or_receiver_node_attrs, self.weights)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(shape=[{", ".join(str(s) for s in self.weights.shape)}], ' \
+        return f'{self.__class__.__name__}(shape=({", ".join(str(s) for s in self.weights.shape)}), ' \
                f'weights={np.prod(self.weights.shape)})'
 
 
