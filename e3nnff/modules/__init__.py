@@ -1,5 +1,5 @@
 from .blocks import (AtomicEnergiesBlock, SkipInteractionBlock, RadialEmbeddingBlock, LinearReadoutBlock,
-                     ScaleShiftBlock, SimpleInteractionBlock)
+                     ScaleShiftBlock, SimpleInteractionBlock, ElementDependentInteractionBlock)
 from .loss import EnergyForcesLoss, EnergyLoss
 from .radial import BesselBasis, PolynomialCutoff
 from .utils import compute_mean_std_atomic_inter_energy
@@ -7,6 +7,7 @@ from .utils import compute_mean_std_atomic_inter_energy
 interactions = {
     'SkipInteractionBlock': SkipInteractionBlock,
     'SimpleInteractionBlock': SimpleInteractionBlock,
+    'ElementDependentInteractionBlock': ElementDependentInteractionBlock,
 }
 
 __all__ = [
