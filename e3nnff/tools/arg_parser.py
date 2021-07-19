@@ -46,7 +46,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         type=int,
                         default=64)
     parser.add_argument('--eval_interval', help='evaluate model every <n> epochs', type=int, default=1)
-    parser.add_argument('--keep_models', help='keep all models', action='store_true', default=False)
+    parser.add_argument('--keep_checkpoints', help='keep all checkpoints', action='store_true', default=False)
     parser.add_argument('--restart_latest',
                         help='restart optimizer from latest checkpoint',
                         action='store_true',
