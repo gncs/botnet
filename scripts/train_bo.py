@@ -70,7 +70,7 @@ def main() -> None:
         num_bessel=args.num_radial_basis,
         num_polynomial_cutoff=args.num_cutoff_basis,
         max_ell=args.max_ell,
-        interaction_cls=modules.interactions[args.interaction],
+        interaction_cls=modules.interaction_classes[args.interaction],
         num_interactions=args.num_interactions,
         num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
@@ -85,7 +85,7 @@ def main() -> None:
 
     optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
-    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer=optimizer, T_0=10_000, T_mult=2)
+    lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
     checkpoint_handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_models)
 

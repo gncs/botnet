@@ -2,6 +2,7 @@ import numpy as np
 from e3nn import o3
 
 from e3nnff import data, models, tools
+from e3nnff.modules import interaction_classes
 from e3nnff.tools import count_parameters
 
 config = data.Configuration(
@@ -26,6 +27,7 @@ class TestModels:
     def test_bo_model(self):
         atomic_energies = np.array([1.0, 3.0], dtype=float)
         model = models.BodyOrderedModel(
+            interaction_cls=interaction_classes['SkipInteractionBlock'],
             r_max=2.0,
             num_bessel=7,
             num_polynomial_cutoff=5,

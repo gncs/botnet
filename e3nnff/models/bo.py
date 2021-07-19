@@ -1,4 +1,4 @@
-from typing import Dict, Any, TypeVar
+from typing import Dict, Any, Type
 
 import numpy as np
 import torch.nn
@@ -6,10 +6,9 @@ from e3nn import o3
 from torch_scatter import scatter_sum
 
 from e3nnff.data import AtomicData
-from e3nnff.modules import AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock
+from e3nnff.modules import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock,
+                            InteractionBlock)
 from .utils import get_edge_vectors_and_lengths, compute_forces
-
-InteractionType = TypeVar('InteractionType', bound=torch.nn.Module)
 
 
 class BodyOrderedModel(torch.nn.Module):
@@ -19,7 +18,7 @@ class BodyOrderedModel(torch.nn.Module):
         num_bessel: int,
         num_polynomial_cutoff: int,
         max_ell: int,
-        interaction_cls: InteractionType,
+        interaction_cls: Type[InteractionBlock],
         num_interactions: int,
         num_elements: int,
         hidden_irreps: o3.Irreps,

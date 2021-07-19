@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Union
 
 import numpy as np
@@ -72,43 +73,72 @@ class AtomicEnergiesBlock(torch.nn.Module):
         return f'{self.__class__.__name__}(num_atomic_energies={len(self.atomic_energies)})'
 
 
-class SkipInteractionBlock(torch.nn.Module):
+class InteractionBlock(ABC, torch.nn.Module):
     def __init__(
         self,
         node_attrs_irreps: o3.Irreps,
         node_feats_irreps: o3.Irreps,
-        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
+        edge_attrs_irreps: o3.Irreps,
         edge_feats_irreps: o3.Irreps,
         target_irreps: o3.Irreps,
     ) -> None:
         super().__init__()
+        self.node_attrs_irreps = node_attrs_irreps
+        self.node_feats_irreps = node_feats_irreps
+        self.edge_attrs_irreps = edge_attrs_irreps
+        self.edge_feats_irreps = edge_feats_irreps
+        self.target_irreps = target_irreps
 
+        self._setup()
+
+    @abstractmethod
+    def _setup(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def forward(
+        self,
+        node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
+    ) -> torch.Tensor:
+        raise NotImplementedError
+
+
+class SkipInteractionBlock(InteractionBlock):
+    def _setup(self) -> None:
         # Simple linear
-        self.linear_1 = o3.Linear(node_feats_irreps, node_feats_irreps, internal_weights=True, shared_weights=True)
+        self.linear_1 = o3.Linear(self.node_feats_irreps,
+                                  self.node_feats_irreps,
+                                  internal_weights=True,
+                                  shared_weights=True)
 
         # Main TensorProduct
-        irreps_mid1, instructions = tp_out_irreps_with_instructions(node_feats_irreps, edge_attrs_irreps, target_irreps)
-        self.conv_tp = o3.TensorProduct(node_feats_irreps,
-                                        edge_attrs_irreps,
+        irreps_mid1, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
+                                                                    self.target_irreps)
+        self.conv_tp = o3.TensorProduct(self.node_feats_irreps,
+                                        self.edge_attrs_irreps,
                                         irreps_mid1,
                                         instructions=instructions,
                                         shared_weights=False,
                                         internal_weights=False)
         self.conv_tp_weights = nn.FullyConnectedNet(
-            [edge_feats_irreps.num_irreps, edge_feats_irreps.num_irreps, self.conv_tp.weight_numel],
+            [self.edge_feats_irreps.num_irreps, self.edge_feats_irreps.num_irreps, self.conv_tp.weight_numel],
             ShiftedSoftPlus(),
         )
 
         # Main linear
         irreps_mid1 = irreps_mid1.simplify()
-        irreps_mid2 = linear_out_irreps(irreps_mid1, target_irreps)
+        irreps_mid2 = linear_out_irreps(irreps_mid1, self.target_irreps)
         irreps_mid2 = irreps_mid2.simplify()
         self.linear_2 = o3.Linear(irreps_mid1, irreps_mid2, internal_weights=True, shared_weights=True)
 
         # Skip-connection TensorProduct
-        self.irreps_out, _ = tp_out_irreps_with_instructions(irreps_mid2, node_attrs_irreps, target_irreps)
+        self.irreps_out, _ = tp_out_irreps_with_instructions(irreps_mid2, self.node_attrs_irreps, self.target_irreps)
         self.irreps_out.simplify()
-        self.skip_tp = o3.FullyConnectedTensorProduct(irreps_mid2, node_attrs_irreps, self.irreps_out)
+        self.skip_tp = o3.FullyConnectedTensorProduct(irreps_mid2, self.node_attrs_irreps, self.irreps_out)
 
     def forward(
         self,
@@ -133,35 +163,27 @@ class SkipInteractionBlock(torch.nn.Module):
         return m + x_skip
 
 
-class SimpleInteractionBlock(torch.nn.Module):
-    def __init__(
-        self,
-        node_attrs_irreps: o3.Irreps,
-        node_feats_irreps: o3.Irreps,
-        edge_attrs_irreps: o3.Irreps,  # [n_edges, sph]
-        edge_feats_irreps: o3.Irreps,
-        target_irreps: o3.Irreps,
-    ) -> None:
-        super().__init__()
-
+class SimpleInteractionBlock(InteractionBlock):
+    def _setup(self) -> None:
         # TensorProduct
-        irreps_mid, instructions = tp_out_irreps_with_instructions(node_feats_irreps, edge_attrs_irreps, target_irreps)
-        self.conv_tp = o3.TensorProduct(node_feats_irreps,
-                                        edge_attrs_irreps,
+        irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
+                                                                   self.target_irreps)
+        self.conv_tp = o3.TensorProduct(self.node_feats_irreps,
+                                        self.edge_attrs_irreps,
                                         irreps_mid,
                                         instructions=instructions,
                                         shared_weights=False,
                                         internal_weights=False)
-        self.conv_tp_weights = o3.Linear(edge_feats_irreps, o3.Irreps(f'{self.conv_tp.weight_numel}x0e'))
+        self.conv_tp_weights = o3.Linear(self.edge_feats_irreps, o3.Irreps(f'{self.conv_tp.weight_numel}x0e'))
 
         # Linear
         irreps_mid = irreps_mid.simplify()
-        self.irreps_out = linear_out_irreps(irreps_mid, target_irreps)
+        self.irreps_out = linear_out_irreps(irreps_mid, self.target_irreps)
         self.irreps_out = self.irreps_out.simplify()
         self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
 
         # Selector TensorProduct
-        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, self.node_attrs_irreps, self.irreps_out)
 
     def forward(
         self,
@@ -201,37 +223,29 @@ class TensorProductWeightsBlock(torch.nn.Module):
                f'weights={np.prod(self.weights.shape)})'
 
 
-class ElementDependentInteractionBlock(torch.nn.Module):
-    def __init__(
-        self,
-        node_attrs_irreps: o3.Irreps,
-        node_feats_irreps: o3.Irreps,
-        edge_attrs_irreps: o3.Irreps,
-        edge_feats_irreps: o3.Irreps,
-        target_irreps: o3.Irreps,
-    ) -> None:
-        super().__init__()
-
+class ElementDependentInteractionBlock(InteractionBlock):
+    def _setup(self) -> None:
         # TensorProduct
-        irreps_mid, instructions = tp_out_irreps_with_instructions(node_feats_irreps, edge_attrs_irreps, target_irreps)
-        self.conv_tp = o3.TensorProduct(node_feats_irreps,
-                                        edge_attrs_irreps,
+        irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
+                                                                   self.target_irreps)
+        self.conv_tp = o3.TensorProduct(self.node_feats_irreps,
+                                        self.edge_attrs_irreps,
                                         irreps_mid,
                                         instructions=instructions,
                                         shared_weights=False,
                                         internal_weights=False)
-        self.conv_tp_weights = TensorProductWeightsBlock(num_elements=node_attrs_irreps.num_irreps,
-                                                         num_edge_feats=edge_feats_irreps.num_irreps,
+        self.conv_tp_weights = TensorProductWeightsBlock(num_elements=self.node_attrs_irreps.num_irreps,
+                                                         num_edge_feats=self.edge_feats_irreps.num_irreps,
                                                          num_feats_out=self.conv_tp.weight_numel)
 
         # Linear
         irreps_mid = irreps_mid.simplify()
-        self.irreps_out = linear_out_irreps(irreps_mid, target_irreps)
+        self.irreps_out = linear_out_irreps(irreps_mid, self.target_irreps)
         self.irreps_out = self.irreps_out.simplify()
         self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
 
         # Selector TensorProduct
-        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, node_attrs_irreps, self.irreps_out)
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, self.node_attrs_irreps, self.irreps_out)
 
     def forward(
         self,
