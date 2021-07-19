@@ -51,7 +51,6 @@ def plot(data: pd.DataFrame) -> None:
 
     ax.legend()
     ax.set_ylim([0.0, 0.04])
-    ax.set_xlim([0.0, 1000])
 
     ax = axes[1]
     ax.plot(valid_data['epoch'], valid_data['mae_e'], color=colors[1], label='MAE Energy [eV]')
@@ -61,7 +60,7 @@ def plot(data: pd.DataFrame) -> None:
     ax.set_ylim([0.0, 0.03])
     ax.set_xlabel('Epoch')
 
-    fig.show()
+    fig.savefig('training.pdf')
 
 
 def main():
