@@ -1,4 +1,5 @@
 import logging
+import os
 
 import numpy as np
 import torch.nn
@@ -118,6 +119,11 @@ def main() -> None:
     test_metrics['epoch'] = epoch
     logger.log(test_metrics)
     logging.info(f'Test loss (epoch {epoch}): {test_loss:.3f}')
+
+    # Save entire model
+    model_path = os.path.join(args.checkpoints_dir, tag + '.model')
+    logging.info(f'Saving model to {model_path}')
+    torch.save(model, model_path)
 
     logging.info('Done')
 
