@@ -62,7 +62,10 @@ def main() -> None:
         loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
     logging.info(loss_fn)
 
-    mean_atom_inter, std_atom_inter = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
+    if args.scale_shift:
+        mean_atom_inter, std_atom_inter = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
+    else:
+        mean_atom_inter, std_atom_inter = 0.0, 1.0
 
     # Build model
     logging.info('Building model')
