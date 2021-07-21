@@ -8,7 +8,6 @@ from typing import List, Sequence, Dict, Any, Tuple
 
 import numpy as np
 
-from e3nnff.tools import get_split_sizes
 from .utils import Configuration, Configurations
 
 # "On the role of gradients for machine learning of molecular energies and forces"
@@ -109,20 +108,12 @@ def unpack_configs(
                 return train_configs, test_configs
 
 
-def split_train_valid_configs(configs: Configurations, valid_fraction: float) -> Tuple[Configurations, Configurations]:
-    _, train_size = get_split_sizes(len(configs), first_fraction=valid_fraction)
-    return configs[:train_size], configs[train_size:]
-
-
 def load(
     directory: str,
     subset: str,
     split: int,
-    valid_fraction=0.2,
-    max_size_train: int = None,
-    max_size_test: int = None,
     force_download=False,
-) -> Tuple[Configurations, Configurations, Configurations]:
+) -> Tuple[Configurations, Configurations]:
     filename = '12672038.zip'
     url = 'https://ndownloader.figshare.com/articles/12672038/versions/3'
 
@@ -133,14 +124,4 @@ def load(
     fetch_archive(path=path, url=url, force_download=force_download)
 
     # Process dataset
-    train_valid_configs, test_configs = unpack_configs(path=path, subset=subset, split=split)
-
-    # Slice
-    train_valid_configs = train_valid_configs[:max_size_train]
-    test_configs = test_configs[:max_size_test]
-
-    train_configs, valid_configs = split_train_valid_configs(train_valid_configs, valid_fraction=valid_fraction)
-    configs = (train_configs, valid_configs, test_configs)
-
-    logging.info(f'Number of configurations: ' f'{[len(configs) for configs in configs]}')
-    return configs
+    return unpack_configs(path=path, subset=subset, split=split)

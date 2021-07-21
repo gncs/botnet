@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from typing import Sequence, Iterable, Tuple, Union, Optional, Dict, Any
+from typing import Sequence, Iterable, Union, Optional, Dict, Any
 
 import numpy as np
 import scipy.constants
@@ -37,12 +37,6 @@ def kcalpmol_per_angstrom_to_hartree_per_bohr(x):
 
 def get_tag(name: str, seed: int) -> str:
     return f'{name}_run-{seed}'
-
-
-def get_split_sizes(size: int, first_fraction: float) -> Tuple[int, int]:
-    assert 0.0 < first_fraction < 1.0
-    first_size = int(first_fraction * size)
-    return first_size, size - first_size
 
 
 def setup_logger(level: Union[int, str] = logging.INFO, tag: Optional[str] = None, directory: Optional[str] = None):

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import numpy as np
 
@@ -17,3 +17,14 @@ class Configuration:
 
 
 Configurations = List[Configuration]
+
+
+def get_split_sizes(size: int, first_fraction: float) -> Tuple[int, int]:
+    assert 0.0 < first_fraction < 1.0
+    first_size = int(first_fraction * size)
+    return first_size, size - first_size
+
+
+def split_train_valid_configs(configs: Configurations, valid_fraction: float) -> Tuple[Configurations, Configurations]:
+    _, train_size = get_split_sizes(len(configs), first_fraction=valid_fraction)
+    return configs[:train_size], configs[train_size:]

@@ -22,20 +22,24 @@ def main() -> None:
     device = tools.init_device(args.device)
 
     # Data preparation
-    train_valid_test_configs = data.load_rmd17(
+    train_valid_configs, test_configs = data.load_rmd17(
         directory=args.downloads_dir,
         subset=args.subset,
-        valid_fraction=args.valid_fraction,
         split=args.split,
-        max_size_train=args.max_size_train,
-        max_size_test=args.max_size_test,
     )
+    train_valid_configs = train_valid_configs[:args.max_size_train]
+    test_configs = test_configs[:args.max_size_test]
+
+    train_configs, valid_configs = data.split_train_valid_configs(train_valid_configs,
+                                                                  valid_fraction=args.valid_fraction)
+    logging.info(f'Number of configurations: train={len(train_configs)}, valid={len(valid_configs)}, '
+                 f'test={len(test_configs)}')
 
     # Atomic number table
     # yapf: disable
     z_table = tools.get_atomic_number_table_from_zs(
         z
-        for configs in train_valid_test_configs[:2]  # train and valid configs
+        for configs in (train_configs, valid_configs)
         for config in configs
         for z in config.atomic_numbers
     )
@@ -51,7 +55,7 @@ def main() -> None:
             shuffle=True,
             drop_last=False,
         )
-        for configs in train_valid_test_configs
+        for configs in (train_configs, valid_configs, test_configs)
     )
     # yapf: enable
 
