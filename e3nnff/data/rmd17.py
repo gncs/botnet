@@ -40,7 +40,7 @@ def extract_configs(data: Dict[str, np.ndarray], indices: Sequence[int]) -> List
             atomic_numbers=np.array(data['nuclear_charges'], dtype=int),
             positions=np.array(coords, dtype=float),  # Ang
             forces=kcalpmol_to_ev(np.array(forces, dtype=float)),  # kcal/mol/Ang -> eV/Ang
-            energy=kcalpmol_to_ev(float(energy)),  # kcal/mol -> Ang
+            energy=kcalpmol_to_ev(float(energy)),  # kcal/mol -> eV
         ) for coords, forces, energy
         in zip(data['coords'][indices], data['forces'][indices], data['energies'][indices])
     ]
