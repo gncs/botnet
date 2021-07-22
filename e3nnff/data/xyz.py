@@ -4,7 +4,7 @@ import ase.data
 import ase.io
 import numpy as np
 
-from e3nnff.data import Configuration, Configurations
+from .utils import Configuration, Configurations
 
 
 def config_from_atoms(atoms: ase.Atoms) -> Configuration:
