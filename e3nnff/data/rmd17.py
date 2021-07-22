@@ -2,31 +2,17 @@ import io
 import logging
 import os
 import tarfile
-import urllib.request
 import zipfile
 from typing import List, Sequence, Dict, Any, Tuple
 
 import numpy as np
 
-from .utils import Configuration, Configurations
+from .utils import Configuration, Configurations, fetch_archive
+
 
 # "On the role of gradients for machine learning of molecular energies and forces"
 # Anders S. Christensen, O. Anatole von Lilienfeld
 # https://arxiv.org/abs/2007.09593
-
-
-def download_url(url: str, save_path: str) -> None:
-    with urllib.request.urlopen(url) as download_file:
-        with open(save_path, 'wb') as out_file:
-            out_file.write(download_file.read())
-
-
-def fetch_archive(path: str, url: str, force_download=False) -> None:
-    if not os.path.exists(path) and not force_download:
-        logging.info(f'Downloading {url} to {path}')
-        download_url(url=url, save_path=path)
-    else:
-        logging.info(f'File {path} exists')
 
 
 def kcalpmol_to_ev(x):
