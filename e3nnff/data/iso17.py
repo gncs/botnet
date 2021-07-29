@@ -31,12 +31,13 @@ def parse_db(path: str) -> Configurations:
     configs = []
     with ase.db.connect(path) as conn:
         for row in conn.select():
-            configs.append(Configuration(
-                atomic_numbers=row.numbers,
-                positions=row.positions,
-                energy=row['total_energy'],  # eV
-                forces=row.data['atomic_forces'],  # eV/Ang
-            ))
+            configs.append(
+                Configuration(
+                    atomic_numbers=row.numbers,
+                    positions=row.positions,
+                    energy=row['total_energy'],  # eV
+                    forces=row.data['atomic_forces'],  # eV/Ang
+                ))
 
     return configs
 
