@@ -84,8 +84,6 @@ def main() -> None:
         num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
-        atomic_inter_scale=1.0,
-        atomic_inter_shift=0.0,
         include_forces=True,
     )
     model.to(device)

@@ -28,19 +28,6 @@ class RadialEmbeddingBlock(torch.nn.Module):
         return bessel * cutoff  # [n_edges, n_basis]
 
 
-class ScaleShiftBlock(torch.nn.Module):
-    def __init__(self, scale: float, shift: float):
-        super().__init__()
-        self.register_buffer('scale', torch.tensor(scale, dtype=torch.get_default_dtype()))
-        self.register_buffer('shift', torch.tensor(shift, dtype=torch.get_default_dtype()))
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.scale * x + self.shift
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}(scale={self.scale:.6f}, shift={self.shift:.6f})'
-
-
 class LinearReadoutBlock(torch.nn.Module):
     def __init__(self, irreps_in: o3.Irreps):
         super().__init__()

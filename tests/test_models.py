@@ -36,8 +36,6 @@ class TestModels:
             num_interactions=2,
             atomic_energies=atomic_energies,
             hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),
-            atomic_inter_shift=0.0,
-            atomic_inter_scale=1.0,
         )
 
         assert count_parameters(model) == 2690

@@ -66,11 +66,6 @@ def main() -> None:
         loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
     logging.info(loss_fn)
 
-    if args.scale_shift:
-        mean_atom_inter, std_atom_inter = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
-    else:
-        mean_atom_inter, std_atom_inter = 0.0, 1.0
-
     # Build model
     logging.info('Building model')
     model = models.BodyOrderedModel(
@@ -83,8 +78,6 @@ def main() -> None:
         num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
-        atomic_inter_scale=std_atom_inter,
-        atomic_inter_shift=mean_atom_inter,
         include_forces=True,
     )
     model.to(device)

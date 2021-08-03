@@ -6,8 +6,7 @@ from e3nn import o3
 from torch_scatter import scatter_sum
 
 from e3nnff.data import AtomicData
-from e3nnff.modules import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, ScaleShiftBlock,
-                            InteractionBlock)
+from e3nnff.modules import AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock
 from .utils import get_edge_vectors_and_lengths, compute_forces
 
 
@@ -23,8 +22,6 @@ class BodyOrderedModel(torch.nn.Module):
         num_elements: int,
         hidden_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
-        atomic_inter_scale: float,
-        atomic_inter_shift: float,
         include_forces=True,
     ):
         super().__init__()
@@ -68,7 +65,6 @@ class BodyOrderedModel(torch.nn.Module):
             self.interactions.append(inter)
             self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
-        self.scale_shift = ScaleShiftBlock(scale=atomic_inter_scale, shift=atomic_inter_shift)
         self.include_forces = include_forces
 
     def forward(self, data: AtomicData, training=False) -> Dict[str, Any]:
@@ -101,12 +97,8 @@ class BodyOrderedModel(torch.nn.Module):
         # Sum over interactions
         node_inter = torch.sum(torch.stack(node_energies, dim=0), dim=0)  # [n_nodes, ]
 
-        # Transform
-        node_inter_trans = self.scale_shift(node_inter)
-
         # Sum over nodes
-        inter_energy = scatter_sum(src=node_inter_trans, index=data.batch, dim=-1,
-                                   dim_size=data.num_graphs)  # [n_graphs,]
+        inter_energy = scatter_sum(src=node_inter, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
 
         total_energy = e0 + inter_energy
 
