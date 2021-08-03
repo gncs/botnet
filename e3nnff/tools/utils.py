@@ -5,34 +5,9 @@ import sys
 from typing import Sequence, Iterable, Union, Optional, Dict, Any
 
 import numpy as np
-import scipy.constants
 import torch
 
 from .torch_tools import to_numpy
-
-_bohr_per_angstrom = scipy.constants.angstrom / scipy.constants.value('Bohr radius')
-_angstrom_per_bohr = 1 / _bohr_per_angstrom
-_joule_per_hartree = scipy.constants.value('Hartree energy')
-_hartree_per_joule = 1 / _joule_per_hartree
-_hartree_per_kjpmol = _hartree_per_joule * 1_000 / scipy.constants.Avogadro
-_kj_per_kcal = scipy.constants.calorie
-_hartree_per_ev = 1 / scipy.constants.value('Hartree energy in eV')
-
-
-def ev_to_hartree(x):
-    return x * _hartree_per_ev
-
-
-def kcalpmol_to_hartree(x):
-    return x * _kj_per_kcal * _hartree_per_kjpmol
-
-
-def angstrom_to_bohr(x):
-    return x * _bohr_per_angstrom
-
-
-def kcalpmol_per_angstrom_to_hartree_per_bohr(x):
-    return kcalpmol_to_hartree(x) * _angstrom_per_bohr
 
 
 def get_tag(name: str, seed: int) -> str:

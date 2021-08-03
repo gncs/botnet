@@ -6,9 +6,7 @@ import torch.nn.functional
 from torch import nn, optim
 
 from e3nnff.data import Configuration
-from e3nnff.tools import (AtomicNumberTable, atomic_numbers_to_indices, ev_to_hartree, kcalpmol_to_hartree,
-                          angstrom_to_bohr, kcalpmol_per_angstrom_to_hartree_per_bohr, CheckpointState,
-                          CheckpointHandler)
+from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices, CheckpointState, CheckpointHandler
 
 
 class TestAtomicNumberTable:
@@ -37,14 +35,6 @@ class TestConversions:
             energy=-1.5,
         )
         assert config
-
-
-class TestUnits:
-    def test_standard_units(self):
-        assert np.isclose(ev_to_hartree(1.0), 0.036749)
-        assert np.isclose(kcalpmol_to_hartree(1.0), 0.0015936)
-        assert np.isclose(angstrom_to_bohr(1.0), 1.88973)
-        assert np.isclose(kcalpmol_per_angstrom_to_hartree_per_bohr(1.0), 0.0015936 / 1.88973)
 
 
 class MyModel(nn.Module):
