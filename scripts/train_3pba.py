@@ -11,7 +11,7 @@ from e3nnff import data, tools, models, modules
 subsets = {'test_300K', 'test_600K', 'test_1200K', 'train_300K', 'train_mixed'}
 
 
-def add_3pba_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def add_3bpa_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument('--downloads_dir', help='directory for downloads', type=str, default='downloads')
     parser.add_argument('--train', help='subset name for training', default='train_mixed', choices=subsets)
     parser.add_argument('--test', help='subset name for testing', default='test_300K', choices=subsets)
@@ -24,7 +24,7 @@ def add_3pba_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
 
 def main() -> None:
     parser = tools.build_default_arg_parser()
-    parser = add_3pba_parser(parser)
+    parser = add_3bpa_parser(parser)
     args = parser.parse_args()
 
     tag = tools.get_tag(name=args.name, seed=args.seed)
@@ -37,7 +37,7 @@ def main() -> None:
     tools.set_default_dtype(args.default_dtype)
 
     # Data preparation
-    configs = data.load_3pba(directory=args.downloads_dir)
+    configs = data.load_3bpa(directory=args.downloads_dir)
     logging.info(f'Training: {args.train}, Test: {args.test}')
     train_valid_configs, test_configs = configs[args.train], configs[args.test]
 
@@ -56,7 +56,7 @@ def main() -> None:
     )
     # yapf: enable
     logging.info(z_table)
-    atomic_energies = np.array([data.three_pba_atomic_energies[z] for z in z_table.zs])
+    atomic_energies = np.array([data.three_bpa_atomic_energies[z] for z in z_table.zs])
 
     # yapf: disable
     train_loader, valid_loader, test_loader = (
