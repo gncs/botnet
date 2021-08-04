@@ -16,6 +16,11 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
 
     # Device and logging
     parser.add_argument('--device', help='select device', type=str, choices=['cpu', 'cuda'], default='cpu')
+    parser.add_argument('--default_dtype',
+                        help='set default dtype',
+                        type=str,
+                        choices=['float32', 'float64'],
+                        default='float32')
     parser.add_argument('--log_level', help='log level', type=str, default='INFO')
 
     # Model

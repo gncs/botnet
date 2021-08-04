@@ -51,3 +51,10 @@ def init_device(device_str: str) -> torch.device:
 
     logging.info('Using CPU')
     return torch.device('cpu')
+
+
+dtype_dict = {'float32': torch.float32, 'float64': torch.float64}
+
+
+def set_default_dtype(dtype: str) -> None:
+    torch.set_default_dtype(dtype_dict[dtype])

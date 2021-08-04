@@ -34,6 +34,7 @@ def main() -> None:
     tools.setup_logger(level=args.log_level, tag=tag, directory=args.log_dir)
     logging.info(f'Configuration: {args}')
     device = tools.init_device(args.device)
+    tools.set_default_dtype(args.default_dtype)
 
     # Data preparation
     configs = data.load_3pba(directory=args.downloads_dir)

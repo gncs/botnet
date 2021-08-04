@@ -20,6 +20,7 @@ def main() -> None:
     tools.setup_logger(level=args.log_level, tag=tag, directory=args.log_dir)
     logging.info(f'Configuration: {args}')
     device = tools.init_device(args.device)
+    tools.set_default_dtype(args.dtype)
 
     # Data preparation
     train_valid_configs, test_configs = data.load_rmd17(
