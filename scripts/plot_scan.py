@@ -29,7 +29,6 @@ def main():
     atoms_list = ase.io.read(args.configs_path, format='extxyz', index=':')
     configs = [data.config_from_atoms(atoms) for atoms in atoms_list]
     ref_energies = np.array([float(atoms.info.get('DFT_energy')) for atoms in atoms_list], dtype=float)
-    min_energy = np.min(ref_energies)
     assert all(energy is not None for energy in ref_energies)
 
     zs = [int(z) for z in args.atomic_numbers.split(',')]
@@ -51,19 +50,21 @@ def main():
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(fig_width, fig_height), constrained_layout=True)
 
     ax.plot(
-        (ref_energies - min_energy) * 1000,
+        (ref_energies - np.min(ref_energies)) * 1000,
         color='black',
+        label='DFT',
     )
 
     ax.plot(
-        (energies - min_energy) * 1000,
+        (energies - np.min(energies)) * 1000,
         color='red',
-        )
+        label='Simple BO',
+    )
 
     ax.set_ylabel(r'$\Delta E$ [meV]')
-    # ax.set_xlabel('')
+    ax.legend()
 
-    fig.savefig('/home/gregor/downloads/acetylacetone.pdf')
+    fig.savefig('scan.pdf')
     plt.show()
 
 

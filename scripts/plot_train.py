@@ -35,29 +35,29 @@ def parse_json_lines_file(path: str) -> List[dict]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Plot e3nn-ff training statistics')
     parser.add_argument('--path', help='path to results file', required=True)
+    parser.add_argument('--min_epoch', help='minimum epoch', default=50, required=False)
     return parser.parse_args()
 
 
-def plot(data: pd.DataFrame) -> None:
+def plot(data: pd.DataFrame, min_epoch: int) -> None:
     fig, axes = plt.subplots(nrows=2,
                              ncols=1,
                              figsize=(fig_width, 2 * fig_height),
                              constrained_layout=True,
                              sharex='col')
     valid_data = data[data['mode'] == 'eval']
+    valid_data = valid_data[valid_data['epoch'] > min_epoch]
 
     ax = axes[0]
     ax.plot(valid_data['epoch'], valid_data['loss'], color=colors[0], label='Loss')
 
     ax.legend()
-    ax.set_ylim([0.0, 0.04])
 
     ax = axes[1]
     ax.plot(valid_data['epoch'], valid_data['mae_e'], color=colors[1], label='MAE Energy [eV]')
     ax.plot(valid_data['epoch'], valid_data['mae_f'], color=colors[2], label='MAE Forces [eV/Å]')
 
     ax.legend()
-    ax.set_ylim([0.0, 0.03])
     ax.set_xlabel('Epoch')
 
     fig.savefig('training.pdf')
@@ -66,7 +66,7 @@ def plot(data: pd.DataFrame) -> None:
 def main():
     args = parse_args()
     data = pd.DataFrame(parse_json_lines_file(args.path))
-    plot(data)
+    plot(data, min_epoch=args.min_epoch)
 
 
 if __name__ == '__main__':
