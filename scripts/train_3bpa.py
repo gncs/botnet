@@ -99,7 +99,8 @@ def main() -> None:
 
     start_epoch = 0
     if args.restart_latest:
-        start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
+        start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler),
+                                                     device=device)
 
     logging.info(f'Optimizer: {optimizer}')
 
@@ -120,7 +121,7 @@ def main() -> None:
     )
 
     # Evaluation on test dataset
-    epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler))
+    epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler), device=device)
     test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
     test_metrics['mode'] = 'test'
     test_metrics['epoch'] = epoch

@@ -94,17 +94,17 @@ class CheckpointIO:
         torch.save(obj=checkpoint, f=path)
         self.old_path = path
 
-    def load_latest(self) -> Tuple[Checkpoint, int]:
-        return self.load(self._get_latest_checkpoint_path())
+    def load_latest(self, device: Optional[torch.device] = None) -> Tuple[Checkpoint, int]:
+        return self.load(self._get_latest_checkpoint_path(), device=device)
 
-    def load(self, path: str) -> Tuple[Checkpoint, int]:
+    def load(self, path: str, device: Optional[torch.device] = None) -> Tuple[Checkpoint, int]:
         checkpoint_info = self._parse_checkpoint_path(path)
 
         if checkpoint_info is None:
             raise RuntimeError(f"Cannot find path '{path}'")
 
         logging.info(f'Loading checkpoint: {checkpoint_info.path}')
-        return torch.load(f=checkpoint_info.path), checkpoint_info.epochs
+        return torch.load(f=checkpoint_info.path, map_location=device), checkpoint_info.epochs
 
 
 class CheckpointHandler:
@@ -116,12 +116,12 @@ class CheckpointHandler:
         checkpoint = self.builder.create_checkpoint(state)
         self.io.save(checkpoint, epochs)
 
-    def load_latest(self, state: CheckpointState, strict=False) -> int:
-        checkpoint, epochs = self.io.load_latest()
+    def load_latest(self, state: CheckpointState, device: Optional[torch.device] = None, strict=False) -> int:
+        checkpoint, epochs = self.io.load_latest(device=device)
         self.builder.load_checkpoint(state=state, checkpoint=checkpoint, strict=strict)
         return epochs
 
-    def load(self, state: CheckpointState, path: str, strict=False) -> int:
-        checkpoint, epochs = self.io.load(path)
+    def load(self, state: CheckpointState, path: str, strict=False, device: Optional[torch.device] = None) -> int:
+        checkpoint, epochs = self.io.load(path, device=device)
         self.builder.load_checkpoint(state=state, checkpoint=checkpoint, strict=strict)
         return epochs
