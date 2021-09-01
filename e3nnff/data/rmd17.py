@@ -9,6 +9,7 @@ import numpy as np
 
 from .utils import Configuration, Configurations, fetch_archive
 
+
 # "On the role of gradients for machine learning of molecular energies and forces"
 # Anders S. Christensen, O. Anatole von Lilienfeld
 # https://arxiv.org/abs/2007.09593
