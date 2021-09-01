@@ -60,11 +60,7 @@ def main() -> None:
     )
     # yapf: enable
 
-    loss_fn: torch.nn.Module
-    if args.no_forces:
-        loss_fn = modules.EnergyLoss()
-    else:
-        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
+    loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
     logging.info(loss_fn)
 
     # Build model
