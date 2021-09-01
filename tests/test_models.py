@@ -27,7 +27,7 @@ class TestModels:
     def test_bo_model(self):
         atomic_energies = np.array([1.0, 3.0], dtype=float)
         model = models.BodyOrderedModel(
-            interaction_cls=interaction_classes['SkipInteractionBlock'],
+            interaction_cls=interaction_classes['SimpleInteractionBlock'],
             r_max=2.0,
             num_bessel=7,
             num_polynomial_cutoff=5,
@@ -38,7 +38,7 @@ class TestModels:
             hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),
         )
 
-        assert count_parameters(model) == 2690
+        assert count_parameters(model) == 2408
 
         atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
