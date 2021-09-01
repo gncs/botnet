@@ -8,17 +8,13 @@ from e3nn import o3
 
 from e3nnff import data, tools, models, modules
 
-subsets = {'test_300K', 'test_600K', 'test_1200K', 'train_300K', 'train_mixed'}
-
 
 def add_3bpa_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument('--downloads_dir', help='directory for downloads', type=str, default='downloads')
-    parser.add_argument('--train', help='subset name for training', default='train_mixed', choices=subsets)
-    parser.add_argument('--test', help='subset name for testing', default='test_300K', choices=subsets)
-    parser.add_argument('--valid_fraction',
-                        help='fraction of the training set used for validation',
-                        type=float,
-                        default=0.1)
+    parser.add_argument('--train',
+                        help='subset name for training',
+                        default='train_mixed',
+                        choices=['train_300K', 'train_mixed'])
     return parser
 
 
@@ -38,13 +34,9 @@ def main() -> None:
 
     # Data preparation
     configs = data.load_3bpa(directory=args.downloads_dir)
-    logging.info(f'Training: {args.train}, Test: {args.test}')
-    train_valid_configs, test_configs = configs[args.train], configs[args.test]
-
-    train_configs, valid_configs = data.split_train_valid_configs(train_valid_configs,
-                                                                  valid_fraction=args.valid_fraction)
-    logging.info(f'Number of configurations: train={len(train_configs)}, valid={len(valid_configs)}, '
-                 f'test={len(test_configs)}')
+    logging.info(f'Training: {args.train}')
+    train_configs, valid_configs = data.split_train_valid_configs(configs=configs[args.train], valid_fraction=0.1)
+    logging.info(f'Number of configurations: train={len(train_configs)}, valid={len(valid_configs)}')
 
     # Atomic number table
     # yapf: disable
@@ -59,14 +51,14 @@ def main() -> None:
     atomic_energies = np.array([data.three_bpa_atomic_energies[z] for z in z_table.zs])
 
     # yapf: disable
-    train_loader, valid_loader, test_loader = (
+    train_loader, valid_loader = (
         data.get_data_loader(
             dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
             batch_size=args.batch_size,
             shuffle=True,
             drop_last=False,
         )
-        for configs in (train_configs, valid_configs, test_configs)
+        for configs in (train_configs, valid_configs)
     )
     # yapf: enable
 
@@ -85,7 +77,6 @@ def main() -> None:
         num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
-        include_forces=True,
     )
     model.to(device)
     logging.info(model)
@@ -120,13 +111,23 @@ def main() -> None:
         device=device,
     )
 
-    # Evaluation on test dataset
+    # Evaluation on test datasets
     epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler), device=device)
-    test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
-    test_metrics['mode'] = 'test'
-    test_metrics['epoch'] = epoch
-    logger.log(test_metrics)
-    logging.info(f'Test loss (epoch {epoch}): {test_loss:.3f}')
+    for test_set in ['test_300K', 'test_600K', 'test_1200K']:
+        test_loader = data.get_data_loader(
+            dataset=[
+                data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs[test_set]
+            ],
+            batch_size=args.batch_size,
+            shuffle=False,
+            drop_last=False,
+        )
+
+        test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
+        logging.info(f"Test set '{test_set}' (epoch {epoch}): "
+                     f'loss={test_loss:.3f}, '
+                     f'mae_e={test_metrics["mae_e"] * 1000:.3f} meV, '
+                     f'mae_f={test_metrics["mae_f"] * 1000:.3f} meV/Ang')
 
     # Save entire model
     model_path = os.path.join(args.checkpoints_dir, tag + '.model')
