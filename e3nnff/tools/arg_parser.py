@@ -61,26 +61,6 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def add_rmd17_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument('--downloads_dir', help='directory for downloads', type=str, default='downloads')
-    parser.add_argument('--subset', help='subset name', default='uracil')
-    parser.add_argument('--split', help='train test split', type=int, default=1)
-    parser.add_argument('--valid_fraction',
-                        help='fraction of the training set used for validation',
-                        type=float,
-                        default=0.1)
-    parser.add_argument('--max_size_train',
-                        help='maximum number of items in training set (int or None)',
-                        type=check_int_or_none,
-                        default=None)
-    parser.add_argument('--max_size_test',
-                        help='maximum number of items in test set (int or None)',
-                        type=check_int_or_none,
-                        default=None)
-
-    return parser
-
-
 def check_int_or_none(value: str) -> Optional[int]:
     try:
         return int(value)
