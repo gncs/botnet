@@ -69,7 +69,7 @@ def load(directory: str, force_download=False) -> Tuple[Configurations, Configur
     # Process dataset
     logging.info(f'Parsing ISO17 dataset files: {filenames}')
 
-    configs_tuple = tuple(parse_db(path=os.path.join(extracted_directory, filename1)) for filename1 in filenames)
+    configs_tuple = tuple(parse_db(path=os.path.join(extracted_directory, filename)) for filename in filenames)
     assert len(configs_tuple) == 3
 
     return configs_tuple  # type: ignore
