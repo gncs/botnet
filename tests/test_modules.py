@@ -4,7 +4,6 @@ import torch_scatter
 
 from e3nnff.data import Configuration, AtomicData, get_data_loader
 from e3nnff.modules import PolynomialCutoff, AtomicEnergiesBlock, BesselBasis
-from e3nnff.modules.utils import compute_mean_std_atomic_inter_energy
 from e3nnff.tools import AtomicNumberTable, to_numpy
 
 config = Configuration(
@@ -53,11 +52,3 @@ class TestAtomicEnergies:
         out = torch_scatter.scatter(src=energies, index=batch.batch, dim=-1, reduce='sum')
         out = to_numpy(out)
         assert np.allclose(out, np.array([5., 5.]))
-
-    def test_interaction(self):
-        data = AtomicData.from_config(config, z_table=table, cutoff=3.0)
-        data_loader = get_data_loader([data, data, data], batch_size=2)
-        mean, std = compute_mean_std_atomic_inter_energy(data_loader, atomic_energies=np.array([1.0, 3.0]))
-
-        assert np.isclose(mean, -2.166666)
-        assert np.isclose(std, 0.0)
