@@ -24,31 +24,28 @@ config = Configuration(
 table = AtomicNumberTable([1, 8])
 
 
-class TestBasis:
-    def test_bessel_basis(self):
-        d = torch.linspace(start=0.5, end=5.5, steps=10)
-        bessel_basis = BesselBasis(r_max=6.0, num_basis=5)
-        output = bessel_basis(d.unsqueeze(-1))
-        assert output.shape == (10, 5)
+def test_bessel_basis():
+    d = torch.linspace(start=0.5, end=5.5, steps=10)
+    bessel_basis = BesselBasis(r_max=6.0, num_basis=5)
+    output = bessel_basis(d.unsqueeze(-1))
+    assert output.shape == (10, 5)
 
 
-class TestCutoff:
-    def test_polynomial_cutoff(self):
-        d = torch.linspace(start=0.5, end=5.5, steps=10)
-        cutoff_fn = PolynomialCutoff(r_max=5.0)
-        output = cutoff_fn(d)
-        assert output.shape == (10, )
+def test_polynomial_cutoff():
+    d = torch.linspace(start=0.5, end=5.5, steps=10)
+    cutoff_fn = PolynomialCutoff(r_max=5.0)
+    output = cutoff_fn(d)
+    assert output.shape == (10, )
 
 
-class TestAtomicEnergies:
-    def test_simple(self):
-        energies_block = AtomicEnergiesBlock(atomic_energies=np.array([1.0, 3.0]))
+def test_atomic_energies():
+    energies_block = AtomicEnergiesBlock(atomic_energies=np.array([1.0, 3.0]))
 
-        data = AtomicData.from_config(config, z_table=table, cutoff=3.0)
-        data_loader = get_data_loader([data, data], batch_size=2)
-        batch = next(iter(data_loader))
+    data = AtomicData.from_config(config, z_table=table, cutoff=3.0)
+    data_loader = get_data_loader([data, data], batch_size=2)
+    batch = next(iter(data_loader))
 
-        energies = energies_block(batch.node_attrs)
-        out = torch_scatter.scatter(src=energies, index=batch.batch, dim=-1, reduce='sum')
-        out = to_numpy(out)
-        assert np.allclose(out, np.array([5., 5.]))
+    energies = energies_block(batch.node_attrs)
+    out = torch_scatter.scatter(src=energies, index=batch.batch, dim=-1, reduce='sum')
+    out = to_numpy(out)
+    assert np.allclose(out, np.array([5., 5.]))

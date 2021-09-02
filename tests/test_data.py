@@ -1,3 +1,4 @@
+# pylint: disable=no-self-use
 import numpy as np
 
 from e3nnff.data import Configuration, AtomicData, get_data_loader, get_neighborhood
@@ -29,14 +30,20 @@ class TestAtomicData:
         assert data.forces.shape == (3, 3)
         assert data.node_attrs.shape == (3, 2)
 
-    def test_collate(self):
+    def test_data_loader(self):
         data1 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
         data2 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
-        data_loader = get_data_loader([data1, data2], batch_size=32)
+        data_loader = get_data_loader([data1, data2], batch_size=2)
 
-        for i in data_loader:
-            print(i)
+        for batch in data_loader:
+            assert batch.batch.shape == (6, )
+            assert batch.edge_index.shape == (2, 8)
+            assert batch.shifts.shape == (8, 3)
+            assert batch.positions.shape == (6, 3)
+            assert batch.node_attrs.shape == (6, 2)
+            assert batch.energy.shape == (2, )
+            assert batch.forces.shape == (6, 3)
 
 
 class TestNeighborhood:

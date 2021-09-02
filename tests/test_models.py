@@ -21,28 +21,27 @@ config = data.Configuration(
 table = tools.AtomicNumberTable([1, 8])
 
 
-class TestModels:
-    def test_bo_model(self):
-        atomic_energies = np.array([1.0, 3.0], dtype=float)
-        model = modules.BodyOrderedModel(
-            interaction_cls=modules.interaction_classes['SimpleInteractionBlock'],
-            r_max=2.0,
-            num_bessel=7,
-            num_polynomial_cutoff=5,
-            max_ell=2,
-            num_elements=len(table),
-            num_interactions=2,
-            atomic_energies=atomic_energies,
-            hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),
-        )
+def test_bo_model():
+    atomic_energies = np.array([1.0, 3.0], dtype=float)
+    model = modules.BodyOrderedModel(
+        interaction_cls=modules.interaction_classes['SimpleInteractionBlock'],
+        r_max=2.0,
+        num_bessel=7,
+        num_polynomial_cutoff=5,
+        max_ell=2,
+        num_elements=len(table),
+        num_interactions=2,
+        atomic_energies=atomic_energies,
+        hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),
+    )
 
-        assert tools.count_parameters(model) == 2408
+    assert tools.count_parameters(model) == 2408
 
-        atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
+    atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
-        data_loader = data.get_data_loader([atomic_data, atomic_data], batch_size=2)
-        batch = next(iter(data_loader))
+    data_loader = data.get_data_loader([atomic_data, atomic_data], batch_size=2)
+    batch = next(iter(data_loader))
 
-        output = model(batch)
-        assert output['energy'].shape == (2, )
-        assert output['forces'].shape == (6, 3)
+    output = model(batch)
+    assert output['energy'].shape == (2, )
+    assert output['forces'].shape == (6, 3)
