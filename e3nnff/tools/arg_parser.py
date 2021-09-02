@@ -13,6 +13,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--log_dir', help='directory for log files', type=str, default='logs')
     parser.add_argument('--checkpoints_dir', help='directory for checkpoint files', type=str, default='checkpoints')
     parser.add_argument('--results_dir', help='directory for results', type=str, default='results')
+    parser.add_argument('--downloads_dir', help='directory for downloads', type=str, default='downloads')
 
     # Device and logging
     parser.add_argument('--device', help='select device', type=str, choices=['cpu', 'cuda'], default='cpu')

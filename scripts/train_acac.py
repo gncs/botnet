@@ -1,4 +1,3 @@
-import argparse
 import logging
 import os
 
@@ -9,14 +8,8 @@ from e3nn import o3
 from e3nnff import data, tools, models, modules
 
 
-def add_acetylacetone_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument('--downloads_dir', help='directory for downloads', type=str, default='downloads')
-    return parser
-
-
 def main() -> None:
     parser = tools.build_default_arg_parser()
-    parser = add_acetylacetone_parser(parser)
     args = parser.parse_args()
 
     tag = tools.get_tag(name=args.name, seed=args.seed)
@@ -108,10 +101,10 @@ def main() -> None:
     # Evaluation on test dataset
     epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler), device=device)
     test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
-    test_metrics['mode'] = 'test'
-    test_metrics['epoch'] = epoch
-    logger.log(test_metrics)
-    logging.info(f'Test loss (epoch {epoch}): {test_loss:.3f}')
+    logging.info(f"Test set (epoch {epoch}): "
+                 f'loss={test_loss:.3f}, '
+                 f'mae_e={test_metrics["mae_e"] * 1000:.3f} meV, '
+                 f'mae_f={test_metrics["mae_f"] * 1000:.3f} meV/Ang')
 
     # Save entire model
     model_path = os.path.join(args.checkpoints_dir, tag + '.model')

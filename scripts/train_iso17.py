@@ -1,4 +1,3 @@
-import argparse
 import logging
 import os
 
@@ -9,14 +8,8 @@ from e3nn import o3
 from e3nnff import data, tools, models, modules
 
 
-def add_iso17_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument('--downloads_dir', help='directory for downloads', type=str, default='downloads')
-    return parser
-
-
 def main() -> None:
     parser = tools.build_default_arg_parser()
-    parser = add_iso17_parser(parser)
     args = parser.parse_args()
 
     tag = tools.get_tag(name=args.name, seed=args.seed)
