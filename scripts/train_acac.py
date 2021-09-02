@@ -8,17 +8,9 @@ from e3nn import o3
 
 from e3nnff import data, tools, models, modules
 
-subsets = {'test_dihedral', 'test_H_transfer', 'test_MD', 'train'}
-
 
 def add_acetylacetone_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument('--downloads_dir', help='directory for downloads', type=str, default='downloads')
-    parser.add_argument('--train', help='subset name for training', default='train', choices=subsets)
-    parser.add_argument('--test', help='subset name for testing', default='test_MD', choices=subsets)
-    parser.add_argument('--valid_fraction',
-                        help='fraction of the training set used for validation',
-                        type=float,
-                        default=0.1)
     return parser
 
 
@@ -38,11 +30,11 @@ def main() -> None:
 
     # Data preparation
     configs = data.load_acetylacetone(directory=args.downloads_dir)
-    logging.info(f'Training: {args.train}, Test: {args.test}')
-    train_valid_configs, test_configs = configs[args.train], configs[args.test]
+    train_subset, test_subset = 'train', 'test_MD'
+    logging.info(f'Training: {train_subset}, Test: {test_subset}')
+    train_valid_configs, test_configs = configs[train_subset], configs[test_subset]
 
-    train_configs, valid_configs = data.split_train_valid_configs(train_valid_configs,
-                                                                  valid_fraction=args.valid_fraction)
+    train_configs, valid_configs = data.split_train_valid_configs(train_valid_configs, valid_fraction=0.1)
     logging.info(f'Number of configurations: train={len(train_configs)}, valid={len(valid_configs)}, '
                  f'test={len(test_configs)}')
 

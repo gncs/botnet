@@ -39,14 +39,7 @@ def main() -> None:
     logging.info(f'Number of configurations: train={len(train_configs)}, valid={len(valid_configs)}')
 
     # Atomic number table
-    # yapf: disable
-    z_table = tools.get_atomic_number_table_from_zs(
-        z
-        for configs in (train_configs, valid_configs)
-        for config in configs
-        for z in config.atomic_numbers
-    )
-    # yapf: enable
+    z_table = tools.AtomicNumberTable([1, 6, 7, 8])
     logging.info(z_table)
     atomic_energies = np.array([data.three_bpa_atomic_energies[z] for z in z_table.zs])
 
