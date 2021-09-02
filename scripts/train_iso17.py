@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 
@@ -8,8 +9,15 @@ from e3nn import o3
 from e3nnff import data, tools, modules
 
 
+def add_iso17_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+    parser.add_argument('--num_train_configs', help='number of training configurations', type=int, default=5000)
+    parser.add_argument('--num_valid_configs', help='number of validation configurations', type=int, default=500)
+    return parser
+
+
 def main() -> None:
     parser = tools.build_default_arg_parser()
+    parser = add_iso17_parser(parser)
     args = parser.parse_args()
 
     tag = tools.get_tag(name=args.name, seed=args.seed)
@@ -22,11 +30,11 @@ def main() -> None:
     tools.set_default_dtype(args.default_dtype)
 
     # Data preparation
-    ref_configs, _test_within_configs, test_configs = data.load_iso17(directory=args.downloads_dir)
-
-    train_configs, valid_configs = data.split_train_valid_configs(configs=ref_configs, valid_fraction=0.1)
-    logging.info(f'Number of configurations: train={len(train_configs)}, valid={len(valid_configs)}, '
-                 f'test={len(test_configs)}')
+    ref_configs, test_within_configs, test_other_configs = data.load_iso17(directory=args.downloads_dir)
+    train_valid_configs = np.random.choice(ref_configs, args.num_train_configs + args.num_valid_configs)
+    train_configs, valid_configs = (train_valid_configs[:args.num_train_configs],
+                                    train_valid_configs[args.num_train_configs:])
+    logging.info(f'Number of configurations: train={len(train_configs)}, valid={len(valid_configs)}')
 
     # Atomic number table
     z_table = tools.AtomicNumberTable([1, 6, 8])
@@ -34,14 +42,14 @@ def main() -> None:
     atomic_energies = np.array([data.rmd17_atomic_energies[z] for z in z_table.zs])
 
     # yapf: disable
-    train_loader, valid_loader, test_loader = (
+    train_loader, valid_loader = (
         data.get_data_loader(
             dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
             batch_size=args.batch_size,
             shuffle=True,
             drop_last=False,
         )
-        for configs in (train_configs, valid_configs, test_configs)
+        for configs in (train_configs, valid_configs)
     )
     # yapf: enable
 
@@ -94,13 +102,24 @@ def main() -> None:
         device=device,
     )
 
-    # Evaluation on test dataset
+    # Evaluation on test datasets
     epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler), device=device)
-    test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
-    logging.info(f"Test set (epoch {epoch}): "
-                 f'loss={test_loss:.3f}, '
-                 f'mae_e={test_metrics["mae_e"] * 1000:.3f} meV, '
-                 f'mae_f={test_metrics["mae_f"] * 1000:.3f} meV/Ang')
+    logging.info(f'Loaded epoch {epoch}')
+
+    for test_name, test_configs in [('test_within', test_within_configs), ('test_other', test_other_configs)]:
+        test_loader = data.get_data_loader(
+            dataset=[
+                data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in test_configs
+            ],
+            batch_size=args.batch_size,
+            shuffle=False,
+            drop_last=False,
+        )
+        test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
+        logging.info(f"Test set '{test_name}' (size={len(test_configs)}): "
+                     f'loss={test_loss:.3f}, '
+                     f'mae_e={test_metrics["mae_e"] * 1000:.3f} meV, '
+                     f'mae_f={test_metrics["mae_f"] * 1000:.3f} meV/Ang')
 
     # Save entire model
     model_path = os.path.join(args.checkpoints_dir, tag + '.model')
