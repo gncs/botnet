@@ -1,9 +1,7 @@
 import numpy as np
 from e3nn import o3
 
-from e3nnff import data, models, tools
-from e3nnff.modules import interaction_classes
-from e3nnff.tools import count_parameters
+from e3nnff import data, modules, tools
 
 config = data.Configuration(
     atomic_numbers=np.array([8, 1, 1]),
@@ -26,8 +24,8 @@ table = tools.AtomicNumberTable([1, 8])
 class TestModels:
     def test_bo_model(self):
         atomic_energies = np.array([1.0, 3.0], dtype=float)
-        model = models.BodyOrderedModel(
-            interaction_cls=interaction_classes['SimpleInteractionBlock'],
+        model = modules.BodyOrderedModel(
+            interaction_cls=modules.interaction_classes['SimpleInteractionBlock'],
             r_max=2.0,
             num_bessel=7,
             num_polynomial_cutoff=5,
@@ -38,7 +36,7 @@ class TestModels:
             hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),
         )
 
-        assert count_parameters(model) == 2408
+        assert tools.count_parameters(model) == 2408
 
         atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
 

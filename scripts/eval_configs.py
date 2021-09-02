@@ -6,7 +6,7 @@ import ase.io
 import numpy as np
 import torch
 
-from e3nnff import data, tools, models
+from e3nnff import data, tools, modules
 
 
 def parse_args() -> argparse.Namespace:
@@ -47,7 +47,7 @@ def main():
         drop_last=False,
     )
 
-    model: models.BodyOrderedModel = torch.load(f=args.model, map_location=torch.device('cpu'))
+    model: modules.BodyOrderedModel = torch.load(f=args.model, map_location=torch.device('cpu'))
     output = model.forward(next(iter(loader)), training=False)
     energies = tools.to_numpy(output['energy'])
 

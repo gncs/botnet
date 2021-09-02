@@ -3,6 +3,7 @@ from typing import Dict, Type
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, SimpleInteractionBlock,
                      ElementDependentInteractionBlock, InteractionBlock)
 from .loss import EnergyForcesLoss
+from .models import BodyOrderedModel
 from .radial import BesselBasis, PolynomialCutoff
 
 interaction_classes: Dict[str, Type[InteractionBlock]] = {
@@ -12,5 +13,5 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
 
 __all__ = [
     'AtomicEnergiesBlock', 'RadialEmbeddingBlock', 'LinearReadoutBlock', 'SimpleInteractionBlock', 'PolynomialCutoff',
-    'BesselBasis', 'EnergyForcesLoss', 'interaction_classes', 'InteractionBlock'
+    'BesselBasis', 'EnergyForcesLoss', 'interaction_classes', 'InteractionBlock', 'BodyOrderedModel'
 ]

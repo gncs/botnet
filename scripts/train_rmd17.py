@@ -6,7 +6,7 @@ import numpy as np
 import torch.nn
 from e3nn import o3
 
-from e3nnff import data, tools, models, modules
+from e3nnff import data, tools, modules
 
 
 def add_rmd17_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -68,7 +68,7 @@ def main() -> None:
 
     # Build model
     logging.info('Building model')
-    model = models.BodyOrderedModel(
+    model = modules.BodyOrderedModel(
         r_max=args.r_max,
         num_bessel=args.num_radial_basis,
         num_polynomial_cutoff=args.num_cutoff_basis,
