@@ -7,7 +7,7 @@ source e3nn-ff-venv/bin/activate
 
 # Install packages
 pip install pip --upgrade
-pip install wheel pytest pyyaml mypy flake8 yapf
+pip install wheel pytest mypy yapf pylint
 
 pip install torch==1.8.1
 pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.8.0+${CUDA}.html
