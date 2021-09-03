@@ -63,7 +63,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         if not subset:
             raise RuntimeError('Specify subset')
         logging.info(f'Dataset: {dataset}, training: {subset}')
-        configs_dict = data.load_acetylacetone(directory=downloads_dir)
+        configs_dict = data.load_acac(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
         train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.1)
         return DatasetCollection(train=train_configs,

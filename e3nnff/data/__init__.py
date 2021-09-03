@@ -1,5 +1,5 @@
-from .acetylacetone import atomic_energies as acetylacetone_atomic_energies
-from .acetylacetone import load as load_acetylacetone
+from .acac import atomic_energies as acac_atomic_energies
+from .acac import load as load_acac
 from .atomic_data import AtomicData, get_data_loader
 from .iso17 import atomic_energies as iso17_atomic_energies
 from .iso17 import load as load_iso17
@@ -13,5 +13,5 @@ from .utils import Configuration, Configurations, split_train_valid_configs
 __all__ = [
     'load_rmd17', 'rmd17_atomic_energies', 'AtomicData', 'get_data_loader', 'get_neighborhood', 'Configuration',
     'Configurations', 'split_train_valid_configs', 'load_iso17', 'iso17_atomic_energies', 'load_3bpa',
-    'three_bpa_atomic_energies', 'acetylacetone_atomic_energies', 'load_acetylacetone'
+    'three_bpa_atomic_energies', 'acac_atomic_energies', 'load_acac'
 ]
