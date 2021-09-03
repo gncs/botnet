@@ -20,9 +20,7 @@ atomic_energies = {
 
 
 def config_from_atoms(atoms: ase.Atoms) -> Configuration:
-    energy = atoms.info.get('DFT_energy', None)
-    if energy is not None:
-        energy = float(energy)
+    energy = float(atoms.info['energy'])
 
     forces = None
     if atoms.has('forces'):
@@ -36,7 +34,7 @@ def config_from_atoms(atoms: ase.Atoms) -> Configuration:
 def unpack_configs(path: str) -> Dict[str, Configurations]:
     logging.info('Unpacking archive')
 
-    subsets = {'train300', 'train600', 'test_MD300', 'test_MD600', 'test_dihedral', 'test_H_transfer'}
+    subsets = {'train_300K', 'train_600K', 'test_MD_300K', 'test_MD_600K', 'test_dihedral', 'test_H_transfer'}
     file_subset_dict = {f'{subset}.xyz': subset for subset in subsets}
 
     extracted_data: Dict[str, Configurations] = {}
@@ -64,7 +62,6 @@ def unpack_configs(path: str) -> Dict[str, Configurations]:
 def load(directory: str) -> Dict[str, Configurations]:
     filename = 'acac_dataset.tar.gz'
 
-    # Prepare
     logging.info('Loading acetylacetone dataset')
     path = os.path.join(directory, filename)
     return unpack_configs(path=path)

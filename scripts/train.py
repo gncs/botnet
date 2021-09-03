@@ -59,6 +59,17 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
                                  valid=valid_configs,
                                  tests=[(key, configs_dict[key]) for key in ['test_300K', 'test_600K', 'test_1200K']])
 
+    if dataset == 'acac':
+        if not subset:
+            raise RuntimeError('Specify subset')
+        logging.info(f'Dataset: {dataset}, training: {subset}')
+        configs_dict = data.load_acetylacetone(directory=downloads_dir)
+        train_valid_configs = configs_dict[subset]
+        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.1)
+        return DatasetCollection(train=train_configs,
+                                 valid=valid_configs,
+                                 tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
+
     raise RuntimeError(f'Unknown dataset: {dataset}')
 
 
