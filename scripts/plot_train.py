@@ -35,11 +35,12 @@ def parse_json_lines_file(path: str) -> List[dict]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Plot e3nn-ff training statistics')
     parser.add_argument('--path', help='path to results file', required=True)
+    parser.add_argument('--output', help='path to results file', required=False, default='training.pdf')
     parser.add_argument('--min_epoch', help='minimum epoch', default=50, required=False)
     return parser.parse_args()
 
 
-def plot(data: pd.DataFrame, min_epoch: int) -> None:
+def plot(data: pd.DataFrame, min_epoch: int, output_path: str) -> None:
     fig, axes = plt.subplots(nrows=2,
                              ncols=1,
                              figsize=(fig_width, 2 * fig_height),
@@ -60,13 +61,13 @@ def plot(data: pd.DataFrame, min_epoch: int) -> None:
     ax.legend()
     ax.set_xlabel('Epoch')
 
-    fig.savefig('training.pdf')
+    fig.savefig(output_path)
 
 
 def main():
     args = parse_args()
     data = pd.DataFrame(parse_json_lines_file(args.path))
-    plot(data, min_epoch=args.min_epoch)
+    plot(data, min_epoch=args.min_epoch, output_path=args.output)
 
 
 if __name__ == '__main__':
