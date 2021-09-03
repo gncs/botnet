@@ -31,7 +31,7 @@ class DatasetCollection:
 
 def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: Optional[int]) -> DatasetCollection:
     if dataset == 'iso17':
-        logging.info(f'Dataset: {dataset}, subset: {subset}')
+        logging.info(f'Dataset: {dataset}')
         ref_configs, test_within, test_other = data.load_iso17(directory=downloads_dir)
         train_size, valid_size = 5000, 500
         train_valid_configs = np.random.choice(ref_configs, train_size + valid_size)
