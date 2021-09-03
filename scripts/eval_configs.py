@@ -16,6 +16,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--atomic_numbers', help='atomic numbers (comma-separated)', type=str, required=True)
     parser.add_argument('--output', help='output path', required=True)
     parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=4.0)
+    parser.add_argument('--device', help='select device', type=str, choices=['cpu', 'cuda'], default='cpu')
     parser.add_argument('--default_dtype',
                         help='set default dtype',
                         type=str,
@@ -32,6 +33,7 @@ def config_from_atoms(atoms: ase.Atoms) -> data.Configuration:
 def main():
     args = parse_args()
     tools.set_default_dtype(args.default_dtype)
+    device = tools.init_device(args.device)
 
     atoms_list = ase.io.read(args.configs, format='extxyz', index=':')
     configs = [config_from_atoms(atoms) for atoms in atoms_list]
@@ -47,7 +49,7 @@ def main():
         drop_last=False,
     )
 
-    model: modules.BodyOrderedModel = torch.load(f=args.model, map_location=torch.device('cpu'))
+    model: modules.BodyOrderedModel = torch.load(f=args.model, map_location=device)
     output = model.forward(next(iter(loader)), training=False)
     energies = tools.to_numpy(output['energy'])
 
