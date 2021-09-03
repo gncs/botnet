@@ -2,7 +2,7 @@ import argparse
 import dataclasses
 import logging
 import os
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple, Dict
 
 import numpy as np
 import torch.nn
@@ -73,6 +73,14 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
     raise RuntimeError(f'Unknown dataset: {dataset}')
 
 
+atomic_energies_dict: Dict[str, Dict[int, float]] = {
+    'iso17': data.iso17_atomic_energies,
+    'rmd17': data.rmd17_atomic_energies,
+    '3bpa': data.three_bpa_atomic_energies,
+    'acac': data.acac_atomic_energies,
+}
+
+
 def main() -> None:
     parser = tools.build_default_arg_parser()
     parser = add_rmd17_parser(parser)
@@ -105,7 +113,7 @@ def main() -> None:
     )
     # yapf: enable
     logging.info(z_table)
-    atomic_energies = np.array([data.rmd17_atomic_energies[z] for z in z_table.zs])
+    atomic_energies = np.array([atomic_energies_dict[args.dataset][z] for z in z_table.zs])
 
     # yapf: disable
     train_loader, valid_loader = (
