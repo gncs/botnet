@@ -38,9 +38,7 @@ def main():
     atoms_list = ase.io.read(args.configs, format='extxyz', index=':')
     configs = [config_from_atoms(atoms) for atoms in atoms_list]
 
-    zs = [int(z) for z in args.atomic_numbers.split(',')]
-    z_table = tools.get_atomic_number_table_from_zs(zs)
-    logging.info(z_table)
+    z_table = tools.AtomicNumberTable([int(z) for z in args.atomic_numbers.split(',')])
 
     loader = data.get_data_loader(
         dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
@@ -56,6 +54,7 @@ def main():
     # Overwrite info dict
     assert len(energies) == len(atoms_list)
     for atoms, energy in zip(atoms_list, energies):
+        atoms.calc = None  # crucial
         atoms.info = {'energy': energy}
 
     # Write atoms to output path
