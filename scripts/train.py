@@ -45,7 +45,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
             raise RuntimeError('Specify subset and split')
         logging.info(f'Dataset: {dataset}, subset: {subset}')
         train_valid_configs, test_configs = data.load_rmd17(directory=downloads_dir, subset=subset, split=split)
-        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.1)
+        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.025)
         return DatasetCollection(train=train_configs, valid=valid_configs, tests=[('test', test_configs)])
 
     if dataset == '3bpa':
