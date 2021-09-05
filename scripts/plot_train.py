@@ -46,12 +46,17 @@ def plot(data: pd.DataFrame, min_epoch: int, output_path: str) -> None:
                              figsize=(fig_width, 2 * fig_height),
                              constrained_layout=True,
                              sharex='col')
+
+    data = data[data['epoch'] > min_epoch]
+
     valid_data = data[data['mode'] == 'eval']
-    valid_data = valid_data[valid_data['epoch'] > min_epoch]
+    train_data = data[data['mode'] == 'opt']
 
     ax = axes[0]
-    ax.plot(valid_data['epoch'], valid_data['loss'], color=colors[0], label='Loss')
+    ax.plot(valid_data['epoch'], valid_data['loss'], color=colors[0], label='Validation')
+    ax.plot(train_data['epoch'], train_data['loss'], color=colors[3], label='Training')
 
+    ax.set_ylabel('Loss')
     ax.legend()
 
     ax = axes[1]
