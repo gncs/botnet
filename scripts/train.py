@@ -11,7 +11,7 @@ from e3nn import o3
 from e3nnff import data, tools, modules
 
 
-def add_rmd17_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument('--dataset',
                         help='dataset name',
                         type=str,
@@ -83,7 +83,7 @@ atomic_energies_dict: Dict[str, Dict[int, float]] = {
 
 def main() -> None:
     parser = tools.build_default_arg_parser()
-    parser = add_rmd17_parser(parser)
+    parser = add_train_parser(parser)
     args = parser.parse_args()
 
     tag = tools.get_tag(name=args.name, seed=args.seed)
