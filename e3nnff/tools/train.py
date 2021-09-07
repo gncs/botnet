@@ -94,8 +94,8 @@ def evaluate(
     device: torch.device,
 ) -> Tuple[float, Dict[str, Any]]:
     total_loss = 0.0
-    delta_es = []
-    delta_fs = []
+    delta_es_list = []
+    delta_fs_list = []
 
     start_time = time.time()
     for batch in data_loader:
@@ -107,19 +107,28 @@ def evaluate(
         loss = loss_fn(pred=output, ref=batch)
         total_loss += to_numpy(loss).item()
 
-        delta_es.append(torch.abs(batch.energy - output['energy']))
-        delta_fs.append(torch.abs(batch.forces - output['forces']))
+        delta_es_list.append(batch.energy - output['energy'])
+        delta_fs_list.append(batch.forces - output['forces'])
 
     avg_loss = total_loss / len(data_loader)
 
-    # MAE energy and forces
-    mae_e = torch.mean(torch.cat(delta_es, dim=0))
-    mae_f = torch.mean(torch.cat(delta_fs, dim=0))
+    delta_es = torch.cat(delta_es_list, dim=0)
+    delta_fs = torch.cat(delta_fs_list, dim=0)
+
+    # MAE: energy and forces
+    mae_e = torch.mean(torch.abs(delta_es))
+    mae_f = torch.mean(torch.abs(delta_fs))
+
+    # RMSE: energy and forces
+    rmse_e = torch.sqrt(torch.mean(torch.square(delta_es)))
+    rmse_f = torch.sqrt(torch.mean(torch.square(delta_fs)))
 
     aux = {
         'loss': avg_loss,
         'mae_e': mae_e.item(),
         'mae_f': mae_f.item(),
+        'rmse_e': rmse_e.item(),
+        'rmse_f': rmse_f.item(),
         'time': time.time() - start_time,
     }
 

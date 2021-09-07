@@ -193,7 +193,9 @@ def main() -> None:
         logging.info(f"Test set '{name}': "
                      f'loss={test_loss:.3f}, '
                      f'mae_e={test_metrics["mae_e"] * 1000:.3f} meV, '
-                     f'mae_f={test_metrics["mae_f"] * 1000:.3f} meV/Ang')
+                     f'mae_f={test_metrics["mae_f"] * 1000:.3f} meV/Ang '
+                     f'rmse_e={test_metrics["rmse_e"] * 1000:.3f} meV, '
+                     f'rmse_f={test_metrics["rmse_f"] * 1000:.3f} meV/Ang')
 
     # Save entire model
     model_path = os.path.join(args.checkpoints_dir, tag + '.model')
