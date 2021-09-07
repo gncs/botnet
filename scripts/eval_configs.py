@@ -21,6 +21,7 @@ def parse_args() -> argparse.Namespace:
                         type=str,
                         choices=['float32', 'float64'],
                         default='float64')
+    parser.add_argument('--batch_size', help='batch size', type=int, default=64)
     return parser.parse_args()
 
 
@@ -39,16 +40,22 @@ def main():
 
     z_table = tools.AtomicNumberTable([int(z) for z in args.atomic_numbers.split(',')])
 
-    loader = data.get_data_loader(
+    data_loader = data.get_data_loader(
         dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
-        batch_size=len(configs),
+        batch_size=args.batch_size,
         shuffle=False,
         drop_last=False,
     )
 
     model: modules.BodyOrderedModel = torch.load(f=args.model, map_location=device)
-    output = model.forward(next(iter(loader)), training=False)
-    energies = tools.to_numpy(output['energy'])
+
+    energies_list = []
+    for batch in data_loader:
+        batch = batch.to(device)
+        output = model(batch, training=False)
+        energies_list.append(tools.to_numpy(output['energy']))
+
+    energies = np.concatenate(energies_list, axis=0)
 
     # Overwrite info dict
     assert len(energies) == len(atoms_list)
