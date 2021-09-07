@@ -56,7 +56,8 @@ class AtomicEnergiesBlock(torch.nn.Module):
         return torch.matmul(x, self.atomic_energies)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(num_atomic_energies={len(self.atomic_energies)})'
+        formatted_energies = ', '.join([f'{x:.4f}' for x in self.atomic_energies])
+        return f'{self.__class__.__name__}(energies=[{formatted_energies}])'
 
 
 class InteractionBlock(ABC, torch.nn.Module):
