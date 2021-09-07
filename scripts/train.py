@@ -54,7 +54,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         logging.info(f'Dataset: {dataset}, training: {subset}')
         configs_dict = data.load_3bpa(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
-        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.1)
+        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.05)
         return DatasetCollection(train=train_configs,
                                  valid=valid_configs,
                                  tests=[(key, configs_dict[key]) for key in ['test300K', 'test600K', 'test1200K']])
@@ -65,7 +65,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         logging.info(f'Dataset: {dataset}, training: {subset}')
         configs_dict = data.load_acac(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
-        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.1)
+        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.05)
         return DatasetCollection(train=train_configs,
                                  valid=valid_configs,
                                  tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
