@@ -2,7 +2,7 @@ import argparse
 import dataclasses
 import logging
 import os
-from typing import Optional, Sequence, Tuple, Dict
+from typing import Optional, Tuple, Dict, List
 
 import numpy as np
 import torch.nn
@@ -26,7 +26,7 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
 class DatasetCollection:
     train: data.Configurations
     valid: data.Configurations
-    tests: Sequence[Tuple[str, data.Configurations]]
+    tests: List[Tuple[str, data.Configurations]]
 
 
 def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: Optional[int]) -> DatasetCollection:
@@ -144,8 +144,6 @@ def main() -> None:
         atomic_energies=atomic_energies,
     )
     model.to(device)
-    logging.info(model)
-    logging.info(f'Number of parameters: {tools.count_parameters(model)}')
 
     optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())
     logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
@@ -158,6 +156,8 @@ def main() -> None:
         start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler),
                                                      device=device)
 
+    logging.info(model)
+    logging.info(f'Number of parameters: {tools.count_parameters(model)}')
     logging.info(f'Optimizer: {optimizer}')
 
     tools.train(
@@ -180,22 +180,22 @@ def main() -> None:
     epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler), device=device)
     logging.info(f'Loading model from epoch {epoch}')
 
-    logging.info('Running tests')
-    for name, test_set in collections.tests:
-        test_loader = data.get_data_loader(
-            dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in test_set],
+    logging.info('Computing metrics for training, validation, and test sets')
+    for name, configs in [('train', collections.train), ('valid', collections.valid)] + collections.tests:
+        data_loader = data.get_data_loader(
+            dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
             batch_size=args.batch_size,
             shuffle=False,
             drop_last=False,
         )
 
-        test_loss, test_metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=test_loader, device=device)
-        logging.info(f"Test set '{name}': "
-                     f'loss={test_loss:.3f}, '
-                     f'mae_e={test_metrics["mae_e"] * 1000:.3f} meV, '
-                     f'mae_f={test_metrics["mae_f"] * 1000:.3f} meV/Ang '
-                     f'rmse_e={test_metrics["rmse_e"] * 1000:.3f} meV, '
-                     f'rmse_f={test_metrics["rmse_f"] * 1000:.3f} meV/Ang')
+        loss, metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=data_loader, device=device)
+        logging.info(f"Results '{name}': "
+                     f'loss={loss:.3f}, '
+                     f'mae_e={metrics["mae_e"] * 1000:.3f} meV, '
+                     f'mae_f={metrics["mae_f"] * 1000:.3f} meV/Ang '
+                     f'rmse_e={metrics["rmse_e"] * 1000:.3f} meV, '
+                     f'rmse_f={metrics["rmse_f"] * 1000:.3f} meV/Ang')
 
     # Save entire model
     model_path = os.path.join(args.checkpoints_dir, tag + '.model')
