@@ -1,5 +1,4 @@
 import argparse
-import logging
 
 import ase.data
 import ase.io
@@ -55,7 +54,7 @@ def main():
     assert len(energies) == len(atoms_list)
     for atoms, energy in zip(atoms_list, energies):
         atoms.calc = None  # crucial
-        atoms.info = {'energy': energy}
+        atoms.info['energy'] = energy
 
     # Write atoms to output path
     ase.io.write(args.output, images=atoms_list, format='extxyz')
