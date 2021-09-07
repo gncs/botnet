@@ -85,27 +85,25 @@ class BodyOrderedModel(torch.nn.Module):
         node_feats = data.node_attrs
 
         # Interactions
-        node_energies = []
+        energies = [e0]
         for interaction, readout in zip(self.interactions, self.readouts):
             node_feats = interaction(node_attrs=data.node_attrs,
                                      node_feats=node_feats,
                                      edge_attrs=edge_attrs,
                                      edge_feats=edge_feats,
                                      edge_index=data.edge_index)
-            node_energies.append(readout(node_feats).squeeze(-1))
+            node_energies = readout(node_feats).squeeze(-1)  # [n_nodes, ]
+            energy = scatter_sum(src=node_energies, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
+            energies.append(energy)
 
-        # Sum over interactions
-        node_inter = torch.sum(torch.stack(node_energies, dim=0), dim=0)  # [n_nodes, ]
-
-        # Sum over nodes
-        inter_energy = scatter_sum(src=node_inter, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
-
-        total_energy = e0 + inter_energy
+        # Sum over energy contributions
+        total_energy = torch.sum(torch.stack(energies, dim=0), dim=0)  # [n_graphs, ]
 
         output = {
             'energy': total_energy,
-            'interaction_energy': inter_energy,
         }
+        for i, energy in enumerate(energies):
+            output[f'e_{i}'] = energy
 
         if self.include_forces:
             output['forces'] = compute_forces(energy=total_energy, positions=data.positions, training=training)
