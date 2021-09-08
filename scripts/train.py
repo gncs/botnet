@@ -115,17 +115,18 @@ def main() -> None:
     logging.info(z_table)
     atomic_energies = np.array([atomic_energies_dict[args.dataset][z] for z in z_table.zs])
 
-    # yapf: disable
-    train_loader, valid_loader = (
-        data.get_data_loader(
-            dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
-            batch_size=args.batch_size,
-            shuffle=True,
-            drop_last=False,
-        )
-        for configs in (collections.train, collections.valid)
+    train_loader = data.get_data_loader(
+        dataset=[data.AtomicData.from_config(c, z_table=z_table, cutoff=args.r_max) for c in collections.train],
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True,
     )
-    # yapf: enable
+    valid_loader = data.get_data_loader(
+        dataset=[data.AtomicData.from_config(c, z_table=z_table, cutoff=args.r_max) for c in collections.valid],
+        batch_size=args.batch_size,
+        shuffle=False,
+        drop_last=False,
+    )
 
     loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
     logging.info(loss_fn)
