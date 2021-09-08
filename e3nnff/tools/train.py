@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 
 from .checkpoint import CheckpointHandler, CheckpointState
 from .torch_tools import to_numpy, tensor_dict_to_device
-from .utils import ProgressLogger
+from .utils import MetricsLogger
 
 
 def train(
@@ -23,7 +23,7 @@ def train(
     max_num_epochs: int,
     patience: int,
     checkpoint_handler: CheckpointHandler,
-    logger: ProgressLogger,
+    logger: MetricsLogger,
     eval_interval: int,
     device: torch.device,
 ):

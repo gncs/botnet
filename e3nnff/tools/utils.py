@@ -86,7 +86,7 @@ class UniversalEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-class ProgressLogger:
+class MetricsLogger:
     def __init__(self, directory: str, tag: str) -> None:
         self.directory = directory
         self.filename = tag + '.txt'

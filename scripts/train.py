@@ -147,7 +147,7 @@ def main() -> None:
     model.to(device)
 
     optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())
-    logger = tools.ProgressLogger(directory=args.results_dir, tag=tag)
+    logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_train')
     lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
     checkpoint_handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_checkpoints)
@@ -182,6 +182,7 @@ def main() -> None:
     logging.info(f'Loading model from epoch {epoch}')
 
     logging.info('Computing metrics for training, validation, and test sets')
+    logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_eval')
     for name, configs in [('train', collections.train), ('valid', collections.valid)] + collections.tests:
         data_loader = data.get_data_loader(
             dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
@@ -197,6 +198,8 @@ def main() -> None:
                      f'mae_f={metrics["mae_f"] * 1000:.3f} meV/Ang, '
                      f'rmse_e={metrics["rmse_e"] * 1000:.3f} meV, '
                      f'rmse_f={metrics["rmse_f"] * 1000:.3f} meV/Ang')
+        metrics['name'] = name
+        logger.log(metrics)
 
     # Save entire model
     model_path = os.path.join(args.checkpoints_dir, tag + '.model')
