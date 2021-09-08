@@ -193,7 +193,7 @@ def main() -> None:
         logging.info(f"Results '{name}': "
                      f'loss={loss:.3f}, '
                      f'mae_e={metrics["mae_e"] * 1000:.3f} meV, '
-                     f'mae_f={metrics["mae_f"] * 1000:.3f} meV/Ang '
+                     f'mae_f={metrics["mae_f"] * 1000:.3f} meV/Ang, '
                      f'rmse_e={metrics["rmse_e"] * 1000:.3f} meV, '
                      f'rmse_f={metrics["rmse_f"] * 1000:.3f} meV/Ang')
 
