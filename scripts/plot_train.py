@@ -50,7 +50,7 @@ def plot(data: pd.DataFrame, min_epoch: int, output_path: str) -> None:
     data = data[data['epoch'] > min_epoch]
 
     valid_data = data[data['mode'] == 'eval']
-    train_data = data[data['mode'] == 'opt']
+    train_data = data[data['mode'] == 'opt'].groupby('epoch').mean().reset_index()
 
     ax = axes[0]
     ax.plot(valid_data['epoch'], valid_data['loss'], color=colors[0], label='Validation')
