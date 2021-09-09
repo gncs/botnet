@@ -22,7 +22,6 @@ class BodyOrderedModel(torch.nn.Module):
         num_elements: int,
         hidden_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
-        include_forces=True,
     ):
         super().__init__()
 
@@ -65,12 +64,9 @@ class BodyOrderedModel(torch.nn.Module):
             self.interactions.append(inter)
             self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
-        self.include_forces = include_forces
-
     def forward(self, data: AtomicData, training=False) -> Dict[str, Any]:
         # Setup
-        if self.include_forces:
-            data.positions.requires_grad = True
+        data.positions.requires_grad = True
 
         # Atomic energies
         node_e0 = self.atomic_energies_fn(data.node_attrs)
@@ -101,11 +97,9 @@ class BodyOrderedModel(torch.nn.Module):
 
         output = {
             'energy': total_energy,
+            'forces': compute_forces(energy=total_energy, positions=data.positions, training=training),
         }
         for i, energy in enumerate(energies):
             output[f'e_{i}'] = energy
-
-        if self.include_forces:
-            output['forces'] = compute_forces(energy=total_energy, positions=data.positions, training=training)
 
         return output
