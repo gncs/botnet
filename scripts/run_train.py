@@ -19,6 +19,7 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
                         required=True)
     parser.add_argument('--subset', help='subset name')
     parser.add_argument('--split', help='train test split', type=int)
+    parser.add_argument('--scale_shift', help='scale and shift interaction energy', action='store_true', default=False)
     return parser
 
 
@@ -133,7 +134,7 @@ def main() -> None:
 
     # Build model
     logging.info('Building model')
-    model = modules.BodyOrderedModel(
+    model_config = dict(
         r_max=args.r_max,
         num_bessel=args.num_radial_basis,
         num_polynomial_cutoff=args.num_cutoff_basis,
@@ -144,6 +145,17 @@ def main() -> None:
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
     )
+
+    if not args.scale_shift:
+        model = modules.BodyOrderedModel(**model_config)
+    else:
+        mean, std = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
+        model = modules.ScaleShiftBodyOrderedModel(
+            **model_config,
+            atomic_inter_scale=std,
+            atomic_inter_shift=mean,
+        )
+
     model.to(device)
 
     optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())

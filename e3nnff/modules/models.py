@@ -6,7 +6,7 @@ from e3nn import o3
 from torch_scatter import scatter_sum
 
 from e3nnff.data import AtomicData
-from .blocks import AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock
+from .blocks import AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock, ScaleShiftBlock
 from .utils import get_edge_vectors_and_lengths, compute_forces
 
 
@@ -101,5 +101,59 @@ class BodyOrderedModel(torch.nn.Module):
         }
         for i, energy in enumerate(energies):
             output[f'e_{i}'] = energy
+
+        return output
+
+
+class ScaleShiftBodyOrderedModel(BodyOrderedModel):
+    def __init__(
+        self,
+        atomic_inter_scale: float,
+        atomic_inter_shift: float,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.scale_shift = ScaleShiftBlock(scale=atomic_inter_scale, shift=atomic_inter_shift)
+
+    def forward(self, data: AtomicData, training=False) -> Dict[str, Any]:
+        # Setup
+        data.positions.requires_grad = True
+
+        # Atomic energies
+        node_e0 = self.atomic_energies_fn(data.node_attrs)
+        e0 = scatter_sum(src=node_e0, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
+
+        # Embeddings
+        vectors, lengths = get_edge_vectors_and_lengths(positions=data.positions,
+                                                        edge_index=data.edge_index,
+                                                        shifts=data.shifts)
+        edge_attrs = self.spherical_harmonics(vectors)
+        edge_feats = self.radial_embedding(lengths)
+        node_feats = data.node_attrs
+
+        # Interactions
+        node_es_list = []
+        for interaction, readout in zip(self.interactions, self.readouts):
+            node_feats = interaction(node_attrs=data.node_attrs,
+                                     node_feats=node_feats,
+                                     edge_attrs=edge_attrs,
+                                     edge_feats=edge_feats,
+                                     edge_index=data.edge_index)
+
+            node_es_list.append(readout(node_feats).squeeze(-1))  # {[n_nodes, ], }
+
+        # Sum over interactions
+        node_inter_es = torch.sum(torch.stack(node_es_list, dim=0), dim=0)  # [n_nodes, ]
+
+        # Sum over nodes in graph
+        inter_e = scatter_sum(src=node_inter_es, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
+
+        # Add E_0 and scaled interaction energy
+        total_e = e0 + self.scale_shift(inter_e)
+
+        output = {
+            'energy': total_e,
+            'forces': compute_forces(energy=total_e, positions=data.positions, training=training),
+        }
 
         return output
