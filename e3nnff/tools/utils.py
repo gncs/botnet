@@ -62,7 +62,12 @@ def atomic_numbers_to_indices(atomic_numbers: np.ndarray, z_table: AtomicNumberT
     return to_index_fn(atomic_numbers)
 
 
-def get_optimizer(name: str, learning_rate: float, parameters: Iterable[torch.Tensor]) -> torch.optim.Optimizer:
+def get_optimizer(
+    name: str,
+    learning_rate: float,
+    weight_decay: float,
+    parameters: Iterable[torch.Tensor],
+) -> torch.optim.Optimizer:
     if name == 'adam':
         amsgrad = False
     elif name == 'amsgrad':
@@ -70,7 +75,7 @@ def get_optimizer(name: str, learning_rate: float, parameters: Iterable[torch.Te
     else:
         raise RuntimeError(f"Unknown optimizer '{name}'")
 
-    return torch.optim.Adam(parameters, lr=learning_rate, amsgrad=amsgrad)
+    return torch.optim.Adam(parameters, lr=learning_rate, amsgrad=amsgrad, weight_decay=weight_decay)
 
 
 class UniversalEncoder(json.JSONEncoder):

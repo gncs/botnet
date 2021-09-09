@@ -158,7 +158,10 @@ def main() -> None:
 
     model.to(device)
 
-    optimizer = tools.get_optimizer(name=args.optimizer, learning_rate=args.lr, parameters=model.parameters())
+    optimizer = tools.get_optimizer(name=args.optimizer,
+                                    learning_rate=args.lr,
+                                    weight_decay=args.weight_decay,
+                                    parameters=model.parameters())
     logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_train')
     lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
