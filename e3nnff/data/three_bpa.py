@@ -25,15 +25,13 @@ atomic_energies = {
 
 
 def config_from_atoms(atoms: ase.Atoms) -> Configuration:
-    energy = atoms.info.get('energy_wB97X', None)  # eV
-    forces = atoms.arrays.get('forces_wB97X', None)  # eV / Ang
+    energy = atoms.info.get('energy', None)  # eV
+    forces = atoms.arrays.get('forces', None)  # eV / Ang
     atomic_numbers = np.array([ase.data.atomic_numbers[symbol] for symbol in atoms.symbols])
     return Configuration(atomic_numbers=atomic_numbers, positions=atoms.positions, energy=energy, forces=forces)
 
 
 def unpack_configs(path: str) -> Dict[str, Configurations]:
-    logging.info('Unpacking archive')
-
     extracted_data: Dict[str, Configurations] = {}
     with tarfile.open(name=path, mode='r|gz') as tar_file:
         for file in tar_file:
