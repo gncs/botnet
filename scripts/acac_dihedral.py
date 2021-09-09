@@ -1,11 +1,12 @@
 import argparse
-import os
-from typing import Tuple, List
+from typing import Tuple
 
 import ase.data
 import ase.io
 import matplotlib.pyplot as plt
 import numpy as np
+
+from plot_settings import style_dict
 
 fig_width = 6.0 / 3  # inches
 fig_height = 2.1
@@ -16,17 +17,20 @@ plt.rcParams.update({'font.size': 6})
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('--training', help='path to XYZ training configurations', required=True)
-    parser.add_argument('--predictions', help='path to XYZ configurations', action='append', required=True)
+    parser.add_argument('--predictions',
+                        help='name and path to XYZ configurations (name, path)',
+                        action='append',
+                        required=True)
     return parser.parse_args()
 
 
-def parse_config_path(path: str) -> Tuple[str, List[ase.Atoms]]:
-    basename = os.path.basename(path)
-    root, ext = os.path.splitext(basename)
-    name = root.split('_')[-1]
+def parse_config_path(name_path_tuple: str) -> Tuple[str, np.ndarray, np.ndarray]:
+    name, path = name_path_tuple.split(',')
+    atoms_list = ase.io.read(path, format='extxyz', index=':')
     return (
         name,
-        ase.io.read(path, format='extxyz', index=':'),
+        np.array([atoms.info['dihedral_angle'] for atoms in atoms_list]),
+        np.array([atoms.info['energy'] for atoms in atoms_list]),
     )
 
 
@@ -44,18 +48,11 @@ def main():
                              gridspec_kw={'height_ratios': (5, 1)})
 
     ax = axes[0]
-    for name, atoms_list in predictions:
-        dihedrals = np.array([atoms.info['dihedral_angle'] for atoms in atoms_list])
-        energies = np.array([atoms.info['energy'] for atoms in atoms_list])
-        ax.plot(
-            dihedrals,
-            (energies - energies[0]) * 1000,
-            color='black',
-            label=name,
-        )
+    for name, dihedrals, energies in predictions:
+        ax.plot(dihedrals, (energies - np.min(predictions[0][-1])) * 1000, **style_dict[name])
 
     ax.set_ylabel(r'$\Delta E$ [meV]')
-    ax.legend()
+    # ax.legend()
 
     ax = axes[1]
     train_dihedrals = []
@@ -65,7 +62,7 @@ def main():
         else:
             train_dihedrals.append(360 - atoms.get_dihedral(0, 1, 2, 3))
 
-    ax.hist(train_dihedrals, bins=np.arange(0, 180, 5), color='black', label='Training data')
+    ax.hist(train_dihedrals, bins=np.arange(0, 185, 5), color='black', label='Training data')
     ax.set_xlabel('Dihedral Angle [°]')
     ax.set_xticks([0, 30, 60, 90, 120, 150, 180])
     ax.set_ylabel('Count')

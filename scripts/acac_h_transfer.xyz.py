@@ -23,12 +23,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def parse_config_path(name_path_tuple: str) -> Tuple[str, List[Tuple[float, float, float]], List[float]]:
+def parse_config_path(name_path_tuple: str) -> Tuple[str, List[float]]:
     name, path = name_path_tuple.split(',')
     atoms_list = ase.io.read(path, format='extxyz', index=':')
     return (
         name,
-        [tuple(atoms.info['dihedrals']) for atoms in atoms_list],
         [atoms.info['energy'] if 'energy' in atoms.info.keys() else atoms.info['energy_wB97X'] for atoms in atoms_list],
     )
 
@@ -39,27 +38,13 @@ def main():
 
     # Plot curve
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(fig_width, fig_height), constrained_layout=True)
-    alpha = 131.0
-    beta = 150.0
 
-    for name, angle_tuples, energies in predictions:
-        data = list(
-            filter(
-                lambda t: np.isclose(t[0][0], alpha) and np.isclose(t[0][1], beta),
-                zip(angle_tuples, energies),
-            ))
+    for name, energies in predictions:
+        ax.plot((energies - np.min(predictions[1][1])) * 1000, **style_dict[name])
 
-        angles = [t[0][-1] for t in data]
-        energies = np.array([t[1] for t in data])
-
-        ax.plot(angles, (energies - np.min(energies)) * 1000, **style_dict[name])
-
-    ax.set_title(fr'$\alpha$={alpha:.1f}°, $\beta$={beta:.1f}°')
-    ax.set_xticks([0, 60, 120, 180, 240, 300])
-    ax.set_xlabel(r'$\gamma$ [°]')
     ax.set_ylabel(r'$\Delta E$ [meV]')
 
-    ax.legend()
+    # ax.legend()
     plt.show()
 
 
