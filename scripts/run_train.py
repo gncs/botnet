@@ -214,6 +214,8 @@ def main() -> None:
                      f'rmse_e={metrics["rmse_e"] * 1000:.3f} meV, '
                      f'rmse_f={metrics["rmse_f"] * 1000:.3f} meV/Ang')
         metrics['subset'] = name
+        metrics['name'] = args.name
+        metrics['seed'] = args.seed
         logger.log(metrics)
 
     # Save entire model
