@@ -85,6 +85,7 @@ def plot(data: pd.DataFrame, min_epoch: int, output_path: str) -> None:
         color=colors[3],
     )
 
+    ax.set_ylim(bottom=0.0)
     ax.set_xlabel('Epoch')
     ax.set_ylabel('Loss')
     ax.legend()
@@ -109,6 +110,7 @@ def plot(data: pd.DataFrame, min_epoch: int, output_path: str) -> None:
         color=colors[2],
     )
 
+    ax.set_ylim(bottom=0.0)
     ax.set_xlabel('Epoch')
     ax.legend()
 
