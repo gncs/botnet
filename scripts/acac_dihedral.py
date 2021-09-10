@@ -6,7 +6,7 @@ import ase.io
 import matplotlib.pyplot as plt
 import numpy as np
 
-from plot_settings import style_dict
+from utils import style_dict
 
 fig_width = 6.0 / 3  # inches
 fig_height = 2.1
