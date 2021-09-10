@@ -24,22 +24,22 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
 
 
 @dataclasses.dataclass
-class DatasetCollection:
+class SubsetCollection:
     train: data.Configurations
     valid: data.Configurations
     tests: List[Tuple[str, data.Configurations]]
 
 
-def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: Optional[int]) -> DatasetCollection:
+def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: Optional[int]) -> SubsetCollection:
     if dataset == 'iso17':
         logging.info(f'Dataset: {dataset}')
         ref_configs, test_within, test_other = data.load_iso17(directory=downloads_dir)
         train_size, valid_size = 5000, 500
         train_valid_configs = np.random.choice(ref_configs, train_size + valid_size)
         train_configs, valid_configs = train_valid_configs[:train_size], train_valid_configs[train_size:]
-        return DatasetCollection(train=train_configs,
-                                 valid=valid_configs,
-                                 tests=[('test_within', test_within), ('test_other', test_other)])
+        return SubsetCollection(train=train_configs,
+                                valid=valid_configs,
+                                tests=[('test_within', test_within), ('test_other', test_other)])
 
     if dataset == 'rmd17':
         if not subset or not split:
@@ -47,7 +47,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         logging.info(f'Dataset: {dataset}, subset: {subset}')
         train_valid_configs, test_configs = data.load_rmd17(directory=downloads_dir, subset=subset, split=split)
         train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.025)
-        return DatasetCollection(train=train_configs, valid=valid_configs, tests=[('test', test_configs)])
+        return SubsetCollection(train=train_configs, valid=valid_configs, tests=[('test', test_configs)])
 
     if dataset == '3bpa':
         if not subset:
@@ -56,9 +56,9 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         configs_dict = data.load_3bpa(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
         train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.05)
-        return DatasetCollection(train=train_configs,
-                                 valid=valid_configs,
-                                 tests=[(key, configs_dict[key]) for key in ['test_300K', 'test_600K', 'test_1200K']])
+        return SubsetCollection(train=train_configs,
+                                valid=valid_configs,
+                                tests=[(key, configs_dict[key]) for key in ['test_300K', 'test_600K', 'test_1200K']])
 
     if dataset == 'acac':
         if not subset:
@@ -67,9 +67,9 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         configs_dict = data.load_acac(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
         train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.05)
-        return DatasetCollection(train=train_configs,
-                                 valid=valid_configs,
-                                 tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
+        return SubsetCollection(train=train_configs,
+                                valid=valid_configs,
+                                tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
 
     raise RuntimeError(f'Unknown dataset: {dataset}')
 
@@ -198,22 +198,22 @@ def main() -> None:
 
     logging.info('Computing metrics for training, validation, and test sets')
     logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_eval')
-    for name, configs in [('train', collections.train), ('valid', collections.valid)] + collections.tests:
+    for name, subset in [('train', collections.train), ('valid', collections.valid)] + collections.tests:
         data_loader = data.get_data_loader(
-            dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
+            dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in subset],
             batch_size=args.batch_size,
             shuffle=False,
             drop_last=False,
         )
 
         loss, metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=data_loader, device=device)
-        logging.info(f"Results '{name}': "
+        logging.info(f"Subset '{name}': "
                      f'loss={loss:.3f}, '
                      f'mae_e={metrics["mae_e"] * 1000:.3f} meV, '
                      f'mae_f={metrics["mae_f"] * 1000:.3f} meV/Ang, '
                      f'rmse_e={metrics["rmse_e"] * 1000:.3f} meV, '
                      f'rmse_f={metrics["rmse_f"] * 1000:.3f} meV/Ang')
-        metrics['name'] = name
+        metrics['subset'] = name
         logger.log(metrics)
 
     # Save entire model
