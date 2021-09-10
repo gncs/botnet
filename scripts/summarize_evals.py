@@ -20,7 +20,7 @@ def get_paths(directory: dir) -> List[str]:
 
 def read_results(path: str) -> List[Dict]:
     with open(path, mode='r') as f:
-        return [json.loads(line) for line in f.readlines()]
+        return [json.loads(line) for line in f]
 
 
 def main():
