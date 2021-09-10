@@ -20,6 +20,7 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
     parser.add_argument('--subset', help='subset name')
     parser.add_argument('--split', help='train test split', type=int)
     parser.add_argument('--scale_shift', help='scale and shift interaction energy', action='store_true', default=False)
+    parser.add_argument('--loss', help='type of loss', default='default', choices=['default', 'ace'])
     return parser
 
 
@@ -129,7 +130,10 @@ def main() -> None:
         drop_last=False,
     )
 
-    loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
+    if args.loss == 'ace':
+        loss_fn = modules.ACELoss(energy_weight=15.0, forces_weight=1.0)
+    else:
+        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
     logging.info(loss_fn)
 
     # Build model
