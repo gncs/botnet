@@ -6,6 +6,7 @@ import os
 import re
 from typing import List, Dict
 
+import numpy as np
 import pandas as pd
 
 
@@ -19,13 +20,13 @@ def get_paths(directory: dir) -> List[str]:
     return glob.glob(os.path.join(directory, '*_eval.txt'))
 
 
-name_re = re.compile(r'(?P<name>.+)_run-(?P<seed>\d+)_eval.txt')
-
-
 @dataclasses.dataclass
 class ExperimentInfo:
     name: str
     seed: int
+
+
+name_re = re.compile(r'(?P<name>.+)_run-(?P<seed>\d+)_eval.txt')
 
 
 def parse_path(path: str) -> ExperimentInfo:
@@ -55,15 +56,15 @@ def main():
     results_list = [result for path in get_paths(directory=args.dir) for result in read_results(path)]
     df = pd.DataFrame(results_list)
 
-    df = df.groupby(['exp', 'name']).mean()
-    df = df.drop(columns=['seed', 'time'])
+    df = df.drop(columns=['seed'])
+    df = df.groupby(['exp', 'name']).agg([np.mean, np.std])
 
     converted = ['mae_e', 'mae_f', 'rmse_e', 'rmse_f']
     df = df.apply(lambda column: column * 1000 if column.name in converted else column)
+    print(f'Columns {", ".join(converted)} are in meV or meV/Ang')
 
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.expand_frame_repr', False,
                            'display.float_format', '{:.3f}'.format):
-        print(f'Columns {", ".join(converted)} in meV or meV/Ang')
         print(df)
 
 
