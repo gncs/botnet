@@ -51,7 +51,7 @@ def parse_training_results(path: str) -> List[dict]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Plot e3nn-ff training statistics')
     parser.add_argument('--path', help='path to results file or directory', required=True)
-    parser.add_argument('--min_epoch', help='minimum epoch', default=50, required=False)
+    parser.add_argument('--min_epoch', help='minimum epoch', default=50, type=int, required=False)
     return parser.parse_args()
 
 
