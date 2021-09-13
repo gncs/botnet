@@ -93,14 +93,14 @@ class BodyOrderedModel(torch.nn.Module):
             energies.append(energy)
 
         # Sum over energy contributions
-        total_energy = torch.sum(torch.stack(energies, dim=0), dim=0)  # [n_graphs, ]
+        energies_tensor = torch.stack(energies, dim=-1)
+        total_energy = torch.sum(energies_tensor, dim=-1)  # [n_graphs, ]
 
         output = {
             'energy': total_energy,
+            'energies': energies_tensor,
             'forces': compute_forces(energy=total_energy, positions=data.positions, training=training),
         }
-        for i, energy in enumerate(energies):
-            output[f'e_{i}'] = energy
 
         return output
 
