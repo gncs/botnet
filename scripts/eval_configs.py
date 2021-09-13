@@ -50,18 +50,22 @@ def main():
     model: modules.BodyOrderedModel = torch.load(f=args.model, map_location=device)
 
     energies_list = []
+    contributions_list = []
     for batch in data_loader:
         batch = batch.to(device)
         output = model(batch, training=False)
         energies_list.append(tools.to_numpy(output['energy']))
+        contributions_list.append(tools.to_numpy(output['contributions']))
 
     energies = np.concatenate(energies_list, axis=0)
+    contributions = np.concatenate(contributions_list, axis=0)
 
     # Overwrite info dict
-    assert len(energies) == len(atoms_list)
-    for atoms, energy in zip(atoms_list, energies):
+    assert len(energies) == len(atoms_list) == contributions.shape[0]
+    for atoms, energy, contribution in zip(atoms_list, energies, contributions):
         atoms.calc = None  # crucial
         atoms.info['energy'] = energy
+        atoms.info['contributions'] = contribution
 
     # Write atoms to output path
     ase.io.write(args.output, images=atoms_list, format='extxyz')
