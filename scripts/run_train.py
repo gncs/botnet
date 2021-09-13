@@ -163,6 +163,7 @@ def main() -> None:
     model.to(device)
 
     optimizer = tools.get_optimizer(name=args.optimizer,
+                                    amsgrad=args.amsgrad,
                                     learning_rate=args.lr,
                                     weight_decay=args.weight_decay,
                                     parameters=model.parameters())

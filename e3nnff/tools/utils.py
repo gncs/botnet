@@ -64,18 +64,18 @@ def atomic_numbers_to_indices(atomic_numbers: np.ndarray, z_table: AtomicNumberT
 
 def get_optimizer(
     name: str,
+    amsgrad: bool,
     learning_rate: float,
     weight_decay: float,
     parameters: Iterable[torch.Tensor],
 ) -> torch.optim.Optimizer:
     if name == 'adam':
-        amsgrad = False
-    elif name == 'amsgrad':
-        amsgrad = True
-    else:
-        raise RuntimeError(f"Unknown optimizer '{name}'")
+        return torch.optim.Adam(parameters, lr=learning_rate, amsgrad=amsgrad, weight_decay=weight_decay)
 
-    return torch.optim.Adam(parameters, lr=learning_rate, amsgrad=amsgrad, weight_decay=weight_decay)
+    if name == 'adamw':
+        return torch.optim.AdamW(parameters, lr=learning_rate, amsgrad=amsgrad, weight_decay=weight_decay)
+
+    raise RuntimeError(f"Unknown optimizer '{name}'")
 
 
 class UniversalEncoder(json.JSONEncoder):
