@@ -28,10 +28,7 @@ def main():
     array = np.concatenate([energies, contributions[1:]], axis=0)
 
     # Plot curve
-    fig, axes = plt.subplots(nrows=1,
-                             ncols=array.shape[0],
-                             figsize=(fig_width, fig_height),
-                             constrained_layout=True)
+    fig, axes = plt.subplots(nrows=1, ncols=array.shape[0], figsize=(fig_width, fig_height), constrained_layout=True)
 
     for i, (ax, energies) in enumerate(zip(axes, array)):
         e_min = np.min(energies)
