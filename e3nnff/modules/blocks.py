@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Tuple
 
 import numpy as np
 import torch
@@ -190,6 +190,77 @@ class ElementDependentInteractionBlock(InteractionBlock):
         num_nodes = node_feats.shape[0]
 
         tp_weights = self.conv_tp_weights(node_attrs[sender], edge_feats)
+        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
+        message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
+        message = self.linear(message)
+        return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
+
+
+def init_layer(layer: torch.nn.Linear, w_scale=1.0) -> torch.nn.Linear:
+    torch.nn.init.orthogonal_(layer.weight.data)
+    layer.weight.data.mul_(w_scale)  # type: ignore
+    torch.nn.init.constant_(layer.bias.data, 0)
+    return layer
+
+
+class MLP(torch.nn.Module):
+    def __init__(self, input_dim: int, output_dims: Tuple[int, ...], gate: torch.nn.Module):
+        super().__init__()
+        self.dims = (input_dim, ) + output_dims
+        self.layers = torch.nn.ModuleList(
+            [init_layer(torch.nn.Linear(dim_in, dim_out)) for dim_in, dim_out in zip(self.dims[:-1], self.dims[1:])])
+        self.gate = gate
+        self.output_dim = self.dims[-1]
+
+    def forward(self, x):
+        for layer in self.layers[:-1]:
+            x = self.gate(layer(x))
+        x = self.layers[-1](x)
+        return x
+
+    def __repr__(self):
+        layers_str = ", ".join(str(layer) for layer in self.layers)
+        return f"{self.__class__.__name__}(layers={{" + layers_str + f"}}, act={self.gate}, " \
+               f"weights={sum(layer.weight.numel() + layer.bias.numel() for layer in self.layers)})"
+
+
+class NonlinearInteractionBlock(InteractionBlock):
+    def _setup(self) -> None:
+        # TensorProduct
+        irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
+                                                                   self.target_irreps)
+        self.conv_tp = o3.TensorProduct(self.node_feats_irreps,
+                                        self.edge_attrs_irreps,
+                                        irreps_mid,
+                                        instructions=instructions,
+                                        shared_weights=False,
+                                        internal_weights=False)
+        input_dim = self.node_attrs_irreps.num_irreps + self.edge_feats_irreps.num_irreps
+        self.conv_tp_weights = MLP(input_dim=input_dim,
+                                   output_dims=(input_dim, self.conv_tp.weight_numel),
+                                   gate=torch.nn.ReLU())
+
+        # Linear
+        irreps_mid = irreps_mid.simplify()
+        self.irreps_out = linear_out_irreps(irreps_mid, self.target_irreps)
+        self.irreps_out = self.irreps_out.simplify()
+        self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
+
+        # Selector TensorProduct
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, self.node_attrs_irreps, self.irreps_out)
+
+    def forward(
+        self,
+        node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
+    ) -> torch.Tensor:
+        sender, receiver = edge_index
+        num_nodes = node_feats.shape[0]
+
+        tp_weights = self.conv_tp_weights(torch.cat([node_attrs[sender], edge_feats], dim=-1))
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
         message = self.linear(message)
