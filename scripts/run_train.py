@@ -162,11 +162,26 @@ def main() -> None:
 
     model.to(device)
 
-    optimizer = tools.get_optimizer(name=args.optimizer,
-                                    amsgrad=args.amsgrad,
-                                    learning_rate=args.lr,
-                                    weight_decay=args.weight_decay,
-                                    parameters=model.parameters())
+    # Optimizer
+    param_options = dict(
+        params=[{
+            'name': 'interactions',
+            'params': model.interactions.parameters(),
+            'weight_decay': args.weight_decay,
+        }, {
+            'name': 'readouts',
+            'params': model.readouts.parameters(),
+            'weight_decay': 0.0,
+        }],
+        lr=args.lr,
+        amsgrad=args.amsgrad,
+    )
+
+    if args.optimizer == 'adamw':
+        optimizer = torch.optim.AdamW(**param_options)
+    else:
+        optimizer = torch.optim.Adam(**param_options)
+
     logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_train')
     lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
