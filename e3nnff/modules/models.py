@@ -173,7 +173,7 @@ class SingleReadoutModel(torch.nn.Module):
         node_feats = data.node_attrs
 
         # Interactions
-        for interaction, readout in zip(self.interactions, self.readouts):
+        for interaction in self.interactions:
             node_feats = interaction(node_attrs=data.node_attrs,
                                      node_feats=node_feats,
                                      edge_attrs=edge_attrs,
