@@ -19,7 +19,10 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
                         required=True)
     parser.add_argument('--subset', help='subset name')
     parser.add_argument('--split', help='train test split', type=int)
-    parser.add_argument('--scale_shift', help='scale and shift interaction energy', action='store_true', default=False)
+    parser.add_argument('--model',
+                        help='model type',
+                        default='body_ordered',
+                        choices=['body_ordered', 'scale_shift', 'single_readout'])
     parser.add_argument('--loss', help='type of loss', default='default', choices=['default', 'ace'])
     return parser
 
@@ -150,15 +153,17 @@ def main() -> None:
         atomic_energies=atomic_energies,
     )
 
-    if not args.scale_shift:
-        model = modules.BodyOrderedModel(**model_config)
-    else:
+    if args.model == 'scale_shift':
         mean, std = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
         model = modules.ScaleShiftBodyOrderedModel(
             **model_config,
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )
+    elif args.model == 'single_readout':
+        model = modules.SingleReadoutModel(**model_config)
+    else:
+        model = modules.BodyOrderedModel(**model_config)
 
     model.to(device)
 
