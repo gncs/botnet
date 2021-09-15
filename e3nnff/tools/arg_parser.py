@@ -55,7 +55,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         help='Maximum number of consecutive epochs of increasing loss',
                         type=int,
                         default=2048)
-    parser.add_argument('--eval_interval', help='evaluate model every <n> epochs', type=int, default=1)
+    parser.add_argument('--eval_interval', help='evaluate model every <n> epochs', type=int, default=2)
     parser.add_argument('--keep_checkpoints', help='keep all checkpoints', action='store_true', default=False)
     parser.add_argument('--restart_latest',
                         help='restart optimizer from latest checkpoint',
