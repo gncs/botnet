@@ -115,12 +115,18 @@ def plot(data: pd.DataFrame, min_epoch: int, output_path: str) -> None:
     ax.legend()
 
     fig.savefig(output_path)
+    plt.close(fig)
 
 
 def get_paths(path: str) -> List[str]:
     if os.path.isfile(path):
         return [path]
-    return glob.glob(os.path.join(path, '*_train.txt'))
+    paths = glob.glob(os.path.join(path, '*_train.txt'))
+
+    if len(paths) == 0:
+        raise RuntimeError(f"Cannot find results in '{path}'")
+
+    return paths
 
 
 def main():
