@@ -49,7 +49,7 @@ def main():
 
         ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.1f}"))
         ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.1f}"))
-        ax.set_title(config_type)
+        ax.set_title(r'$\mathrm{' + config_type[0] + r'}-\mathrm{' + config_type[1] + '}$')
 
     axes[0].set_ylabel(r'$\Delta E$ [eV]')
     axes[0].legend()
