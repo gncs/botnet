@@ -15,7 +15,7 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
     parser.add_argument('--dataset',
                         help='dataset name',
                         type=str,
-                        choices=['iso17', 'rmd17', '3bpa', 'acac'],
+                        choices=['iso17', 'rmd17', '3bpa', 'acac', 'ethanol'],
                         required=True)
     parser.add_argument('--subset', help='subset name')
     parser.add_argument('--split', help='train test split', type=int)
@@ -75,6 +75,13 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
                                 valid=valid_configs,
                                 tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
 
+    if dataset == 'ethanol':
+        logging.info(f'Dataset: {dataset}')
+        configs_dict = data.load_ethanol(directory=downloads_dir)
+        train_valid_configs = configs_dict['train']
+        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.05)
+        return SubsetCollection(train=train_configs, valid=valid_configs, tests=[('test_MD', configs_dict['test_MD'])])
+
     raise RuntimeError(f'Unknown dataset: {dataset}')
 
 
@@ -83,6 +90,7 @@ atomic_energies_dict: Dict[str, Dict[int, float]] = {
     'rmd17': data.rmd17_atomic_energies,
     '3bpa': data.three_bpa_atomic_energies,
     'acac': data.acac_atomic_energies,
+    'ethanol': data.ethanol_atomic_energies,
 }
 
 

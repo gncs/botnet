@@ -6,13 +6,13 @@ from .utils import Configurations, unpack_configs_from_archive
 
 # Atomic energies (in eV)
 atomic_energies = {
-    1: -13.568422178253735,
-    6: -1026.8538996116154,
-    8: -2037.796869412825,
+    1: -13.568422383046626,
+    6: -1025.2770951782686,
+    8: -2035.5709809589698,
 }
 
 
 def load(directory: str) -> Dict[str, Configurations]:
-    logging.info('Loading acetylacetone dataset')
-    path = os.path.join(directory, 'dataset_acac.tar.gz')
+    logging.info('Loading ethanol')
+    path = os.path.join(directory, 'dataset_ethanol.tar.gz')
     return unpack_configs_from_archive(path=path)

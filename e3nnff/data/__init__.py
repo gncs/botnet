@@ -1,6 +1,8 @@
 from .acac import atomic_energies as acac_atomic_energies
 from .acac import load as load_acac
 from .atomic_data import AtomicData, get_data_loader
+from .ethanol import atomic_energies as ethanol_atomic_energies
+from .ethanol import load as load_ethanol
 from .iso17 import atomic_energies as iso17_atomic_energies
 from .iso17 import load as load_iso17
 from .neighborhood import get_neighborhood
@@ -13,5 +15,5 @@ from .utils import Configuration, Configurations, split_train_valid_configs
 __all__ = [
     'load_rmd17', 'rmd17_atomic_energies', 'AtomicData', 'get_data_loader', 'get_neighborhood', 'Configuration',
     'Configurations', 'split_train_valid_configs', 'load_iso17', 'iso17_atomic_energies', 'load_3bpa',
-    'three_bpa_atomic_energies', 'acac_atomic_energies', 'load_acac'
+    'three_bpa_atomic_energies', 'acac_atomic_energies', 'load_acac', 'load_ethanol', 'ethanol_atomic_energies'
 ]
