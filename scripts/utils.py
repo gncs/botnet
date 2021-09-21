@@ -16,6 +16,10 @@ style_dict = {
         'color': 'black',
         'label': 'DFT',
     },
+    'nequip': {
+        'color': colors[1],
+        'label': 'NequIP',
+    },
     'botnet': {
         'color': colors[0],
         'label': 'BOTNet',
