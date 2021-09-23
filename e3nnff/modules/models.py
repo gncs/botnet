@@ -153,7 +153,7 @@ class SingleReadoutModel(torch.nn.Module):
                 target_irreps=hidden_irreps,
             )
             self.interactions.append(inter)
-            
+
         self.readouts = torch.nn.ModuleList([LinearReadoutBlock(self.interactions[-1].irreps_out)])
 
     def forward(self, data: AtomicData, training=False) -> Dict[str, Any]:
