@@ -7,6 +7,7 @@ from typing import Optional, Tuple, Dict, List
 import numpy as np
 import torch.nn
 from e3nn import o3
+from torch.optim.swa_utils import AveragedModel, SWALR
 
 from e3nnff import data, tools, modules
 
@@ -141,6 +142,7 @@ def main() -> None:
         drop_last=False,
     )
 
+    loss_fn: torch.nn.Module
     if args.loss == 'ace':
         loss_fn = modules.ACELoss(energy_weight=15.0, forces_weight=1.0)
     else:
@@ -161,6 +163,7 @@ def main() -> None:
         atomic_energies=atomic_energies,
     )
 
+    model: torch.nn.Module
     if args.model == 'scale_shift':
         mean, std = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
         model = modules.ScaleShiftBodyOrderedModel(
@@ -190,6 +193,7 @@ def main() -> None:
         amsgrad=args.amsgrad,
     )
 
+    optimizer: torch.optim.Optimizer
     if args.optimizer == 'adamw':
         optimizer = torch.optim.AdamW(**param_options)
     else:
@@ -204,6 +208,15 @@ def main() -> None:
     if args.restart_latest:
         start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler),
                                                      device=device)
+
+    swa: Optional[tools.SWAContainer] = None
+    if args.swa:
+        swa = tools.SWAContainer(
+            model=AveragedModel(model),
+            scheduler=SWALR(optimizer=optimizer, swa_lr=args.lr, anneal_epochs=1, anneal_strategy='linear'),
+            start=10,
+        )
+        logging.info(f'Using stochastic weight averaging (after {swa.start} epochs)')
 
     logging.info(model)
     logging.info(f'Number of parameters: {tools.count_parameters(model)}')
@@ -223,12 +236,20 @@ def main() -> None:
         logger=logger,
         patience=args.patience,
         device=device,
+        swa=swa,
     )
 
-    # Evaluation on test datasets
-    epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler), device=device)
-    logging.info(f'Loading model from epoch {epoch}')
+    if swa:
+        logging.info('Building averaged model')
+        # Update batch norm statistics for the swa_model at the end (actually we are not using bn)
+        torch.optim.swa_utils.update_bn(train_loader, swa.model)
+        model = swa.model.module
+    else:
+        epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler),
+                                               device=device)
+        logging.info(f'Loaded model from epoch {epoch}')
 
+    # Evaluation on test datasets
     logging.info('Computing metrics for training, validation, and test sets')
     logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_eval')
     for name, subset in [('train', collections.train), ('valid', collections.valid)] + collections.tests:

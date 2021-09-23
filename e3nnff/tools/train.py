@@ -1,15 +1,24 @@
+import dataclasses
 import logging
 import time
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 
 import numpy as np
 import torch
 import torch_geometric
+from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.utils.data import DataLoader
 
 from .checkpoint import CheckpointHandler, CheckpointState
 from .torch_tools import to_numpy, tensor_dict_to_device
 from .utils import MetricsLogger
+
+
+@dataclasses.dataclass
+class SWAContainer:
+    model: AveragedModel
+    scheduler: SWALR
+    start: int
 
 
 def train(
@@ -26,6 +35,7 @@ def train(
     logger: MetricsLogger,
     eval_interval: int,
     device: torch.device,
+    swa: Optional[SWAContainer] = None,
 ):
     lowest_loss = np.inf
     patience_counter = 0
@@ -58,8 +68,12 @@ def train(
                 patience_counter = 0
                 checkpoint_handler.save(state=CheckpointState(model, optimizer, lr_scheduler), epochs=epoch)
 
-        # LR scheduler
-        lr_scheduler.step()
+        # LR scheduler and SWA update
+        if swa is None or epoch < swa.start:
+            lr_scheduler.step()
+        else:
+            swa.model.update_parameters(model)
+            swa.scheduler.step()
 
     logging.info('Training complete')
 
