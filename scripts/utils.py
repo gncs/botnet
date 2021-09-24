@@ -23,5 +23,9 @@ style_dict = {
     'botnet': {
         'color': colors[0],
         'label': 'BOTNet',
+    },
+    'ace': {
+        'color': colors[2],
+        'label': 'linACE',
     }
 }
