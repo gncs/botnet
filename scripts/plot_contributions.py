@@ -38,7 +38,7 @@ def main():
         else:
             ax.set_title(rf'$E_{i}$' + f' - ({e_min:.3f})')
 
-    # ax.set_ylabel(r'$E$ [eV]')
+    axes[0].set_ylabel(r'$E$ [eV]')
     # ax.legend()
 
     plt.show()
