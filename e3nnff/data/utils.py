@@ -4,7 +4,7 @@ import os
 import tarfile
 import urllib.request
 from dataclasses import dataclass
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, Sequence
 
 import ase.data
 import ase.io
@@ -32,9 +32,11 @@ def get_split_sizes(size: int, first_fraction: float) -> Tuple[int, int]:
     return first_size, size - first_size
 
 
-def split_train_valid_configs(configs: Configurations, valid_fraction: float) -> Tuple[Configurations, Configurations]:
-    _, train_size = get_split_sizes(len(configs), first_fraction=valid_fraction)
-    return configs[:train_size], configs[train_size:]
+def random_train_valid_split(items: Sequence, valid_fraction: float) -> Tuple[List, List]:
+    indices = list(range(len(items)))
+    np.random.shuffle(indices)
+    _, train_size = get_split_sizes(len(items), first_fraction=valid_fraction)
+    return [items[i] for i in indices[:train_size]], [items[i] for i in indices[train_size:]]
 
 
 def download_url(url: str, save_path: str) -> None:

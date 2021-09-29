@@ -51,7 +51,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
             raise RuntimeError('Specify subset and split')
         logging.info(f'Dataset: {dataset}, subset: {subset}')
         train_valid_configs, test_configs = data.load_rmd17(directory=downloads_dir, subset=subset, split=split)
-        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.05)
+        train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.05)
         return SubsetCollection(train=train_configs, valid=valid_configs, tests=[('test', test_configs)])
 
     if dataset == '3bpa':
@@ -60,7 +60,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         logging.info(f'Dataset: {dataset}, training: {subset}')
         configs_dict = data.load_3bpa(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
-        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.10)
+        train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.10)
         return SubsetCollection(train=train_configs,
                                 valid=valid_configs,
                                 tests=[(key, configs_dict[key]) for key in ['test_300K', 'test_600K', 'test_1200K']])
@@ -71,7 +71,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         logging.info(f'Dataset: {dataset}, training: {subset}')
         configs_dict = data.load_acac(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
-        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.10)
+        train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.10)
         return SubsetCollection(train=train_configs,
                                 valid=valid_configs,
                                 tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
@@ -80,7 +80,7 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
         logging.info(f'Dataset: {dataset}')
         configs_dict = data.load_ethanol(directory=downloads_dir)
         train_valid_configs = configs_dict['train']
-        train_configs, valid_configs = data.split_train_valid_configs(configs=train_valid_configs, valid_fraction=0.05)
+        train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.05)
         return SubsetCollection(train=train_configs, valid=valid_configs, tests=[('test_MD', configs_dict['test_MD'])])
 
     raise RuntimeError(f'Unknown dataset: {dataset}')
