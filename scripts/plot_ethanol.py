@@ -85,7 +85,7 @@ def main():
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
     ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.1f}"))
 
-    fig.show()
+    fig.savefig('ethanol.pdf')
 
 
 if __name__ == '__main__':

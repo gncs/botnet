@@ -27,5 +27,10 @@ style_dict = {
     'ace': {
         'color': colors[2],
         'label': 'linACE',
+    },
+    'bace': {
+        'color': colors[2],
+        'label': 'bACE',
+        'linestyle': 'dashed',
     }
 }

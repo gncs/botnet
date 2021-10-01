@@ -26,7 +26,7 @@ def parse_config_path(name_path_tuple: str) -> Tuple[str, pd.DataFrame]:
     name, path = name_path_tuple.split(',')
     atoms_list = ase.io.read(path, format='extxyz', index=':')
     return name, pd.DataFrame({
-        'distance': [atoms.info['separation'] for atoms in atoms_list],
+        'distance': [atoms.info['distance'] for atoms in atoms_list],
         'energy': [atoms.info['energy'] for atoms in atoms_list],
         'config_type': [atoms.info['config_type'] for atoms in atoms_list],
     })
@@ -36,7 +36,8 @@ def main():
     args = parse_args()
     predictions = [parse_config_path(path) for path in args.configs]
 
-    fig, axes = plt.subplots(nrows=1, ncols=6, figsize=(6.0, 1.5), constrained_layout=True, sharey='row')
+    fig, axes_grid = plt.subplots(nrows=2, ncols=3, figsize=(6.0, 3.0), constrained_layout=True)
+    axes = [ax for row in axes_grid for ax in row]
 
     config_types = ['HC', 'CC', 'CO', 'HO', 'HH', 'OO']
     for ax, config_type in zip(axes, config_types):
@@ -54,7 +55,7 @@ def main():
     axes[0].set_ylabel(r'$\Delta E$ [eV]')
     axes[0].legend()
 
-    fig.show()
+    fig.savefig('dimers.pdf')
 
 
 if __name__ == '__main__':

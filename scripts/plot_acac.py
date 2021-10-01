@@ -107,7 +107,7 @@ def main():
     ax.set_xlabel('Distance [Å]')
     ax.set_ylabel('Count')
 
-    plt.show()
+    fig.savefig('acac.pdf')
 
 
 if __name__ == '__main__':

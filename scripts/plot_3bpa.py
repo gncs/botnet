@@ -58,7 +58,8 @@ def main():
 
     axes[0].set_ylabel(r'$\Delta E$ [meV]')
     axes[0].legend()
-    plt.show()
+
+    fig.savefig('3bpa.pdf')
 
 
 if __name__ == '__main__':
