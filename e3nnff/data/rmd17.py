@@ -33,7 +33,8 @@ def extract_configs(data: Dict[str, np.ndarray], indices: Sequence[int]) -> List
 
 
 subsets = {
-    'aspirin', 'azobenzene', 'ethanol', 'malonaldehyde', 'naphthalene', 'paracetamol', 'salicylic', 'toluene', 'uracil'
+    'aspirin', 'azobenzene', 'benzene', 'ethanol', 'malonaldehyde', 'naphthalene', 'paracetamol', 'salicylic',
+    'toluene', 'uracil'
 }
 splits = list(range(1, 6))
 
