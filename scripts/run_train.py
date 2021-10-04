@@ -25,6 +25,7 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
                         default='body_ordered',
                         choices=['body_ordered', 'scale_shift', 'single_readout'])
     parser.add_argument('--loss', help='type of loss', default='default', choices=['default', 'ace'])
+    parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=100)
     return parser
 
 
@@ -146,7 +147,7 @@ def main() -> None:
     if args.loss == 'ace':
         loss_fn = modules.ACELoss(energy_weight=15.0, forces_weight=1.0)
     else:
-        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=100.0)
+        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=args.forces_weight)
     logging.info(loss_fn)
 
     # Build model
