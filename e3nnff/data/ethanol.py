@@ -13,6 +13,6 @@ atomic_energies = {
 
 
 def load(directory: str) -> Dict[str, Configurations]:
-    logging.info('Loading ethanol')
+    logging.info('Loading ethanol dataset')
     path = os.path.join(directory, 'dataset_ethanol.tar.gz')
     return unpack_configs_from_archive(path=path)

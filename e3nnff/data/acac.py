@@ -13,6 +13,6 @@ atomic_energies = {
 
 
 def load(directory: str) -> Dict[str, Configurations]:
-    logging.info('Loading acetylacetone dataset')
+    logging.info('Loading acetylacetone (acac) dataset')
     path = os.path.join(directory, 'dataset_acac.tar.gz')
     return unpack_configs_from_archive(path=path)

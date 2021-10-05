@@ -25,7 +25,7 @@ def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser
                         default='body_ordered',
                         choices=['body_ordered', 'scale_shift', 'single_readout'])
     parser.add_argument('--loss', help='type of loss', default='default', choices=['default', 'ace'])
-    parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=100)
+    parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=100.0)
     return parser
 
 
@@ -38,7 +38,6 @@ class SubsetCollection:
 
 def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: Optional[int]) -> SubsetCollection:
     if dataset == 'iso17':
-        logging.info(f'Dataset: {dataset}')
         ref_configs, test_within, test_other = data.load_iso17(directory=downloads_dir)
         train_size, valid_size = 5000, 500
         train_valid_configs = np.random.choice(ref_configs, train_size + valid_size)
@@ -50,7 +49,6 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
     if dataset == 'rmd17':
         if not subset or not split:
             raise RuntimeError('Specify subset and split')
-        logging.info(f'Dataset: {dataset}, subset: {subset}')
         train_valid_configs, test_configs = data.load_rmd17(directory=downloads_dir, subset=subset, split=split)
         train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.05)
         return SubsetCollection(train=train_configs, valid=valid_configs, tests=[('test', test_configs)])
@@ -58,7 +56,6 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
     if dataset == '3bpa':
         if not subset:
             raise RuntimeError('Specify subset')
-        logging.info(f'Dataset: {dataset}, training: {subset}')
         configs_dict = data.load_3bpa(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
         train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.10)
@@ -69,7 +66,6 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
     if dataset == 'acac':
         if not subset:
             raise RuntimeError('Specify subset')
-        logging.info(f'Dataset: {dataset}, training: {subset}')
         configs_dict = data.load_acac(directory=downloads_dir)
         train_valid_configs = configs_dict[subset]
         train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.10)
@@ -78,7 +74,6 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
                                 tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
 
     if dataset == 'ethanol':
-        logging.info(f'Dataset: {dataset}')
         configs_dict = data.load_ethanol(directory=downloads_dir)
         train_valid_configs = configs_dict['train']
         train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs, valid_fraction=0.05)

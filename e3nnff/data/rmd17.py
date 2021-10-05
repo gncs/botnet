@@ -104,7 +104,7 @@ def load(
     url = 'https://ndownloader.figshare.com/articles/12672038/versions/3'
 
     # Prepare
-    logging.info(f'Loading rMD17, subset={subset}, split={split}')
+    logging.info(f'Loading rMD17 dataset, subset={subset}, split={split}')
     path = os.path.join(directory, filename)
     os.makedirs(name=directory, exist_ok=True)
     fetch_archive(path=path, url=url, force_download=force_download)

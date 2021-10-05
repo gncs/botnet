@@ -18,6 +18,6 @@ atomic_energies = {
 
 
 def load(directory: str) -> Dict[str, Configurations]:
-    logging.info('Loading 3BPA')
+    logging.info('Loading 3BPA dataset')
     path = os.path.join(directory, 'dataset_3BPA.tar.gz')
     return unpack_configs_from_archive(path=path)
