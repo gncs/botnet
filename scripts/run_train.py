@@ -1,4 +1,3 @@
-import argparse
 import dataclasses
 import logging
 import os
@@ -10,23 +9,6 @@ from e3nn import o3
 from torch.optim.swa_utils import AveragedModel, SWALR
 
 from e3nnff import data, tools, modules
-
-
-def add_train_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument('--dataset',
-                        help='dataset name',
-                        type=str,
-                        choices=['iso17', 'rmd17', '3bpa', 'acac', 'ethanol'],
-                        required=True)
-    parser.add_argument('--subset', help='subset name')
-    parser.add_argument('--split', help='train test split', type=int)
-    parser.add_argument('--model',
-                        help='model type',
-                        default='body_ordered',
-                        choices=['body_ordered', 'scale_shift', 'single_readout'])
-    parser.add_argument('--loss', help='type of loss', default='default', choices=['default', 'ace'])
-    parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=100.0)
-    return parser
 
 
 @dataclasses.dataclass
@@ -92,10 +74,7 @@ atomic_energies_dict: Dict[str, Dict[int, float]] = {
 
 
 def main() -> None:
-    parser = tools.build_default_arg_parser()
-    parser = add_train_parser(parser)
-    args = parser.parse_args()
-
+    args = tools.build_default_arg_parser().parse_args()
     tag = tools.get_tag(name=args.name, seed=args.seed)
 
     # Setup

@@ -25,6 +25,10 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--log_level', help='log level', type=str, default='INFO')
 
     # Model
+    parser.add_argument('--model',
+                        help='model type',
+                        default='body_ordered',
+                        choices=['body_ordered', 'scale_shift', 'single_readout'])
     parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=4.0)
     parser.add_argument('--num_radial_basis', help='number of radial basis functions', type=int, default=8)
     parser.add_argument('--num_cutoff_basis', help='number of basis functions for smooth cutoff', type=int, default=6)
@@ -39,7 +43,18 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         type=str,
                         default='32x0e + 32x1o + 32x2e + 32x3o')
 
-    # Optimizer
+    # Dataset
+    parser.add_argument('--dataset',
+                        help='dataset name',
+                        type=str,
+                        choices=['iso17', 'rmd17', '3bpa', 'acac', 'ethanol'],
+                        required=True)
+    parser.add_argument('--subset', help='subset name')
+    parser.add_argument('--split', help='train test split', type=int)
+
+    # Loss and optimization
+    parser.add_argument('--loss', help='type of loss', default='default', choices=['default', 'ace'])
+    parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=100.0)
     parser.add_argument('--optimizer',
                         help='Optimizer for parameter optimization',
                         type=str,
