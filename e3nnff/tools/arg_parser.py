@@ -7,7 +7,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
 
     # Name and seed
     parser.add_argument('--name', help='experiment name', required=True)
-    parser.add_argument('--seed', help='run ID', type=int, default=0)
+    parser.add_argument('--seed', help='random seed', type=int, default=0)
 
     # Directories
     parser.add_argument('--log_dir', help='directory for log files', type=str, default='logs')
@@ -28,12 +28,12 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=4.0)
     parser.add_argument('--num_radial_basis', help='number of radial basis functions', type=int, default=8)
     parser.add_argument('--num_cutoff_basis', help='number of basis functions for smooth cutoff', type=int, default=6)
-    parser.add_argument('--max_ell', help=r'maximum \ell in spherical harmonics series expansion', type=int, default=3)
+    parser.add_argument('--max_ell', help=r'highest \ell of spherical harmonics', type=int, default=3)
     parser.add_argument('--interaction',
                         help='name of interaction block',
                         type=str,
                         default='ElementDependentInteractionBlock')
-    parser.add_argument('--num_interactions', help='number of interactions', type=int, default=6)
+    parser.add_argument('--num_interactions', help='number of interactions', type=int, default=5)
     parser.add_argument('--hidden_irreps',
                         help='irreps for hidden node states',
                         type=str,
