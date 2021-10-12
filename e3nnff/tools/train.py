@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from .checkpoint import CheckpointHandler, CheckpointState
 from .torch_tools import to_numpy, tensor_dict_to_device
 from .utils import MetricsLogger
+from e3nnff import tools
 
 
 @dataclasses.dataclass
@@ -126,23 +127,24 @@ def evaluate(
 
     avg_loss = total_loss / len(data_loader)
 
-    delta_es = torch.cat(delta_es_list, dim=0)
-    delta_fs = torch.cat(delta_fs_list, dim=0)
-
-    # MAE: energy and forces
-    mae_e = torch.mean(torch.abs(delta_es))
-    mae_f = torch.mean(torch.abs(delta_fs))
-
-    # RMSE: energy and forces
-    rmse_e = torch.sqrt(torch.mean(torch.square(delta_es)))
-    rmse_f = torch.sqrt(torch.mean(torch.square(delta_fs)))
+    delta_es = tools.to_numpy(torch.cat(delta_es_list, dim=0))
+    delta_fs = tools.to_numpy(torch.cat(delta_fs_list, dim=0))
 
     aux = {
         'loss': avg_loss,
-        'mae_e': mae_e.item(),
-        'mae_f': mae_f.item(),
-        'rmse_e': rmse_e.item(),
-        'rmse_f': rmse_f.item(),
+        # Mean absolute error
+        'mae_e': tools.compute_mae(delta_es),
+        'mae_f': tools.compute_mae(delta_fs),
+        # Root-mean-square error
+        'rmse_e': tools.compute_rmse(delta_es),
+        'rmse_f': tools.compute_rmse(delta_fs),
+        # Q_95
+        'q95_e': tools.compute_q95(delta_es),
+        'q95_f': tools.compute_q95(delta_fs),
+        # C(eta)
+        # 'c_e': tools.compute_c(delta_es, ),
+        # 'c_f': tools.compute_c(delta_fs, ),
+        # Time
         'time': time.time() - start_time,
     }
 

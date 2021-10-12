@@ -10,6 +10,22 @@ import torch
 from .torch_tools import to_numpy
 
 
+def compute_mae(delta: np.ndarray) -> float:
+    return np.mean(np.abs(delta)).item()
+
+
+def compute_rmse(delta: np.ndarray) -> float:
+    return np.sqrt(np.mean(np.square(delta))).item()
+
+
+def compute_q95(delta: np.ndarray) -> float:
+    return np.percentile(np.abs(delta), q=95)
+
+
+def compute_c(delta: np.ndarray, eta: float) -> float:
+    return np.mean(np.abs(delta) < eta).item()
+
+
 def get_tag(name: str, seed: int) -> str:
     return f'{name}_run-{seed}'
 

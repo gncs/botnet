@@ -241,7 +241,10 @@ def main() -> None:
                      f'mae_e={metrics["mae_e"] * 1000:.3f} meV, '
                      f'mae_f={metrics["mae_f"] * 1000:.3f} meV/Ang, '
                      f'rmse_e={metrics["rmse_e"] * 1000:.3f} meV, '
-                     f'rmse_f={metrics["rmse_f"] * 1000:.3f} meV/Ang')
+                     f'rmse_f={metrics["rmse_f"] * 1000:.3f} meV/Ang, '
+                     f'q95_e={metrics["q95_e"] * 1000:.3f} meV, '
+                     f'q95_f={metrics["q95_f"] * 1000:.3f} meV/Ang'
+                     )
         metrics['subset'] = name
         metrics['name'] = args.name
         metrics['seed'] = args.seed
