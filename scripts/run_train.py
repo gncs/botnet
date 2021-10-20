@@ -47,7 +47,8 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
                                                                      seed=1)
         return SubsetCollection(train=train_configs,
                                 valid=valid_configs,
-                                tests=[(key, configs_dict[key]) for key in ['test_300K', 'test_600K', 'test_1200K']])
+                                tests=[(key, configs_dict[key])
+                                       for key in ['test_300K', 'test_600K', 'test_1200K', 'test_dih']])
 
     if dataset == 'acac':
         if not subset:
