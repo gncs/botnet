@@ -17,13 +17,13 @@ from .utils import Configurations, Configuration, fetch_archive
 # The data is stored in ASE sqlite format with the total energy in eV under the key total energy and
 # the atomic_forces under the key atomic_forces in eV/Ang.
 
-# Atomic energies (same as QM9) (in eV)
+# Atomic energies (in eV)
+# We simply use the average energy per atom as there are no atomic energies available for ISO17
+avg_atomic_energy = -605.4509453425806
 atomic_energies = {
-    1: -0.500273,
-    6: -37.846772,
-    7: -54.583861,
-    8: -75.064579,
-    9: -99.718730,
+    1: avg_atomic_energy,
+    6: avg_atomic_energy,
+    8: avg_atomic_energy,
 }
 
 
@@ -68,7 +68,6 @@ def load(directory: str, force_download=False) -> Tuple[Configurations, Configur
 
     # Process dataset
     logging.info(f'Parsing ISO17 dataset files: {filenames}')
-
     configs_tuple = tuple(parse_db(path=os.path.join(extracted_directory, filename)) for filename in filenames)
     assert len(configs_tuple) == 3
 
