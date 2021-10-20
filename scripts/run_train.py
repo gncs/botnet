@@ -128,6 +128,8 @@ def main() -> None:
     loss_fn: torch.nn.Module
     if args.loss == 'ace':
         loss_fn = modules.ACELoss(energy_weight=15.0, forces_weight=1.0)
+    elif args.loss == 'weighted':
+        loss_fn = modules.WeightedEnergyForcesLoss(energy_weight=1.0, forces_weight=3.0)
     else:
         loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=args.forces_weight)
     logging.info(loss_fn)
