@@ -9,10 +9,6 @@ import numpy as np
 
 from .utils import Configuration, Configurations, fetch_archive
 
-# "On the role of gradients for machine learning of molecular energies and forces"
-# Anders S. Christensen, O. Anatole von Lilienfeld
-# https://arxiv.org/abs/2007.09593
-
 
 def kcalpmol_to_ev(x):
     return x * 0.04336411531
@@ -92,6 +88,11 @@ def unpack_configs(
                     test_configs = extract_configs(data=np_load, indices=extracted_data['test_split'])
 
                 return train_configs, test_configs
+
+
+# "On the role of gradients for machine learning of molecular energies and forces"
+# Anders S. Christensen, O. Anatole von Lilienfeld
+# https://arxiv.org/abs/2007.09593
 
 
 def load(
