@@ -4,6 +4,7 @@ import ase.data
 import ase.io
 import numpy as np
 import torch
+import torch_geometric
 
 from e3nnff import data, tools, modules
 
@@ -41,7 +42,7 @@ def main():
 
     z_table = tools.AtomicNumberTable([int(z) for z in args.atomic_numbers.split(',')])
 
-    data_loader = data.get_data_loader(
+    data_loader = torch_geometric.data.DataLoader(
         dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in configs],
         batch_size=args.batch_size,
         shuffle=False,

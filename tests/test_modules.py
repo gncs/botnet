@@ -1,8 +1,9 @@
 import numpy as np
 import torch
+import torch_geometric
 import torch_scatter
 
-from e3nnff.data import Configuration, AtomicData, get_data_loader
+from e3nnff.data import Configuration, AtomicData
 from e3nnff.modules import PolynomialCutoff, AtomicEnergiesBlock, BesselBasis
 from e3nnff.tools import AtomicNumberTable, to_numpy
 
@@ -42,7 +43,12 @@ def test_atomic_energies():
     energies_block = AtomicEnergiesBlock(atomic_energies=np.array([1.0, 3.0]))
 
     data = AtomicData.from_config(config, z_table=table, cutoff=3.0)
-    data_loader = get_data_loader([data, data], batch_size=2)
+    data_loader = torch_geometric.data.DataLoader(
+        dataset=[data, data],
+        batch_size=2,
+        shuffle=True,
+        drop_last=False,
+    )
     batch = next(iter(data_loader))
 
     energies = energies_block(batch.node_attrs)

@@ -1,7 +1,8 @@
 # pylint: disable=no-self-use
 import numpy as np
+import torch_geometric
 
-from e3nnff.data import Configuration, AtomicData, get_data_loader, get_neighborhood
+from e3nnff.data import Configuration, AtomicData, get_neighborhood
 from e3nnff.tools import AtomicNumberTable
 
 config = Configuration(
@@ -34,7 +35,12 @@ class TestAtomicData:
         data1 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
         data2 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
-        data_loader = get_data_loader([data1, data2], batch_size=2)
+        data_loader = torch_geometric.data.DataLoader(
+            dataset=[data1, data2],
+            batch_size=2,
+            shuffle=True,
+            drop_last=False,
+        )
 
         for batch in data_loader:
             assert batch.batch.shape == (6, )

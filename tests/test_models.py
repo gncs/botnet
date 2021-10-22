@@ -1,4 +1,5 @@
 import numpy as np
+import torch_geometric
 from e3nn import o3
 
 from e3nnff import data, modules, tools
@@ -39,7 +40,12 @@ def test_bo_model():
 
     atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
-    data_loader = data.get_data_loader([atomic_data, atomic_data], batch_size=2)
+    data_loader = torch_geometric.data.DataLoader(
+        dataset=[atomic_data, atomic_data],
+        batch_size=2,
+        shuffle=True,
+        drop_last=False,
+    )
     batch = next(iter(data_loader))
 
     output = model(batch)

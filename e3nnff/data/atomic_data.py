@@ -1,4 +1,4 @@
-from typing import Sequence, Optional
+from typing import Optional
 
 import torch.utils.data
 import torch_geometric
@@ -69,17 +69,3 @@ class AtomicData(torch_geometric.data.Data):
             forces=forces,
             energy=energy,
         )
-
-
-def get_data_loader(
-    dataset: Sequence[AtomicData],
-    batch_size: int,
-    shuffle=True,
-    drop_last=False,
-) -> torch.utils.data.DataLoader:
-    return torch_geometric.data.DataLoader(
-        dataset=dataset,
-        batch_size=batch_size,
-        shuffle=shuffle,
-        drop_last=drop_last,
-    )

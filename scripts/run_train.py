@@ -5,6 +5,7 @@ from typing import Optional, Tuple, Dict, List
 
 import numpy as np
 import torch.nn
+import torch_geometric
 from e3nn import o3
 from torch.optim.swa_utils import AveragedModel, SWALR
 
@@ -113,13 +114,13 @@ def main() -> None:
     logging.info(z_table)
     atomic_energies = np.array([atomic_energies_dict[args.dataset][z] for z in z_table.zs])
 
-    train_loader = data.get_data_loader(
+    train_loader = torch_geometric.data.DataLoader(
         dataset=[data.AtomicData.from_config(c, z_table=z_table, cutoff=args.r_max) for c in collections.train],
         batch_size=args.batch_size,
         shuffle=True,
         drop_last=True,
     )
-    valid_loader = data.get_data_loader(
+    valid_loader = torch_geometric.data.DataLoader(
         dataset=[data.AtomicData.from_config(c, z_table=z_table, cutoff=args.r_max) for c in collections.valid],
         batch_size=args.batch_size,
         shuffle=False,
@@ -239,7 +240,7 @@ def main() -> None:
     logging.info('Computing metrics for training, validation, and test sets')
     logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_eval')
     for name, subset in [('train', collections.train), ('valid', collections.valid)] + collections.tests:
-        data_loader = data.get_data_loader(
+        data_loader = torch_geometric.data.DataLoader(
             dataset=[data.AtomicData.from_config(config, z_table=z_table, cutoff=args.r_max) for config in subset],
             batch_size=args.batch_size,
             shuffle=False,
