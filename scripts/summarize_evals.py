@@ -28,7 +28,7 @@ def main():
     results_list = [result for path in get_paths(directory=args.dir) for result in read_results(path)]
     df = pd.DataFrame(results_list)
 
-    converted = ['mae_e', 'mae_f', 'rmse_e', 'rmse_f']
+    converted = ['mae_e', 'mae_f', 'rmse_e', 'rmse_f', 'q95_e', 'q95_f']
     df = df.apply(lambda column: column * 1000 if column.name in converted else column)
     print(f'Columns {", ".join(converted)} are in meV or meV/Ang')
 
