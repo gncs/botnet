@@ -53,8 +53,8 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--split', help='train test split', type=int)
 
     # Loss and optimization
-    parser.add_argument('--loss', help='type of loss', default='default', choices=['default', 'ace', 'weighted'])
-    parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=100.0)
+    parser.add_argument('--loss', help='type of loss', default='weighted', choices=['ef', 'ace', 'weighted'])
+    parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=10.0)
     parser.add_argument('--optimizer',
                         help='Optimizer for parameter optimization',
                         type=str,
