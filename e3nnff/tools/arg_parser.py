@@ -64,7 +64,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--lr', help='Learning rate of optimizer', type=float, default=0.01)
     parser.add_argument('--weight_decay', help='weight decay (L2 penalty)', type=float, default=5e-5)
     parser.add_argument('--amsgrad', help='use amsgrad variant of optimizer', action='store_true', default=True)
-    parser.add_argument('--lr_scheduler_gamma', help='Gamma of learning rate scheduler', type=float, default=1.0)
+    parser.add_argument('--lr_scheduler_gamma', help='Gamma of learning rate scheduler', type=float, default=0.9993)
     parser.add_argument('--swa', help='use Stochastic Weight Averaging', action='store_true', default=False)
     parser.add_argument('--max_num_epochs', help='Maximum number of epochs', type=int, default=2048)
     parser.add_argument('--patience',
