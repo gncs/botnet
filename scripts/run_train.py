@@ -249,7 +249,7 @@ def main() -> None:
 
         loss, metrics = tools.evaluate(model, loss_fn=loss_fn, data_loader=data_loader, device=device)
         logging.info(f"Subset '{name}': "
-                     f'loss={loss:.3f}, '
+                     f'loss={loss:.4f}, '
                      f'mae_e={metrics["mae_e"] * 1000:.3f} meV, '
                      f'mae_f={metrics["mae_f"] * 1000:.3f} meV/Ang, '
                      f'rmse_e={metrics["rmse_e"] * 1000:.3f} meV, '
