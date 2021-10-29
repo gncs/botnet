@@ -19,6 +19,20 @@ style_dict = {
     'nequip': {
         'color': colors[1],
         'label': 'NequIP',
+        'linestyle': 'dashed',
+    },
+    'nequip-linear': {
+        'color': colors[3],
+        'label': 'NequIP Linear',
+        'linestyle': 'dashed',
+    },
+    'nequip-shifted': {
+        'color': colors[4],
+        'label': 'NequIP Shift',
+    },
+    'nequip-bo': {
+        'color': colors[5],
+        'label': 'NequIP BO',
     },
     'botnet': {
         'color': colors[0],
