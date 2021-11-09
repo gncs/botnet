@@ -237,12 +237,13 @@ class ScaleShiftBodyOrderedModel(BodyOrderedModel):
 
         # Sum over interactions
         node_inter_es = torch.sum(torch.stack(node_es_list, dim=0), dim=0)  # [n_nodes, ]
+        node_inter_es = self.scale_shift(node_inter_es)
 
         # Sum over nodes in graph
         inter_e = scatter_sum(src=node_inter_es, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
 
-        # Add E_0 and scaled interaction energy
-        total_e = e0 + self.scale_shift(inter_e)
+        # Add E_0 and (scaled) interaction energy
+        total_e = e0 + inter_e
 
         output = {
             'energy': total_e,
