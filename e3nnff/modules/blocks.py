@@ -11,6 +11,18 @@ from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .radial import BesselBasis, PolynomialCutoff
 
 
+class LinearNodeEmbeddingBlock(torch.nn.Module):
+    def __init__(self, irreps_in: o3.Irreps, irreps_out: o3.Irreps):
+        super().__init__()
+        self.linear = o3.Linear(irreps_in=irreps_in, irreps_out=irreps_out)
+
+    def forward(
+            self,
+            node_attrs: torch.Tensor,  # [n_nodes, irreps]
+    ):
+        return self.linear(node_attrs)
+
+
 class RadialEmbeddingBlock(torch.nn.Module):
     def __init__(self, r_max: float, num_bessel: int, num_polynomial_cutoff: int):
         super().__init__()

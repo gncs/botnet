@@ -6,7 +6,8 @@ from e3nn import o3
 from torch_scatter import scatter_sum
 
 from e3nnff.data import AtomicData
-from .blocks import AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock, ScaleShiftBlock
+from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock, ScaleShiftBlock,
+                     LinearNodeEmbeddingBlock)
 from .utils import get_edge_vectors_and_lengths, compute_forces
 
 
@@ -26,16 +27,18 @@ class BodyOrderedModel(torch.nn.Module):
         super().__init__()
 
         # Embedding
+        node_attr_irreps = o3.Irreps([(num_elements, (0, 1))])
+        node_feats_irreps = o3.Irreps([(hidden_irreps.count(o3.Irrep(0, 1)), (0, 1))])
+        self.node_embedding = LinearNodeEmbeddingBlock(irreps_in=node_attr_irreps, irreps_out=node_feats_irreps)
         self.radial_embedding = RadialEmbeddingBlock(
             r_max=r_max,
             num_bessel=num_bessel,
             num_polynomial_cutoff=num_polynomial_cutoff,
         )
+        edge_feats_irreps = o3.Irreps(f'{self.radial_embedding.out_dim}x0e')
 
         sh_irreps = o3.Irreps.spherical_harmonics(max_ell)
         self.spherical_harmonics = o3.SphericalHarmonics(sh_irreps, normalize=True, normalization='component')
-
-        node_attr_irreps = o3.Irreps(f'{num_elements}x0e')
 
         # Interactions and readouts
         self.atomic_energies_fn = AtomicEnergiesBlock(atomic_energies)
@@ -45,9 +48,9 @@ class BodyOrderedModel(torch.nn.Module):
 
         inter = interaction_cls(
             node_attrs_irreps=node_attr_irreps,
-            node_feats_irreps=node_attr_irreps,
+            node_feats_irreps=node_feats_irreps,
             edge_attrs_irreps=sh_irreps,
-            edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
+            edge_feats_irreps=edge_feats_irreps,
             target_irreps=hidden_irreps,
         )
         self.interactions.append(inter)
@@ -58,7 +61,7 @@ class BodyOrderedModel(torch.nn.Module):
                 node_attrs_irreps=node_attr_irreps,
                 node_feats_irreps=inter.irreps_out,
                 edge_attrs_irreps=sh_irreps,
-                edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
+                edge_feats_irreps=edge_feats_irreps,
                 target_irreps=hidden_irreps,
             )
             self.interactions.append(inter)
@@ -73,12 +76,12 @@ class BodyOrderedModel(torch.nn.Module):
         e0 = scatter_sum(src=node_e0, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
 
         # Embeddings
+        node_feats = self.node_embedding(data.node_attrs)
         vectors, lengths = get_edge_vectors_and_lengths(positions=data.positions,
                                                         edge_index=data.edge_index,
                                                         shifts=data.shifts)
         edge_attrs = self.spherical_harmonics(vectors)
         edge_feats = self.radial_embedding(lengths)
-        node_feats = data.node_attrs
 
         # Interactions
         energies = [e0]
@@ -121,25 +124,27 @@ class SingleReadoutModel(torch.nn.Module):
         super().__init__()
 
         # Embedding
+        node_attr_irreps = o3.Irreps([(num_elements, (0, 1))])
+        node_feats_irreps = o3.Irreps([(hidden_irreps.count(o3.Irrep(0, 1)), (0, 1))])
+        self.node_embedding = LinearNodeEmbeddingBlock(irreps_in=node_attr_irreps, irreps_out=node_feats_irreps)
         self.radial_embedding = RadialEmbeddingBlock(
             r_max=r_max,
             num_bessel=num_bessel,
             num_polynomial_cutoff=num_polynomial_cutoff,
         )
+        edge_feats_irreps = o3.Irreps(f'{self.radial_embedding.out_dim}x0e')
 
         sh_irreps = o3.Irreps.spherical_harmonics(max_ell)
         self.spherical_harmonics = o3.SphericalHarmonics(sh_irreps, normalize=True, normalization='component')
-
-        node_attr_irreps = o3.Irreps(f'{num_elements}x0e')
 
         # Interactions and readout
         self.atomic_energies_fn = AtomicEnergiesBlock(atomic_energies)
 
         inter = interaction_cls(
             node_attrs_irreps=node_attr_irreps,
-            node_feats_irreps=node_attr_irreps,
+            node_feats_irreps=node_feats_irreps,
             edge_attrs_irreps=sh_irreps,
-            edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
+            edge_feats_irreps=edge_feats_irreps,
             target_irreps=hidden_irreps,
         )
         self.interactions = torch.nn.ModuleList([inter])
@@ -149,7 +154,7 @@ class SingleReadoutModel(torch.nn.Module):
                 node_attrs_irreps=node_attr_irreps,
                 node_feats_irreps=inter.irreps_out,
                 edge_attrs_irreps=sh_irreps,
-                edge_feats_irreps=o3.Irreps(f'{self.radial_embedding.out_dim}x0e'),
+                edge_feats_irreps=edge_feats_irreps,
                 target_irreps=hidden_irreps,
             )
             self.interactions.append(inter)
@@ -165,12 +170,12 @@ class SingleReadoutModel(torch.nn.Module):
         e0 = scatter_sum(src=node_e0, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
 
         # Embeddings
+        node_feats = self.node_embedding(data.node_attrs)
         vectors, lengths = get_edge_vectors_and_lengths(positions=data.positions,
                                                         edge_index=data.edge_index,
                                                         shifts=data.shifts)
         edge_attrs = self.spherical_harmonics(vectors)
         edge_feats = self.radial_embedding(lengths)
-        node_feats = data.node_attrs
 
         # Interactions
         for interaction in self.interactions:
@@ -212,12 +217,12 @@ class ScaleShiftBodyOrderedModel(BodyOrderedModel):
         e0 = scatter_sum(src=node_e0, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
 
         # Embeddings
+        node_feats = self.node_embedding(data.node_attrs)
         vectors, lengths = get_edge_vectors_and_lengths(positions=data.positions,
                                                         edge_index=data.edge_index,
                                                         shifts=data.shifts)
         edge_attrs = self.spherical_harmonics(vectors)
         edge_feats = self.radial_embedding(lengths)
-        node_feats = data.node_attrs
 
         # Interactions
         node_es_list = []
