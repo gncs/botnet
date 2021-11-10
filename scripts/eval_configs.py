@@ -23,6 +23,10 @@ def parse_args() -> argparse.Namespace:
                         choices=['float32', 'float64'],
                         default='float64')
     parser.add_argument('--batch_size', help='batch size', type=int, default=64)
+    parser.add_argument('--no_contributions',
+                        help='model does not output energy contributions ',
+                        action='store_true',
+                        default=False)
     return parser.parse_args()
 
 
@@ -61,22 +65,29 @@ def main():
         batch = batch.to(device)
         output = model(batch, training=False)
         energies_list.append(tools.to_numpy(output['energy']))
-        contributions_list.append(tools.to_numpy(output['contributions']))
+
+        if not args.no_contributions:
+            contributions_list.append(tools.to_numpy(output['contributions']))
 
         forces = np.split(tools.to_numpy(output['forces']), indices_or_sections=batch.ptr[1:], axis=0)
         forces_collection.append(forces[:-1])  # drop last as its emtpy
 
     energies = np.concatenate(energies_list, axis=0)
-    contributions = np.concatenate(contributions_list, axis=0)
     forces_list = [forces for forces_list in forces_collection for forces in forces_list]
+    assert len(atoms_list) == len(energies) == len(forces_list)
+
+    if not args.no_contributions:
+        contributions = np.concatenate(contributions_list, axis=0)
+        assert len(atoms_list) == contributions.shape[0]
 
     # Store data in atoms objects
-    assert len(atoms_list) == len(energies) == contributions.shape[0] == len(forces_list)
-    for atoms, energy, contribution, forces in zip(atoms_list, energies, contributions, forces_list):
+    for i, (atoms, energy, forces) in enumerate(zip(atoms_list, energies, forces_list)):
         atoms.calc = None  # crucial
         atoms.info['energy'] = energy
-        atoms.info['contributions'] = contribution
         atoms.arrays['forces'] = forces
+
+        if not args.no_contributions:
+            atoms.info['contributions'] = contributions[i]
 
     # Write atoms to output path
     ase.io.write(args.output, images=atoms_list, format='extxyz')
