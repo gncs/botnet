@@ -38,6 +38,11 @@ style_dict = {
         'color': colors[0],
         'label': 'BOTNet',
     },
+    'botnet-shifted': {
+        'color': colors[0],
+        'label': 'BOTNet Shift',
+        'linestyle': 'dashed',
+    },
     'ace': {
         'color': colors[2],
         'label': 'linACE',
