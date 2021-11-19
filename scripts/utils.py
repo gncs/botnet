@@ -11,6 +11,8 @@ colors = [
     '#17becf',  # blue-teal
 ]
 
+dashed = (0, (5, 1))
+
 style_dict = {
     'dft': {
         'color': 'black',
@@ -19,12 +21,12 @@ style_dict = {
     'nequip': {
         'color': colors[1],
         'label': 'NequIP',
-        'linestyle': 'dashed',
+        'linestyle': dashed,
     },
     'nequip-linear': {
         'color': colors[3],
         'label': 'NequIP Linear',
-        'linestyle': 'dashed',
+        'linestyle': dashed,
     },
     'nequip-shifted': {
         'color': colors[4],
@@ -38,18 +40,13 @@ style_dict = {
         'color': colors[0],
         'label': 'BOTNet',
     },
-    'botnet-shifted': {
+    'botnet-ssh': {
         'color': colors[0],
-        'label': 'BOTNet Shift',
-        'linestyle': 'dashed',
+        'label': 'BOTNet-SSH',
+        'linestyle': dashed,
     },
     'ace': {
         'color': colors[2],
         'label': 'linACE',
-    },
-    'bace': {
-        'color': colors[2],
-        'label': 'bACE',
-        'linestyle': 'dashed',
     }
 }
