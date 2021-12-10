@@ -41,7 +41,7 @@ style_dict = {
         'label': 'BOTNet',
     },
     'botnet-ssh': {
-        'color': colors[0],
+        'color': colors[8],
         'label': 'BOTNet-SSH',
         'linestyle': dashed,
     },

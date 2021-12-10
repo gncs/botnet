@@ -21,24 +21,34 @@ def parse_args() -> argparse.Namespace:
 
 
 def parse_dihedral_configs(name_path_tuple: str) -> Tuple[str, pd.DataFrame]:
-    name, path = name_path_tuple.split(',')
-    atoms_list = ase.io.read(path, format='extxyz', index=':')
-    return (name,
-            pd.DataFrame({
-                'dihedral': [atoms.info['dihedral_angle'] for atoms in atoms_list],
-                'energy': [atoms.info['energy'] * 1000 for atoms in atoms_list],
-            }))
+    name, *paths = name_path_tuple.split(',')
+    frames = [{
+        'dihedral': atoms.info['dihedral_angle'],
+        'energy': atoms.info['energy'] * 1000,
+    } for path in paths for atoms in ase.io.read(path, format='extxyz', index=':')]
+
+    df = pd.DataFrame(frames).groupby(['dihedral']).aggregate(
+        mean_energy=pd.NamedAgg(column='energy', aggfunc='mean'),
+        std_energy=pd.NamedAgg(column='energy', aggfunc='std'),
+    ).reset_index()
+
+    return name, df
 
 
 def parse_transfer_configs(name_path_tuple: str) -> Tuple[str, pd.DataFrame]:
-    name, path = name_path_tuple.split(',')
-    atoms_list = ase.io.read(path, format='extxyz', index=':')
-    return (name,
-            pd.DataFrame({
-                'energy': [atoms.info['energy'] * 1000 for atoms in atoms_list],
-                'd1': [atoms.get_distance(3, 11) for atoms in atoms_list],
-                'd2': [atoms.get_distance(5, 11) for atoms in atoms_list],
-            }))
+    name, *paths = name_path_tuple.split(',')
+    frames = [{
+        'energy': atoms.info['energy'] * 1000,
+        'd1': atoms.get_distance(3, 11),
+        'd2': atoms.get_distance(5, 11),
+    } for path in paths for atoms in ase.io.read(path, format='extxyz', index=':')]
+
+    df = pd.DataFrame(frames).groupby(['d1', 'd2']).aggregate(
+        mean_energy=pd.NamedAgg(column='energy', aggfunc='mean'),
+        std_energy=pd.NamedAgg(column='energy', aggfunc='std'),
+    ).reset_index()
+
+    return name, df
 
 
 def main():
@@ -56,13 +66,21 @@ def main():
 
     # Dihedral curve
     ax = axes[0][0]
-    ref_energy = np.min(dihedral_predictions[0][1]['energy'])
+    ref_energy = np.min(dihedral_predictions[0][1]['mean_energy'])
 
-    for name, df in dihedral_predictions:
-        ax.plot(df['dihedral'], (df['energy'] - ref_energy), **style_dict[name])
+    for index, (name, df) in enumerate(dihedral_predictions):
+        ax.plot(df['dihedral'], (df['mean_energy'] - ref_energy), zorder=2 * index + 1, **style_dict[name])
+        ax.fill_between(
+            x=df['dihedral'],
+            y1=df['mean_energy'] - ref_energy - df['std_energy'],
+            y2=df['mean_energy'] - ref_energy + df['std_energy'],
+            alpha=0.3,
+            zorder=2 * index,
+            **style_dict[name],
+        )
 
     ax.set_ylabel(r'$\Delta E$ [meV]')
-    ax.legend()
+    ax.legend().set_zorder(2 * len(dihedral_predictions))
 
     # Dihedral Histogram
     ax = axes[1][0]
@@ -81,9 +99,17 @@ def main():
 
     # H transfer
     ax = axes[0][1]
-    ref_energy = np.min(transfer_predictions[0][1]['energy'])
-    for name, df in transfer_predictions:
-        ax.plot(df['d1'], df['energy'] - ref_energy, **style_dict[name])
+    ref_energy = np.min(transfer_predictions[0][1]['mean_energy'])
+    for index, (name, df) in enumerate(transfer_predictions):
+        ax.plot(df['d1'], df['mean_energy'] - ref_energy, zorder=2 * index + 1, **style_dict[name])
+        ax.fill_between(
+            x=df['d1'],
+            y1=df['mean_energy'] - ref_energy - df['std_energy'],
+            y2=df['mean_energy'] - ref_energy + df['std_energy'],
+            alpha=0.3,
+            zorder=2 * index,
+            **style_dict[name],
+        )
 
     # H transfer histogram
     ax = axes[1][1]

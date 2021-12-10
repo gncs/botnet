@@ -29,7 +29,13 @@ def parse_config_path(name_path_tuple: str) -> Tuple[str, pd.DataFrame]:
             'energy': atoms.info['energy'] * 1000,  # meV
         } for path in paths for atoms in ase.io.read(path, format='extxyz', index=':')
     ]
-    return name, pd.DataFrame(frames)
+
+    df = pd.DataFrame(frames).groupby(['alpha', 'beta', 'gamma']).aggregate(
+        mean_energy=pd.NamedAgg(column='energy', aggfunc='mean'),
+        std_energy=pd.NamedAgg(column='energy', aggfunc='std'),
+    ).reset_index()
+
+    return name, df
 
 
 def main():
@@ -46,18 +52,26 @@ def main():
 
     for ax, (alpha, beta) in zip(axes, alpha_betas):
         ref = predictions[0][1]
-        ref_energy = ref.loc[np.isclose(ref['alpha'], alpha) & np.isclose(ref['beta'], beta), 'energy'].min()
+        ref_energy = ref.loc[np.isclose(ref['alpha'], alpha) & np.isclose(ref['beta'], beta), 'mean_energy'].min()
 
-        for name, df in predictions:
+        for index, (name, df) in enumerate(predictions):
             selection = df.loc[np.isclose(df['alpha'], alpha) & np.isclose(df['beta'], beta)]
-            ax.plot(selection['gamma'], selection['energy'] - ref_energy, **style_dict[name])
+            ax.plot(selection['gamma'], selection['mean_energy'] - ref_energy, zorder=2 * index + 1, **style_dict[name])
+            ax.fill_between(
+                x=selection['gamma'],
+                y1=selection['mean_energy'] - ref_energy - selection['std_energy'],
+                y2=selection['mean_energy'] - ref_energy + selection['std_energy'],
+                alpha=0.3,
+                zorder=2 * index,
+                **style_dict[name],
+            )
 
         ax.set_title(fr'$\alpha$={alpha:.1f}°, $\beta$={beta:.1f}°')
         ax.set_xticks([0, 60, 120, 180, 240, 300])
         ax.set_xlabel(r'$\gamma$ [°]')
 
     axes[0].set_ylabel(r'$\Delta E$ [meV]')
-    axes[0].legend()
+    axes[0].legend().set_zorder(2 * len(predictions))
 
     fig.savefig('3bpa.pdf')
 
