@@ -51,29 +51,15 @@ class LinearReadoutBlock(torch.nn.Module):
     ) -> torch.Tensor:  # [..., ]
         return self.linear(x)  # [n_nodes, 1]
 
-class NonLinearReadoutBlock(torch.nn.Module):
+
+class NonLinearReadoutBlock_simple(torch.nn.Module):
     #Non linear readout.
-    #Example : irreps_in = 32x0e + 32x0o + 32x1e + 32x1o
-    # Select the scalars : self.irreps_scalars = 32xoe
-    # Select the non scalars : self.non_scalars = 32x0o + 32x1e + 32x1o
-    # Create the norm : 32x0o + 32x1e + 32x1o -> 96x0e
-    # Create the linear : 128x0e -> 32x0e
-    # Apply the non linearity : 32x0e -> 32x0e
-    # Final readout : 32x0e -> 1x0e
     def __init__(self, irreps_in: o3.Irreps, gate : torch.nn.Module):
         super().__init__()
-
         self.irreps_scalars = o3.Irreps(
-            [(mul,ir) for mul,ir in irreps_in if ir.l == 0 and ir.p == 1]) #select the scalars irreps
-        self.irreps_non_scalars = o3.Irreps(
-            [(mul,ir) for mul,ir in irreps_in if ir.l > 0] + 
-            [(mul,ir) for mul,ir in irreps_in if ir.l == 0 and ir.p == -1]) #select the non scalar irreps
-        self.sc = nn._gate._Sortcut(self.irreps_scalars,self.irreps_non_scalars) #the cut function between scalars/non scalars
-        self._norm = o3.Norm(self.irreps_non_scalars, squared=True) #norm to transform non scalars into scalars
-
-        self.num_features = sum([mul for mul, ir in self.irreps_non_scalars]) #number of non scalar features
-        self.irreps_in_scalars = o3.Irreps(
-                str(self.num_features) + 'x0e+'+ str(self.irreps_scalars)).simplify()
+            [(mul,ir) for mul,ir in irreps_in if ir.l == 0 and ir.p == 1])
+        self._norm = o3.Norm(irreps_in, squared=True) #norm to transform non scalars into scalars
+        self.irreps_in_scalars = self._norm.irreps_out #number of scalars formed by the norm
 
         self.linear = o3.Linear(irreps_in=self.irreps_in_scalars, irreps_out=self.irreps_scalars) #linearity from [num_irreps,num_irreps_scalar] 
         self.linear_2 = o3.Linear(irreps_in=self.irreps_scalars, irreps_out=o3.Irreps('0e'))
@@ -83,10 +69,8 @@ class NonLinearReadoutBlock(torch.nn.Module):
             self,
             x: torch.Tensor  # [n_nodes, irreps]
     ) -> torch.Tensor:  # [..., ]
-        x_scalars,x_nsc = self.sc(x) #cut the scalars from x
-        x_nsc = self._norm(x_nsc) #norm the non scalars
-        x = torch.cat((x_scalars,x_nsc),dim=-1) #cat the scalars and the norm of the non scalars
-        x = self.non_linearity(self.linear(x))
+        x = self._norm(x) #norm the node features
+        x = self.non_linearity(self.linear(x)) #apply the MLP
         return self.linear_2(x)  # [n_nodes, 1]
 
 
