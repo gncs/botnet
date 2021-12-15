@@ -1,4 +1,4 @@
-from typing import Dict, Any, Type
+from typing import Dict, Any, Type, Callable
 
 import numpy as np
 import torch.nn
@@ -7,7 +7,7 @@ from torch_scatter import scatter_sum
 
 from e3nnff.data import AtomicData
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock, ScaleShiftBlock,
-                     LinearNodeEmbeddingBlock,NonLinearReadoutBlock)
+                     LinearNodeEmbeddingBlock, NonLinearReadoutBlock)
 from .utils import get_edge_vectors_and_lengths, compute_forces
 
 
@@ -108,7 +108,7 @@ class BodyOrderedModel(torch.nn.Module):
         return output
 
 
-class BodyOrderedModel_NonLinear(torch.nn.Module):
+class NonLinearBodyOrderedModel(torch.nn.Module):
     def __init__(
         self,
         r_max: float,
@@ -120,7 +120,7 @@ class BodyOrderedModel_NonLinear(torch.nn.Module):
         num_elements: int,
         hidden_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
-        gate: str,
+        gate: Callable,
     ):
         super().__init__()
 
@@ -163,9 +163,9 @@ class BodyOrderedModel_NonLinear(torch.nn.Module):
                 target_irreps=hidden_irreps,
             )
             self.interactions.append(inter)
-            if i ==  num_interactions - 2 : 
-                self.readouts.append(NonLinearReadoutBlock(inter.irreps_out,gate))
-            else :
+            if i == num_interactions - 2:
+                self.readouts.append(NonLinearReadoutBlock(inter.irreps_out, gate))
+            else:
                 self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 
     def forward(self, data: AtomicData, training=False) -> Dict[str, Any]:
@@ -354,7 +354,7 @@ class ScaleShiftBodyOrderedModel(BodyOrderedModel):
         return output
 
 
-class ScaleShiftBodyOrderedModel_NonLinear(BodyOrderedModel_NonLinear):
+class ScaleShiftNonLinearBodyOrderedModel(NonLinearBodyOrderedModel):
     def __init__(
         self,
         atomic_inter_scale: float,
@@ -407,4 +407,3 @@ class ScaleShiftBodyOrderedModel_NonLinear(BodyOrderedModel_NonLinear):
         }
 
         return output
-

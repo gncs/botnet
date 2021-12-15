@@ -1,8 +1,6 @@
 import argparse
 from typing import Optional
 
-from numpy import str0
-
 
 def build_default_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -30,7 +28,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--model',
                         help='model type',
                         default='body_ordered',
-                        choices=['body_ordered', 'scale_shift', 'single_readout','scale_shift_non_linear'])
+                        choices=['body_ordered', 'scale_shift', 'single_readout', 'scale_shift_non_linear'])
     parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=4.0)
     parser.add_argument('--num_radial_basis', help='number of radial basis functions', type=int, default=8)
     parser.add_argument('--num_cutoff_basis', help='number of basis functions for smooth cutoff', type=int, default=6)

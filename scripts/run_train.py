@@ -4,7 +4,7 @@ import os
 from typing import Optional, Tuple, Dict, List
 
 import numpy as np
-import torch.nn
+import torch.nn.functional
 import torch_geometric
 from e3nn import o3
 from torch.optim.swa_utils import AveragedModel, SWALR
@@ -80,6 +80,12 @@ atomic_energies_dict: Dict[str, Dict[int, float]] = {
     '3bpa': data.three_bpa_atomic_energies,
     'acac': data.acac_atomic_energies,
     'ethanol': data.ethanol_atomic_energies,
+}
+
+gate_dict = {
+    'abs': torch.abs,
+    'tanh': torch.tanh,
+    'silu': torch.nn.functional.silu,
 }
 
 
@@ -160,9 +166,9 @@ def main() -> None:
         )
     elif args.model == 'scale_shift_non_linear':
         mean, std = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
-        model = modules.ScaleShiftBodyOrderedModel_NonLinear(
+        model = modules.ScaleShiftNonLinearBodyOrderedModel(
             **model_config,
-            gate=args.gate,
+            gate=gate_dict[args.gate],
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )

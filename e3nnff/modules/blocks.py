@@ -1,22 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Union, Tuple
+from typing import Union, Tuple, Callable
 
 import numpy as np
 import torch
 import torch.nn.functional
-from e3nn import o3
-from e3nn import nn
+from e3nn import nn, o3
 from torch_scatter import scatter_sum
 
 from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .radial import BesselBasis, PolynomialCutoff
-
-
-acts = {
-    "abs": torch.abs,
-    "tanh": torch.tanh,
-    "silu": torch.nn.functional.silu,
-}
 
 
 class LinearNodeEmbeddingBlock(torch.nn.Module):
@@ -60,24 +52,20 @@ class LinearReadoutBlock(torch.nn.Module):
 
 
 class NonLinearReadoutBlock(torch.nn.Module):
-    #Non linear readout.
-    def __init__(self, irreps_in: o3.Irreps, gate: str):
+    def __init__(self, irreps_in: o3.Irreps, gate: Callable):
         super().__init__()
-        self.irreps_scalars = o3.Irreps(
-            [(mul,ir) for mul,ir in irreps_in if ir.l == 0 and ir.p == 1])
-        self._norm = o3.Norm(irreps_in, squared=True) #norm to transform non scalars into scalars
-        self.irreps_in_scalars = self._norm.irreps_out #number of scalars formed by the norm
-
-        self.linear = o3.Linear(irreps_in=self.irreps_in_scalars, irreps_out=self.irreps_scalars) #linearity from [num_irreps,num_irreps_scalar] 
-        self.linear_2 = o3.Linear(irreps_in=self.irreps_scalars, irreps_out=o3.Irreps('0e'))
-        self.non_linearity = nn.Activation(irreps_in = self.irreps_scalars, acts = [acts[gate]]) #the non linearity
+        self.hidden_irreps = o3.Irreps([(irreps_in.count(o3.Irrep(0, 1)), (0, 1))])
+        self.norm = o3.Norm(irreps_in, squared=True)
+        self.linear_1 = o3.Linear(irreps_in=self.norm.irreps_out, irreps_out=self.hidden_irreps)
+        self.non_linearity = nn.Activation(irreps_in=self.hidden_irreps, acts=[gate])
+        self.linear_2 = o3.Linear(irreps_in=self.hidden_irreps, irreps_out=o3.Irreps('0e'))
 
     def forward(
             self,
             x: torch.Tensor  # [n_nodes, irreps]
     ) -> torch.Tensor:  # [..., ]
-        x = self._norm(x) #norm the node features
-        x = self.non_linearity(self.linear(x)) #apply the MLP
+        x = self.norm(x)
+        x = self.non_linearity(self.linear_1(x))
         return self.linear_2(x)  # [n_nodes, 1]
 
 
