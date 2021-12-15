@@ -207,8 +207,10 @@ def main() -> None:
 
     start_epoch = 0
     if args.restart_latest:
-        start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler),
-                                                     device=device)
+        opt_start_epoch = checkpoint_handler.load_latest(state=tools.CheckpointState(model, optimizer, lr_scheduler),
+                                                         device=device)
+        if opt_start_epoch is not None:
+            start_epoch = opt_start_epoch
 
     swa: Optional[tools.SWAContainer] = None
     if args.swa:
