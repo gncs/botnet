@@ -58,6 +58,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     # Loss and optimization
     parser.add_argument('--loss', help='type of loss', default='weighted', choices=['ef', 'ace', 'weighted'])
     parser.add_argument('--forces_weight', help='weight of forces loss', type=float, default=10.0)
+    parser.add_argument('--energy_weight', help='weight of energy loss', type=float, default=1.0)
     parser.add_argument('--optimizer',
                         help='Optimizer for parameter optimization',
                         type=str,

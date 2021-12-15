@@ -131,9 +131,9 @@ def main() -> None:
     if args.loss == 'ace':
         loss_fn = modules.ACELoss(energy_weight=15.0, forces_weight=1.0)
     elif args.loss == 'weighted':
-        loss_fn = modules.WeightedEnergyForcesLoss(energy_weight=1.0, forces_weight=args.forces_weight)
+        loss_fn = modules.WeightedEnergyForcesLoss(energy_weight=args.energy_weight, forces_weight=args.forces_weight)
     else:
-        loss_fn = modules.EnergyForcesLoss(energy_weight=1.0, forces_weight=args.forces_weight)
+        loss_fn = modules.EnergyForcesLoss(energy_weight=args.energy_weight, forces_weight=args.forces_weight)
     logging.info(loss_fn)
 
     # Build model
