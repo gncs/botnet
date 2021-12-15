@@ -158,7 +158,7 @@ def main() -> None:
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )
-    elif args.model == 'scale_shift_non_linear' :
+    elif args.model == 'scale_shift_non_linear':
         mean, std = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
         model = modules.ScaleShiftBodyOrderedModel_NonLinear(
             **model_config,
