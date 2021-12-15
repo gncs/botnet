@@ -12,6 +12,13 @@ from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .radial import BesselBasis, PolynomialCutoff
 
 
+acts = {
+    "abs": torch.abs,
+    "tanh": torch.tanh,
+    "silu": torch.nn.functional.silu,
+}
+
+
 class LinearNodeEmbeddingBlock(torch.nn.Module):
     def __init__(self, irreps_in: o3.Irreps, irreps_out: o3.Irreps):
         super().__init__()
@@ -54,7 +61,7 @@ class LinearReadoutBlock(torch.nn.Module):
 
 class NonLinearReadoutBlock(torch.nn.Module):
     #Non linear readout.
-    def __init__(self, irreps_in: o3.Irreps, gate : torch.nn.Module):
+    def __init__(self, irreps_in: o3.Irreps, gate: str):
         super().__init__()
         self.irreps_scalars = o3.Irreps(
             [(mul,ir) for mul,ir in irreps_in if ir.l == 0 and ir.p == 1])
@@ -63,7 +70,7 @@ class NonLinearReadoutBlock(torch.nn.Module):
 
         self.linear = o3.Linear(irreps_in=self.irreps_in_scalars, irreps_out=self.irreps_scalars) #linearity from [num_irreps,num_irreps_scalar] 
         self.linear_2 = o3.Linear(irreps_in=self.irreps_scalars, irreps_out=o3.Irreps('0e'))
-        self.non_linearity = nn.Activation(irreps_in = self.irreps_scalars, acts = [gate]) #the non linearity
+        self.non_linearity = nn.Activation(irreps_in = self.irreps_scalars, acts = [acts[gate]]) #the non linearity
 
     def forward(
             self,

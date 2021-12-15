@@ -1,6 +1,8 @@
 import argparse
 from typing import Optional
 
+from numpy import str0
+
 
 def build_default_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -42,6 +44,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         help='irreps for hidden node states',
                         type=str,
                         default='32x0e + 32x1o + 32x2e + 32x3o')
+    parser.add_argument('--gate', help='non linearity for last readout', type=str, default='tanh')
 
     # Dataset
     parser.add_argument('--dataset',

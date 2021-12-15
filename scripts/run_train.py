@@ -162,6 +162,7 @@ def main() -> None:
         mean, std = modules.compute_mean_std_atomic_inter_energy(train_loader, atomic_energies)
         model = modules.ScaleShiftBodyOrderedModel_NonLinear(
             **model_config,
+            gate=args.gate,
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )
