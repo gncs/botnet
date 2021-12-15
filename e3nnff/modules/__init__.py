@@ -1,9 +1,9 @@
 from typing import Dict, Type
 
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, SimpleInteractionBlock,
-                     ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock)
+                     ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock, NonLinearReadoutBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
-from .models import BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel
+from .models import BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel, ScaleShiftBodyOrderedModel_NonLinear
 from .radial import BesselBasis, PolynomialCutoff
 from .utils import compute_mean_std_atomic_inter_energy
 

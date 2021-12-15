@@ -52,7 +52,7 @@ class LinearReadoutBlock(torch.nn.Module):
         return self.linear(x)  # [n_nodes, 1]
 
 
-class NonLinearReadoutBlock_simple(torch.nn.Module):
+class NonLinearReadoutBlock(torch.nn.Module):
     #Non linear readout.
     def __init__(self, irreps_in: o3.Irreps, gate : torch.nn.Module):
         super().__init__()
