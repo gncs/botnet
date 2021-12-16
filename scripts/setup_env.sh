@@ -17,3 +17,4 @@ pip install sympy
 pip install opt_einsum_fx==0.1.1
 pip install torch-geometric==1.7.0
 pip install e3nn==0.3.2
+pip install torch-ema
