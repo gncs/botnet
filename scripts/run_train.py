@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 import os
-from typing import Optional, Tuple, Dict, List
+from typing import Callable, Optional, Tuple, Dict, List
 
 import numpy as np
 import torch.nn.functional
@@ -221,7 +221,7 @@ def main() -> None:
             start=10,
         )
         logging.info(f'Using stochastic weight averaging (after {swa.start} epochs)')
-
+    ema: Optional[Callable] = None
     if args.ema:
         from torch_ema import ExponentialMovingAverage
         ema = ExponentialMovingAverage(model.parameters(), decay=args.ema_decay)
