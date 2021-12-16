@@ -57,3 +57,27 @@ def compute_mean_std_atomic_inter_energy(
     std = to_numpy(torch.std(avg_atom_inter_es)).item()
 
     return mean, std
+
+def compute_mean_rms_energy_forces(
+    data_loader: torch.utils.data.DataLoader,
+    atomic_energies: np.ndarray,
+) -> Tuple[float, float]:
+    atomic_energies_fn = AtomicEnergiesBlock(atomic_energies=atomic_energies)
+
+    atom_energy_list = []
+    forces_list = []
+
+    for batch in data_loader:
+        node_e0 = atomic_energies_fn(batch.node_attrs)
+        graph_e0s = scatter_sum(src=node_e0, index=batch.batch, dim=-1, dim_size=batch.num_graphs)
+        graph_sizes = batch.ptr[1:] - batch.ptr[:-1]
+        atom_energy_list.append((batch.energy - graph_e0s) / graph_sizes) #{[n_graphs], }
+        forces_list.append(batch.forces) #{[n_graphs*n_atoms,3], }
+
+    atom_energy_list = torch.cat(atom_energy_list)  # [total_n_graphs]
+    forces_list = torch.cat(forces_list) #{[total_n_graphs*n_atoms,3], }
+
+    mean = to_numpy(torch.mean(atom_energy_list)).item()
+    rms = to_numpy(torch.sqrt(torch.mean(torch.square(forces_list)))).item()
+
+    return mean, 1/rms
