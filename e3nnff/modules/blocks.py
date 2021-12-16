@@ -52,9 +52,9 @@ class LinearReadoutBlock(torch.nn.Module):
 
 
 class NonLinearReadoutBlock(torch.nn.Module):
-    def __init__(self, irreps_in: o3.Irreps, gate: Callable):
+    def __init__(self, irreps_in: o3.Irreps, MLP_irreps: o3.Irreps, gate: Callable):
         super().__init__()
-        self.hidden_irreps = o3.Irreps([(irreps_in.count(o3.Irrep(0, 1)), (0, 1))])
+        self.hidden_irreps = MLP_irreps
         self.norm = o3.Norm(irreps_in, squared=True)
         self.linear_1 = o3.Linear(irreps_in=self.norm.irreps_out, irreps_out=self.hidden_irreps)
         self.non_linearity = nn.Activation(irreps_in=self.hidden_irreps, acts=[gate])

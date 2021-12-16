@@ -119,6 +119,7 @@ class NonLinearBodyOrderedModel(torch.nn.Module):
         num_interactions: int,
         num_elements: int,
         hidden_irreps: o3.Irreps,
+        MLP_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
         gate: Callable,
     ):
@@ -164,7 +165,7 @@ class NonLinearBodyOrderedModel(torch.nn.Module):
             )
             self.interactions.append(inter)
             if i == num_interactions - 2:
-                self.readouts.append(NonLinearReadoutBlock(inter.irreps_out, gate))
+                self.readouts.append(NonLinearReadoutBlock(inter.irreps_out, gate, MLP_irreps))
             else:
                 self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 

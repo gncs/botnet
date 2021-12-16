@@ -169,6 +169,7 @@ def main() -> None:
         model = modules.ScaleShiftNonLinearBodyOrderedModel(
             **model_config,
             gate=gate_dict[args.gate],
+            MLP_irreps=o3.Irreps(args.MLP_irreps),
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )
