@@ -222,6 +222,11 @@ def main() -> None:
         )
         logging.info(f'Using stochastic weight averaging (after {swa.start} epochs)')
 
+    if args.ema:
+        from torch_ema import ExponentialMovingAverage
+        ema = ExponentialMovingAverage(model.parameters(), decay=args.ema_decay)
+
+
     logging.info(model)
     logging.info(f'Number of parameters: {tools.count_parameters(model)}')
     logging.info(f'Optimizer: {optimizer}')
@@ -241,6 +246,7 @@ def main() -> None:
         patience=args.patience,
         device=device,
         swa=swa,
+        ema=ema,
     )
 
     if swa:

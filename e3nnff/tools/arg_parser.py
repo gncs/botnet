@@ -69,6 +69,8 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--amsgrad', help='use amsgrad variant of optimizer', action='store_true', default=True)
     parser.add_argument('--lr_scheduler_gamma', help='Gamma of learning rate scheduler', type=float, default=0.9993)
     parser.add_argument('--swa', help='use Stochastic Weight Averaging', action='store_true', default=False)
+    parser.add_argument('--ema', help='use Exponential Moving Average', action='store_true', default=False)
+    parser.add_argument('--ema_decay', help='Exponential Moving Average decay', type=float, default=0.995)
     parser.add_argument('--max_num_epochs', help='Maximum number of epochs', type=int, default=2048)
     parser.add_argument('--patience',
                         help='Maximum number of consecutive epochs of increasing loss',

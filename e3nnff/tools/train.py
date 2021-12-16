@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 import time
-from typing import Dict, Any, Tuple, Optional
+from typing import Callable, Dict, Any, Tuple, Optional
 
 import numpy as np
 import torch
@@ -36,6 +36,7 @@ def train(
     eval_interval: int,
     device: torch.device,
     swa: Optional[SWAContainer] = None,
+    ema: Optional[Callable] = None,
 ):
     lowest_loss = np.inf
     patience_counter = 0
@@ -51,7 +52,11 @@ def train(
 
         # Validate
         if epoch % eval_interval == 0:
-            valid_loss, eval_metrics = evaluate(model=model, loss_fn=loss_fn, data_loader=valid_loader, device=device)
+            if ema is not None:
+                with ema.average_parameters():
+                    valid_loss, eval_metrics = evaluate(model=model, loss_fn=loss_fn, data_loader=valid_loader, device=device)
+            else:
+                valid_loss, eval_metrics = evaluate(model=model, loss_fn=loss_fn, data_loader=valid_loader, device=device)
             eval_metrics['mode'] = 'eval'
             eval_metrics['epoch'] = epoch
             logger.log(eval_metrics)
@@ -66,11 +71,17 @@ def train(
             else:
                 lowest_loss = valid_loss
                 patience_counter = 0
-                checkpoint_handler.save(state=CheckpointState(model, optimizer, lr_scheduler), epochs=epoch)
+                if ema is not None:
+                    with ema.average_parameters():
+                        checkpoint_handler.save(state=CheckpointState(model, optimizer, lr_scheduler), epochs=epoch)
+                else:
+                    checkpoint_handler.save(state=CheckpointState(model, optimizer, lr_scheduler), epochs=epoch)
 
         # LR scheduler and SWA update
         if swa is None or epoch < swa.start:
             lr_scheduler.step()
+            if ema is not None:
+                ema.update()
         else:
             swa.model.update_parameters(model)
             swa.scheduler.step()
