@@ -218,7 +218,7 @@ class ElementDependentInteractionBlock(InteractionBlock):
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]
 
-        tp_weights = self.conv_tp_weights(edge_feats)
+        tp_weights = self.conv_tp_weights(node_attrs[sender], edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
         message = self.linear(message)
