@@ -312,7 +312,7 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         self.conv_tp_weights = nn.FullyConnectedNet([input_dim]
             + 3 * [64]
             + [self.conv_tp.weight_numel],
-            torch.nn.functional.silu,)
+            torch.nn.functional.silu)
 
         # Linear
         irreps_mid = irreps_mid.simplify()
@@ -334,7 +334,7 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]
 
-        tp_weights = self.conv_tp_weights(torch.cat([node_attrs[sender], edge_feats], dim=-1))
+        tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
         message = self.linear(message)
