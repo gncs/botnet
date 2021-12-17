@@ -308,7 +308,7 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
                                         instructions=instructions,
                                         shared_weights=False,
                                         internal_weights=False)
-        input_dim = self.node_attrs_irreps.num_irreps
+        input_dim = self.edge_feats_irreps.num_irreps
         self.conv_tp_weights = nn.FullyConnectedNet([input_dim]
             + 3 * [64]
             + [self.conv_tp.weight_numel],
