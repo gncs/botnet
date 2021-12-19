@@ -80,4 +80,4 @@ def compute_mean_rms_energy_forces(
     mean = to_numpy(torch.mean(atom_energy_list)).item()
     rms = to_numpy(torch.sqrt(torch.mean(torch.square(forces_list)))).item()
 
-    return mean, 1/rms
+    return mean, rms
