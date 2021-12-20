@@ -45,7 +45,7 @@ def train(
     for epoch in range(start_epoch, max_num_epochs):
         # Train
         for batch in train_loader:
-            _, opt_metrics = take_step(model=model, loss_fn=loss_fn, batch=batch, optimizer=optimizer, device=device)
+            _, opt_metrics = take_step(model=model, loss_fn=loss_fn, batch=batch, optimizer=optimizer, ema=ema, device=device)
             opt_metrics['mode'] = 'opt'
             opt_metrics['epoch'] = epoch
             logger.log(opt_metrics)
@@ -80,8 +80,6 @@ def train(
         # LR scheduler and SWA update
         if swa is None or epoch < swa.start:
             lr_scheduler.step()
-            if ema is not None:
-                ema.update()
         else:
             swa.model.update_parameters(model)
             swa.scheduler.step()
@@ -94,6 +92,7 @@ def take_step(
     loss_fn: torch.nn.Module,
     batch: torch_geometric.data.Batch,
     optimizer: torch.optim.Optimizer,
+    ema: Optional[Callable],
     device: torch.device,
 ) -> Tuple[float, Dict[str, Any]]:
     start_time = time.time()
@@ -103,7 +102,8 @@ def take_step(
     loss = loss_fn(pred=output, ref=batch)
     loss.backward()
     optimizer.step()
-
+    if ema is not None:
+        ema.update()
     loss_dict = {
         'loss': to_numpy(loss),
         'time': time.time() - start_time,
