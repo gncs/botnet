@@ -14,7 +14,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def get_paths(directory: dir) -> List[str]:
+def get_paths(directory: str) -> List[str]:
     return glob.glob(os.path.join(directory, '*_eval.txt'))
 
 
