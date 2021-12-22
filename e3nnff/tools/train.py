@@ -1,13 +1,14 @@
 import dataclasses
 import logging
 import time
-from typing import Callable, Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple, Optional
 
 import numpy as np
 import torch
 import torch_geometric
 from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.utils.data import DataLoader
+from torch_ema import ExponentialMovingAverage
 
 from .checkpoint import CheckpointHandler, CheckpointState
 from .torch_tools import to_numpy, tensor_dict_to_device
@@ -36,7 +37,7 @@ def train(
     eval_interval: int,
     device: torch.device,
     swa: Optional[SWAContainer] = None,
-    ema: Optional[Callable] = None,
+    ema: Optional[ExponentialMovingAverage] = None,
 ):
     lowest_loss = np.inf
     patience_counter = 0
@@ -45,7 +46,12 @@ def train(
     for epoch in range(start_epoch, max_num_epochs):
         # Train
         for batch in train_loader:
-            _, opt_metrics = take_step(model=model, loss_fn=loss_fn, batch=batch, optimizer=optimizer, ema=ema, device=device)
+            _, opt_metrics = take_step(model=model,
+                                       loss_fn=loss_fn,
+                                       batch=batch,
+                                       optimizer=optimizer,
+                                       ema=ema,
+                                       device=device)
             opt_metrics['mode'] = 'opt'
             opt_metrics['epoch'] = epoch
             logger.log(opt_metrics)
@@ -54,9 +60,15 @@ def train(
         if epoch % eval_interval == 0:
             if ema is not None:
                 with ema.average_parameters():
-                    valid_loss, eval_metrics = evaluate(model=model, loss_fn=loss_fn, data_loader=valid_loader, device=device)
+                    valid_loss, eval_metrics = evaluate(model=model,
+                                                        loss_fn=loss_fn,
+                                                        data_loader=valid_loader,
+                                                        device=device)
             else:
-                valid_loss, eval_metrics = evaluate(model=model, loss_fn=loss_fn, data_loader=valid_loader, device=device)
+                valid_loss, eval_metrics = evaluate(model=model,
+                                                    loss_fn=loss_fn,
+                                                    data_loader=valid_loader,
+                                                    device=device)
             eval_metrics['mode'] = 'eval'
             eval_metrics['epoch'] = epoch
             logger.log(eval_metrics)
@@ -92,7 +104,7 @@ def take_step(
     loss_fn: torch.nn.Module,
     batch: torch_geometric.data.Batch,
     optimizer: torch.optim.Optimizer,
-    ema: Optional[Callable],
+    ema: Optional[ExponentialMovingAverage],
     device: torch.device,
 ) -> Tuple[float, Dict[str, Any]]:
     start_time = time.time()
@@ -102,8 +114,10 @@ def take_step(
     loss = loss_fn(pred=output, ref=batch)
     loss.backward()
     optimizer.step()
+
     if ema is not None:
         ema.update()
+
     loss_dict = {
         'loss': to_numpy(loss),
         'time': time.time() - start_time,
