@@ -1,13 +1,14 @@
 import dataclasses
 import logging
 import os
-from typing import Callable, Optional, Tuple, Dict, List
+from typing import Optional, Tuple, Dict, List
 
 import numpy as np
 import torch.nn.functional
 import torch_geometric
 from e3nn import o3
 from torch.optim.swa_utils import AveragedModel, SWALR
+from torch_ema import ExponentialMovingAverage
 
 from e3nnff import data, tools, modules
 
@@ -221,11 +222,10 @@ def main() -> None:
             start=10,
         )
         logging.info(f'Using stochastic weight averaging (after {swa.start} epochs)')
-    ema: Optional[Callable] = None
-    if args.ema:
-        from torch_ema import ExponentialMovingAverage
-        ema = ExponentialMovingAverage(model.parameters(), decay=args.ema_decay)
 
+    ema: Optional[ExponentialMovingAverage] = None
+    if args.ema:
+        ema = ExponentialMovingAverage(model.parameters(), decay=args.ema_decay)
 
     logging.info(model)
     logging.info(f'Number of parameters: {tools.count_parameters(model)}')
