@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 colors = [
     '#1f77b4',  # muted blue
     '#d62728',  # brick red
@@ -13,7 +15,7 @@ colors = [
 
 dashed = (0, (5, 1))
 
-style_dict = {
+style_dict: Dict[str, Dict[str, Any]] = {
     'dft': {
         'color': 'black',
         'label': 'DFT',
@@ -35,6 +37,20 @@ style_dict = {
     'nequip-bo': {
         'color': colors[5],
         'label': 'NequIP BO',
+    },
+    'nequip-e0': {
+        'color': colors[3],
+        'label': 'NequIP E0',
+    },
+    'nequip-ssh': {
+        'color': colors[4],
+        'label': 'NequIP SSH',
+        'linestyle': dashed,
+    },
+    'nequip-e0-ssh': {
+        'color': colors[1],
+        'label': 'NequIP E0 SSH',
+        'linestyle': dashed,
     },
     'botnet': {
         'color': colors[0],
