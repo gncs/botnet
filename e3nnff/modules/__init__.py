@@ -16,7 +16,7 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'AgnosticNonlinearInteractionBlock': AgnosticNonlinearInteractionBlock,
 }
 
-scaling_classes: Dict[str, Type[Callable]]  = {
+scaling_classes: Dict[str, Callable] = {
     'std_scaling': compute_mean_std_atomic_inter_energy,
     'rms_forces_scaling': compute_mean_rms_energy_forces,
 }
