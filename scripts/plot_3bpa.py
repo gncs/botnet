@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from scripts.utils import style_dict
+from utils import style_dict
 
 plt.rcParams.update({'font.size': 6})
 

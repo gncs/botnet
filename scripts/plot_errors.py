@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from statsmodels.graphics.boxplots import violinplot
 
-from scripts.utils import style_dict
+from utils import style_dict
 
 plt.rcParams.update({'font.size': 6})
 
@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def parse_config_path(name_path_tuple: str) -> Tuple[str, np.array, np.array]:
+def parse_config_path(name_path_tuple: str) -> Tuple[str, np.ndarray, np.ndarray]:
     name, path = name_path_tuple.split(',')
     atoms_list = ase.io.read(path, format='extxyz', index=':')
     energies = np.array([atoms.info['energy'] for atoms in atoms_list]) * 1000  # meV
