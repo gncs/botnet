@@ -29,28 +29,23 @@ class BotNetCalculator(Calculator):
 
     implemented_properties = ["energy", "forces"]
 
-    def __init__(
-        self,
-        model: torch.jit.ScriptModule,
-        r_max: float,
-        device: Union[str, torch.device],
-        atomic_numbers : float,
-        energy_units_to_eV: float = 1.0,
-        length_units_to_A: float = 1.0,
-        **kwargs
-    ):
+    def __init__(self,
+                 model: torch.jit.ScriptModule,
+                 r_max: float,
+                 device: Union[str, torch.device],
+                 atomic_numbers: float,
+                 energy_units_to_eV: float = 1.0,
+                 length_units_to_A: float = 1.0,
+                 **kwargs):
         Calculator.__init__(self, **kwargs)
         self.results = {}
-       
 
-       
         self.model = model
         self.r_max = r_max
         self.device = device
         self.energy_units_to_eV = energy_units_to_eV
         self.length_units_to_A = length_units_to_A
         self.z_table = data.AtomicNumberTable([int(z) for z in atomic_numbers])
-
 
     def calculate(self, atoms=None, properties=["energy"], system_changes=all_changes):
         """
@@ -63,13 +58,13 @@ class BotNetCalculator(Calculator):
         """
         # call to base-class to set atoms attribute
         Calculator.calculate(self, atoms)
-           
+
         # prepare data
         configs = config_from_atoms(atoms)
         #data = data.to(self.device)
 
         # predict + extract data
-        out = self.model(data.AtomicData.from_config(configs,z_table=self.z_table,cutoff=self.r_max))
+        out = self.model(data.AtomicData.from_config(configs, z_table=self.z_table, cutoff=self.r_max))
         forces = out['forces'].detach().cpu().numpy()
         energy = out['energy'].detach().cpu().item()
 
@@ -80,9 +75,11 @@ class BotNetCalculator(Calculator):
             "forces": forces * (self.energy_units_to_eV / self.length_units_to_A),
         }
 
+
 def config_from_atoms(atoms: ase.Atoms) -> data.Configuration:
     atomic_numbers = np.array([ase.data.atomic_numbers[symbol] for symbol in atoms.symbols])
     return data.Configuration(atomic_numbers=atomic_numbers, positions=atoms.positions)
+
 
 class AseInterface:
     """
@@ -93,20 +90,17 @@ class AseInterface:
         working_dir (str): Path to directory where files should be stored
         device (str): cpu or cuda
     """
-
-    def __init__(
-        self,
-        molecule_path,
-        ml_model,
-        working_dir,
-        device="cpu",
-        energy="Energy",
-        forces="Forces",
-        energy_units="eV",
-        forces_units="eV/Angstrom",
-        r_max = 4,
-        rescale = None
-    ):
+    def __init__(self,
+                 molecule_path,
+                 ml_model,
+                 working_dir,
+                 device="cpu",
+                 energy="Energy",
+                 forces="Forces",
+                 energy_units="eV",
+                 forces_units="eV/Angstrom",
+                 r_max=4,
+                 rescale=None):
         # Setup directory
         self.working_dir = working_dir
         if not os.path.exists(self.working_dir):
@@ -119,11 +113,11 @@ class AseInterface:
 
         # Set up calculator
         calculator = BotNetCalculator(
-            model = ml_model,
-            r_max = self.r_max,
+            model=ml_model,
+            r_max=self.r_max,
             device=device,
         )
-       
+
         self.molecule.set_calculator(calculator)
 
         # Unless initialized, set dynamics to False
@@ -228,9 +222,7 @@ class AseInterface:
         self.dynamics.attach(logger, interval=interval)
         self.dynamics.attach(trajectory.write, interval=interval)
 
-    def _init_velocities(
-        self, temp_init=300, remove_translation=True, remove_rotation=True
-    ):
+    def _init_velocities(self, temp_init=300, remove_translation=True, remove_rotation=True):
         """
         Initialize velocities for molecular dynamics
         Args:
@@ -254,9 +246,7 @@ class AseInterface:
             steps (int): Number of simulation steps performed
         """
         if not self.dynamics:
-            raise AttributeError(
-                "Dynamics need to be initialized using the" " 'setup_md' function"
-            )
+            raise AttributeError("Dynamics need to be initialized using the" " 'setup_md' function")
 
         self.dynamics.run(steps)
 
@@ -280,7 +270,7 @@ class AseInterface:
         # Save final geometry in xyz format
         self.save_molecule(name)
 
-    def compute_normal_modes(self, write_jmol=True,delta=0.01):
+    def compute_normal_modes(self, write_jmol=True, delta=0.01):
         """
         Use ase calculator to compute numerical frequencies for the molecule
         Args:
@@ -290,7 +280,7 @@ class AseInterface:
         freq_file = os.path.join(self.working_dir, "normal_modes")
 
         # Compute frequencies
-        frequencies = Vibrations(self.molecule, name=freq_file,delta=delta)
+        frequencies = Vibrations(self.molecule, name=freq_file, delta=delta)
         frequencies.run()
 
         # Print a summary
@@ -300,5 +290,5 @@ class AseInterface:
         # Write jmol file if requested
         if write_jmol:
             frequencies.write_jmol()
-       
+
         return frequencies
