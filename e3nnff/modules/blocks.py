@@ -6,7 +6,6 @@ import torch
 import torch.nn.functional
 from e3nn import nn, o3
 from torch_scatter import scatter_sum
-import math
 
 from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .radial import BesselBasis, PolynomialCutoff
@@ -296,7 +295,6 @@ class NonlinearInteractionBlock(InteractionBlock):
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
-
 class AgnosticNonlinearInteractionBlock(InteractionBlock):
     def _setup(self) -> None:
         # TensorProduct
@@ -309,12 +307,13 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
                                         shared_weights=False,
                                         internal_weights=False)
 
-        self.linear_up = o3.Linear(self.node_feats_irreps,self.node_feats_irreps, internal_weights=True, shared_weights=True)                                
+        self.linear_up = o3.Linear(self.node_feats_irreps,
+                                   self.node_feats_irreps,
+                                   internal_weights=True,
+                                   shared_weights=True)
         input_dim = self.edge_feats_irreps.num_irreps
-        self.conv_tp_weights = nn.FullyConnectedNet([input_dim]
-            + 3 * [64]
-            + [self.conv_tp.weight_numel],
-            torch.nn.functional.silu)
+        self.conv_tp_weights = nn.FullyConnectedNet([input_dim] + 3 * [64] + [self.conv_tp.weight_numel],
+                                                    torch.nn.functional.silu)
 
         # Linear
         irreps_mid = irreps_mid.simplify()
@@ -343,7 +342,6 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
-
 class ScaleShiftBlock(torch.nn.Module):
     def __init__(self, scale: float, shift: float):
         super().__init__()
@@ -356,5 +354,6 @@ class ScaleShiftBlock(torch.nn.Module):
     def __repr__(self):
         return f'{self.__class__.__name__}(scale={self.scale:.6f}, shift={self.shift:.6f})'
 
-def ShiftedSoftPlus(x):
-    return torch.nn.functional.softplus(x) - math.log(2.0)
+
+def shifted_softplus(x):
+    return torch.nn.functional.softplus(x) - np.log(2.0)
