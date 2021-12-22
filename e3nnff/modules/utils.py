@@ -58,6 +58,7 @@ def compute_mean_std_atomic_inter_energy(
 
     return mean, std
 
+
 def compute_mean_rms_energy_forces(
     data_loader: torch.utils.data.DataLoader,
     atomic_energies: np.ndarray,
@@ -71,13 +72,13 @@ def compute_mean_rms_energy_forces(
         node_e0 = atomic_energies_fn(batch.node_attrs)
         graph_e0s = scatter_sum(src=node_e0, index=batch.batch, dim=-1, dim_size=batch.num_graphs)
         graph_sizes = batch.ptr[1:] - batch.ptr[:-1]
-        atom_energy_list.append((batch.energy - graph_e0s) / graph_sizes) #{[n_graphs], }
-        forces_list.append(batch.forces) #{[n_graphs*n_atoms,3], }
+        atom_energy_list.append((batch.energy - graph_e0s) / graph_sizes)  # {[n_graphs], }
+        forces_list.append(batch.forces)  # {[n_graphs*n_atoms,3], }
 
-    atom_energy_list = torch.cat(atom_energy_list)  # [total_n_graphs]
-    forces_list = torch.cat(forces_list) #{[total_n_graphs*n_atoms,3], }
+    atom_energies = torch.cat(atom_energy_list, dim=0)  # [total_n_graphs]
+    forces = torch.cat(forces_list, dim=0)  # {[total_n_graphs*n_atoms,3], }
 
-    mean = to_numpy(torch.mean(atom_energy_list)).item()
-    rms = to_numpy(torch.sqrt(torch.mean(torch.square(forces_list)))).item()
+    mean = to_numpy(torch.mean(atom_energies)).item()
+    rms = to_numpy(torch.sqrt(torch.mean(torch.square(forces)))).item()
 
     return mean, rms
