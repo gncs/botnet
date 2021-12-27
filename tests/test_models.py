@@ -51,3 +51,45 @@ def test_bo_model():
     output = model(batch)
     assert output['energy'].shape == (2, )
     assert output['forces'].shape == (6, 3)
+
+
+def test_isolated_atom():
+    isolated_config = data.Configuration(
+        atomic_numbers=np.array([1, 1]),
+        positions=np.array([
+            [0.0, 0.0, 0.0],
+            [10.0, 0.0, 0.0],
+        ]),
+    )
+
+    r_cutoff = 3.0
+    isolated_data = data.AtomicData.from_config(isolated_config, z_table=table, cutoff=r_cutoff)
+    atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=r_cutoff)
+    data_loader = torch_geometric.data.DataLoader(
+        dataset=[isolated_data, atomic_data],
+        batch_size=2,
+        shuffle=False,
+        drop_last=False,
+    )
+
+    atomic_energies = np.array([1.5, 2.5], dtype=float)
+    model = modules.BodyOrderedModel(
+        interaction_cls=modules.interaction_classes['SimpleInteractionBlock'],
+        r_max=r_cutoff,
+        num_bessel=7,
+        num_polynomial_cutoff=5,
+        max_ell=2,
+        num_elements=len(table),
+        num_interactions=2,
+        atomic_energies=atomic_energies,
+        hidden_irreps=o3.Irreps('5x0e + 5x1o + 5x2e + 5x3o'),
+    )
+
+    batch = next(iter(data_loader))
+    output = model(batch)
+
+    energy = tools.to_numpy(output['energy'])
+    assert np.isclose(energy[0], 2 * atomic_energies[0])
+
+    contributions = tools.to_numpy(output['contributions'])
+    assert np.isclose(contributions[0, 1:], 0.0).all()
