@@ -342,6 +342,9 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
+nonlinearities = { 1 : torch.nn.functional.silu,
+                   -1 : torch.tanh}
+
 class NequIPInteractionBlock(InteractionBlock):
     def _setup(self) -> None:
         
@@ -384,7 +387,7 @@ class NequIPInteractionBlock(InteractionBlock):
             ]
         )
         irreps_gates = o3.Irreps([mul,"0e"] for mul,_ in irreps_gated)
-        self.equivariant_nonlin = nn.Gate(irreps_scalars=irreps_scalars,act_scalars=[torch.tanh] * len(irreps_scalars),
+        self.equivariant_nonlin = nn.Gate(irreps_scalars=irreps_scalars,act_scalars=[nonlinearities[ir.p] for _,ir in irreps_scalars],
                 irreps_gates=irreps_gates, act_gates=[torch.nn.functional.silu] * len(irreps_gates),irreps_gated=irreps_gated,)
         self.irreps_nonlin = self.equivariant_nonlin.irreps_in.simplify()
         self.irreps_out = self.equivariant_nonlin.irreps_out.simplify()
