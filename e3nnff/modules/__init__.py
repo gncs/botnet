@@ -15,7 +15,6 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'NonlinearInteractionBlock': NonlinearInteractionBlock,
     'AgnosticNonlinearInteractionBlock': AgnosticNonlinearInteractionBlock,
     'NequIPInteractionBlock': NequIPInteractionBlock,
-    'ScaleShiftNonLinearSingleReadoutModel':ScaleShiftNonLinearSingleReadoutModel,
 }
 
 scaling_classes: Dict[str, Type[Callable]]  = {
@@ -26,5 +25,6 @@ scaling_classes: Dict[str, Type[Callable]]  = {
 __all__ = [
     'AtomicEnergiesBlock', 'RadialEmbeddingBlock', 'LinearReadoutBlock', 'SimpleInteractionBlock', 'PolynomialCutoff',
     'BesselBasis', 'EnergyForcesLoss', 'ACELoss', 'WeightedEnergyForcesLoss', 'interaction_classes', 'InteractionBlock',
-    'BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 'SingleReadoutModel', 'ScaleShiftSingleReadoutModel', 'compute_mean_std_atomic_inter_energy'
+    'BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 'SingleReadoutModel', 'ScaleShiftSingleReadoutModel', 'ScaleShiftNonLinearSingleReadoutModel',
+    'compute_mean_std_atomic_inter_energy',
 ]
