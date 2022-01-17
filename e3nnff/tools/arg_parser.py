@@ -43,7 +43,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         type=str,
                         default='32x0e + 32x1o + 32x2e + 32x3o')
     parser.add_argument('--MLP_irreps', help='hidden irreps of the MLP in last readout', type=str, default='16x0e')
-    parser.add_argument('--gate', help='non linearity for last readout', type=str, default='tanh')
+    parser.add_argument('--gate', help='non linearity for last readout', type=str, default='silu')
     parser.add_argument('--scaling',
                         help='type of scaling to the output',
                         type=str,
