@@ -87,6 +87,7 @@ gate_dict = {
     'abs': torch.abs,
     'tanh': torch.tanh,
     'silu': torch.nn.functional.silu,
+    'None': None,
 }
 
 

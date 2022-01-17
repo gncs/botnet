@@ -5,7 +5,7 @@ from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlo
                      NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, NequIPInteractionBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
-                     ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel)
+                     ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel, ScaleShiftNonLinearSingleReadoutModel)
 from .radial import BesselBasis, PolynomialCutoff
 from .utils import compute_mean_std_atomic_inter_energy, compute_mean_rms_energy_forces
 
@@ -15,6 +15,7 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'NonlinearInteractionBlock': NonlinearInteractionBlock,
     'AgnosticNonlinearInteractionBlock': AgnosticNonlinearInteractionBlock,
     'NequIPInteractionBlock': NequIPInteractionBlock,
+    'ScaleShiftNonLinearSingleReadoutModel':ScaleShiftNonLinearSingleReadoutModel,
 }
 
 scaling_classes: Dict[str, Type[Callable]]  = {
