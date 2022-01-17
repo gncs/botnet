@@ -174,6 +174,13 @@ def main() -> None:
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )
+    elif args.model == 'scale_shift_single_readout':
+        mean, std = modules.scaling_classes[args.scaling](train_loader, atomic_energies)
+        model = modules.ScaleShiftSingleReadoutModel(
+            **model_config,
+            atomic_inter_scale=std,
+            atomic_inter_shift=mean,
+        )
     elif args.model == 'single_readout':
         model = modules.SingleReadoutModel(**model_config)
     else:
