@@ -175,6 +175,15 @@ def main() -> None:
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )
+    elif args.model == 'scale_shift_non_linear_single_readout':
+        mean, std = modules.scaling_classes[args.scaling](train_loader, atomic_energies)
+        model = modules.ScaleShiftNonLinearSingleReadoutModel(
+            **model_config,
+            gate=gate_dict[args.gate],
+            MLP_irreps=o3.Irreps(args.MLP_irreps),
+            atomic_inter_scale=std,
+            atomic_inter_shift=mean,
+        )
     elif args.model == 'scale_shift_single_readout':
         mean, std = modules.scaling_classes[args.scaling](train_loader, atomic_energies)
         model = modules.ScaleShiftSingleReadoutModel(
