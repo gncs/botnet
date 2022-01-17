@@ -342,6 +342,81 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
+class NequIPInteractionBlock(InteractionBlock):
+    def _setup(self) -> None:
+        
+        #First linear
+        self.linear_up = o3.Linear(self.node_feats_irreps,self.node_feats_irreps, internal_weights=True, shared_weights=True)
+
+        # TensorProduct
+        irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
+                                                                   self.target_irreps)
+        self.conv_tp = o3.TensorProduct(self.node_feats_irreps,
+                                        self.edge_attrs_irreps,
+                                        irreps_mid,
+                                        instructions=instructions,
+                                        shared_weights=False,
+                                        internal_weights=False)
+
+        irreps_mid = irreps_mid.simplify()
+
+        #Convolution weights
+        input_dim = self.edge_feats_irreps.num_irreps
+        self.conv_tp_weights = nn.FullyConnectedNet([input_dim]
+            + 3 * [64]
+            + [self.conv_tp.weight_numel],
+            torch.nn.functional.silu)
+
+        #equivariant non linearity
+        irreps_scalars = o3.Irreps([
+                (mul, ir)
+                for mul, ir in self.feature_irreps_hidden
+                if ir.l == 0
+                and ir in irreps_mid
+            ]
+        )
+        irreps_gated = o3.Irreps(
+            [
+                (mul, ir)
+                for mul, ir in self.feature_irreps_hidden
+                if ir.l > 0
+                and ir in irreps_mid
+            ]
+        )
+        irreps_gates = o3.Irreps([mul,"0e"] for mul,_ in irreps_gated)
+        self.equivariant_nonlin = nn.Gate(irreps_scalars=irreps_scalars,act_scalars=[torch.nn.functional.silu] * len(irreps_scalars),
+                irreps_gates=irreps_gates, act_gates=[torch.nn.functional.silu],irreps_gated=irreps_gated,)
+        self.irreps_out = self.equivariant_nonlin.irreps_in.simplify()
+
+        # Linear
+        self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
+
+        # Selector TensorProduct
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, self.node_attrs_irreps, self.irreps_out)
+
+
+
+    def forward(
+        self,
+        node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
+    ) -> torch.Tensor:
+        sender, receiver = edge_index
+        num_nodes = node_feats.shape[0]
+        sc = self.skip_tp(node_feats, node_attrs)
+        node_feats = self.linear_up(node_feats)
+        tp_weights = self.conv_tp_weights(edge_feats)
+        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
+        message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
+        message = self.linear(message)
+        message = message + sc
+        return self.equivariant_nonlin(message) # [n_nodes, irreps]
+
+
+
 class ScaleShiftBlock(torch.nn.Module):
     def __init__(self, scale: float, shift: float):
         super().__init__()

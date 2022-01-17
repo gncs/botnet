@@ -408,3 +408,52 @@ class ScaleShiftNonLinearBodyOrderedModel(NonLinearBodyOrderedModel):
         }
 
         return output
+
+class ScaleShiftSingleReadoutModel(SingleReadoutModel):
+    def __init__(
+        self,
+        atomic_inter_scale: float,
+        atomic_inter_shift: float,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.scale_shift = ScaleShiftBlock(scale=atomic_inter_scale, shift=atomic_inter_shift)
+
+    def forward(self, data: AtomicData, training=False) -> Dict[str, Any]:
+        # Setup
+        data.positions.requires_grad = True
+
+        # Atomic energies
+        node_e0 = self.atomic_energies_fn(data.node_attrs)
+        e0 = scatter_sum(src=node_e0, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
+
+        # Embeddings
+        node_feats = self.node_embedding(data.node_attrs)
+        vectors, lengths = get_edge_vectors_and_lengths(positions=data.positions,
+                                                        edge_index=data.edge_index,
+                                                        shifts=data.shifts)
+        edge_attrs = self.spherical_harmonics(vectors)
+        edge_feats = self.radial_embedding(lengths)
+
+        # Interactions
+        for interaction in self.interactions:
+            node_feats = interaction(node_attrs=data.node_attrs,
+                                     node_feats=node_feats,
+                                     edge_attrs=edge_attrs,
+                                     edge_feats=edge_feats,
+                                     edge_index=data.edge_index)
+
+        node_inter_es = self.readouts[0](node_feats).squeeze(-1)  # {[n_nodes, ], }
+        node_inter_es = self.scale_shift(node_inter_es)
+
+        # Sum over nodes in graph
+        inter_e = scatter_sum(src=node_inter_es, index=data.batch, dim=-1, dim_size=data.num_graphs)  # [n_graphs,]
+
+        total_e = e0 + inter_e
+
+        output = {
+            'energy': total_e,
+            'forces': compute_forces(energy=total_e, positions=data.positions, training=training),
+        }
+
+        return output

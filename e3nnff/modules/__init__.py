@@ -2,10 +2,10 @@ from typing import Callable, Dict, Type
 
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, SimpleInteractionBlock,
                      ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock,
-                     NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock)
+                     NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, NequIPInteractionBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
-                     ScaleShiftNonLinearBodyOrderedModel)
+                     ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel)
 from .radial import BesselBasis, PolynomialCutoff
 from .utils import compute_mean_std_atomic_inter_energy, compute_mean_rms_energy_forces
 
@@ -14,9 +14,10 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'ElementDependentInteractionBlock': ElementDependentInteractionBlock,
     'NonlinearInteractionBlock': NonlinearInteractionBlock,
     'AgnosticNonlinearInteractionBlock': AgnosticNonlinearInteractionBlock,
+    'NequIPInteractionBlock': NequIPInteractionBlock,
 }
 
-scaling_classes: Dict[str, Callable] = {
+scaling_classes: Dict[str, Type[Callable]]  = {
     'std_scaling': compute_mean_std_atomic_inter_energy,
     'rms_forces_scaling': compute_mean_rms_energy_forces,
 }
@@ -24,5 +25,5 @@ scaling_classes: Dict[str, Callable] = {
 __all__ = [
     'AtomicEnergiesBlock', 'RadialEmbeddingBlock', 'LinearReadoutBlock', 'SimpleInteractionBlock', 'PolynomialCutoff',
     'BesselBasis', 'EnergyForcesLoss', 'ACELoss', 'WeightedEnergyForcesLoss', 'interaction_classes', 'InteractionBlock',
-    'BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 'SingleReadoutModel', 'compute_mean_std_atomic_inter_energy'
+    'BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 'SingleReadoutModel', 'ScaleShiftSingleReadoutModel', 'compute_mean_std_atomic_inter_energy'
 ]
