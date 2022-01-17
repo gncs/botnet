@@ -370,7 +370,7 @@ class NequIPInteractionBlock(InteractionBlock):
         #equivariant non linearity
         irreps_scalars = o3.Irreps([
                 (mul, ir)
-                for mul, ir in self.feature_irreps_hidden
+                for mul, ir in self.target_irreps
                 if ir.l == 0
                 and ir in irreps_mid
             ]
@@ -378,21 +378,22 @@ class NequIPInteractionBlock(InteractionBlock):
         irreps_gated = o3.Irreps(
             [
                 (mul, ir)
-                for mul, ir in self.feature_irreps_hidden
+                for mul, ir in self.target_irreps
                 if ir.l > 0
                 and ir in irreps_mid
             ]
         )
         irreps_gates = o3.Irreps([mul,"0e"] for mul,_ in irreps_gated)
-        self.equivariant_nonlin = nn.Gate(irreps_scalars=irreps_scalars,act_scalars=[torch.nn.functional.silu] * len(irreps_scalars),
-                irreps_gates=irreps_gates, act_gates=[torch.nn.functional.silu],irreps_gated=irreps_gated,)
-        self.irreps_out = self.equivariant_nonlin.irreps_in.simplify()
+        self.equivariant_nonlin = nn.Gate(irreps_scalars=irreps_scalars,act_scalars=[torch.tanh] * len(irreps_scalars),
+                irreps_gates=irreps_gates, act_gates=[torch.nn.functional.silu] * len(irreps_gates),irreps_gated=irreps_gated,)
+        self.irreps_nonlin = self.equivariant_nonlin.irreps_in.simplify()
+        self.irreps_out = self.equivariant_nonlin.irreps_out.simplify()
 
         # Linear
-        self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
+        self.linear = o3.Linear(irreps_mid, self.irreps_nonlin, internal_weights=True, shared_weights=True)
 
         # Selector TensorProduct
-        self.skip_tp = o3.FullyConnectedTensorProduct(self.irreps_out, self.node_attrs_irreps, self.irreps_out)
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.node_feats_irreps, self.node_attrs_irreps, self.irreps_nonlin)
 
 
 
