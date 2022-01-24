@@ -319,27 +319,6 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
             + [self.conv_tp.weight_numel],
             torch.nn.functional.silu)
 
-        #equivariant non linearity
-        irreps_scalars = o3.Irreps([
-                (mul, ir)
-                for mul, ir in self.target_irreps
-                if ir.l == 0
-                and ir in irreps_mid
-            ]
-        )
-        irreps_gated = o3.Irreps(
-            [
-                (mul, ir)
-                for mul, ir in self.target_irreps
-                if ir.l > 0
-                and ir in irreps_mid
-            ]
-        )
-        irreps_gates = o3.Irreps([mul,"0e"] for mul,_ in irreps_gated)
-        self.equivariant_nonlin = nn.Gate(irreps_scalars=irreps_scalars,act_scalars=[nonlinearities[ir.p] for _,ir in irreps_scalars],
-                irreps_gates=irreps_gates, act_gates=[torch.nn.functional.silu] * len(irreps_gates),irreps_gated=irreps_gated,)
-        self.irreps_nonlin = self.equivariant_nonlin.irreps_in.simplify()
-        self.irreps_out = self.equivariant_nonlin.irreps_out.simplify()
 
         # Linear
         self.linear = o3.Linear(irreps_mid, self.irreps_nonlin, internal_weights=True, shared_weights=True)
@@ -363,7 +342,7 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
         message = self.linear(message)
         message = self.skip_tp(message, node_attrs)
-        return self.equivariant_nonlin(message)  # [n_nodes, irreps]
+        return message  # [n_nodes, irreps]
 
 
 nonlinearities = { 1 : torch.nn.functional.silu,

@@ -66,7 +66,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--optimizer',
                         help='Optimizer for parameter optimization',
                         type=str,
-                        default='adamw',
+                        default='adam',
                         choices=['adam', 'adamw'])
     parser.add_argument('--batch_size', help='batch size', type=int, default=10)
     parser.add_argument('--lr', help='Learning rate of optimizer', type=float, default=0.01)
