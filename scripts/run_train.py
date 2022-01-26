@@ -220,8 +220,12 @@ def main() -> None:
         optimizer = torch.optim.Adam(**param_options)
 
     logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_train')
-    lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
 
+    if args.scheduler == 'ExponentialLR':
+        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
+    elif args.scheduler == 'ReduceLROnPlateau':
+        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, factor=args.lr_factor,
+                                                                  patience=args.scheduler_partience)
     checkpoint_handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_checkpoints)
 
     start_epoch = 0
