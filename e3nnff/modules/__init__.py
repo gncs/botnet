@@ -2,7 +2,7 @@ from typing import Callable, Dict, Type
 
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, SimpleInteractionBlock,
                      ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock,
-                     NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, NequIPInteractionBlock)
+                     NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, AgnosticResidualNonlinearInteractionBlock, NequIPInteractionBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
                      ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel, ScaleShiftNonLinearSingleReadoutModel)
@@ -14,6 +14,7 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'ElementDependentInteractionBlock': ElementDependentInteractionBlock,
     'NonlinearInteractionBlock': NonlinearInteractionBlock,
     'AgnosticNonlinearInteractionBlock': AgnosticNonlinearInteractionBlock,
+    'AgnosticResidualNonlinearInteractionBlock': AgnosticResidualNonlinearInteractionBlock,
     'NequIPInteractionBlock': NequIPInteractionBlock,
 }
 
