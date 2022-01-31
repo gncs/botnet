@@ -146,7 +146,8 @@ def main() -> None:
     
     if args.compute_num_avg_neighbors == True:
         args.num_avg_neighbors = modules.compute_num_avg_neighbors(train_loader)
-
+    logging.info(args.num_avg_neighbors)
+    
     # Build model
     logging.info('Building model')
     model_config = dict(
