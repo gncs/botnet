@@ -82,3 +82,19 @@ def compute_mean_rms_energy_forces(
     rms = to_numpy(torch.sqrt(torch.mean(torch.square(forces)))).item()
 
     return mean, rms
+
+def compute_num_avg_neighbors(
+    data_loader: torch.utils.data.DataLoader,
+) -> Tuple[float, float]:
+
+    average_neighbors_list = []
+
+    for batch in data_loader:
+        _,count = torch.unique(batch.edge_index)
+        average_neighbors_list.append(torch.mean(count/2))
+
+    average_neighbors = torch.cat(average_neighbors_list, dim=0)  # [total_n_graphs]
+    
+    num_avg_neighbors = to_numpy(torch.mean(average_neighbors)).item()
+
+    return num_avg_neighbors

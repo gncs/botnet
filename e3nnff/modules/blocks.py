@@ -96,6 +96,7 @@ class InteractionBlock(ABC, torch.nn.Module):
         edge_attrs_irreps: o3.Irreps,
         edge_feats_irreps: o3.Irreps,
         target_irreps: o3.Irreps,
+        num_avg_neighbors: float,
     ) -> None:
         super().__init__()
         self.node_attrs_irreps = node_attrs_irreps
@@ -103,6 +104,7 @@ class InteractionBlock(ABC, torch.nn.Module):
         self.edge_attrs_irreps = edge_attrs_irreps
         self.edge_feats_irreps = edge_feats_irreps
         self.target_irreps = target_irreps
+        self.num_avg_neighbors = num_avg_neighbors
 
         self._setup()
 
@@ -158,7 +160,7 @@ class SimpleInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)
+        message = self.linear(message)/self.num_avg_neighbors
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
@@ -220,7 +222,7 @@ class ElementDependentInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(node_attrs[sender], edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)
+        message = self.linear(message)/self.num_avg_neighbors
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
@@ -291,7 +293,7 @@ class NonlinearInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(torch.cat([node_attrs[sender], edge_feats], dim=-1))
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)
+        message = self.linear(message)/self.num_avg_neighbors
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
@@ -339,7 +341,7 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)
+        message = self.linear(message)/self.num_avg_neighbors
         message = self.skip_tp(message, node_attrs)
         return message  # [n_nodes, irreps]
 
@@ -393,7 +395,7 @@ class AgnosticResidualNonlinearInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)
+        message = self.linear(message)/self.num_avg_neighbors
         message = message + sc
         return message  # [n_nodes, irreps]
 
@@ -473,7 +475,7 @@ class NequIPInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message) 
+        message = self.linear(message)/self.num_avg_neighbors
         message = message + sc
         return self.equivariant_nonlin(message) # [n_nodes, irreps]
 

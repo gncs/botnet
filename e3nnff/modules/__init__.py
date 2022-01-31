@@ -7,7 +7,7 @@ from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
                      ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel, ScaleShiftNonLinearSingleReadoutModel)
 from .radial import BesselBasis, PolynomialCutoff
-from .utils import compute_mean_std_atomic_inter_energy, compute_mean_rms_energy_forces
+from .utils import compute_mean_std_atomic_inter_energy, compute_mean_rms_energy_forces, compute_average_neigbhors
 
 interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'SimpleInteractionBlock': SimpleInteractionBlock,

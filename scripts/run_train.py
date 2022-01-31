@@ -143,6 +143,9 @@ def main() -> None:
     else:
         loss_fn = modules.EnergyForcesLoss(energy_weight=args.energy_weight, forces_weight=args.forces_weight)
     logging.info(loss_fn)
+    
+    if args.compute_num_avg_neighbors == True:
+        args.num_avg_neighbors = modules.compute_num_avg_neighbors(train_loader)
 
     # Build model
     logging.info('Building model')
@@ -156,6 +159,7 @@ def main() -> None:
         num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
+        num_avg_neighbors=args.num_avg_neighbors
     )
 
     model: torch.nn.Module
