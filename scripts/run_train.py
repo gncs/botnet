@@ -143,11 +143,11 @@ def main() -> None:
     else:
         loss_fn = modules.EnergyForcesLoss(energy_weight=args.energy_weight, forces_weight=args.forces_weight)
     logging.info(loss_fn)
-    
-    if args.compute_num_avg_neighbors == True:
-        args.num_avg_neighbors = modules.compute_num_avg_neighbors(train_loader)
-    logging.info(args.num_avg_neighbors)
-    
+
+    if args.compute_avg_num_neighbors:
+        args.avg_num_neighbors = modules.compute_avg_num_neighbors(train_loader)
+    logging.info(f'Average number of neighbors: {args.avg_num_neighbors:.3f}')
+
     # Build model
     logging.info('Building model')
     model_config = dict(
@@ -160,7 +160,7 @@ def main() -> None:
         num_elements=len(z_table),
         hidden_irreps=o3.Irreps(args.hidden_irreps),
         atomic_energies=atomic_energies,
-        num_avg_neighbors=args.num_avg_neighbors
+        avg_num_neighbors=args.avg_num_neighbors,
     )
 
     model: torch.nn.Module
@@ -226,11 +226,12 @@ def main() -> None:
 
     logger = tools.MetricsLogger(directory=args.results_dir, tag=tag + '_train')
 
-    if args.scheduler == 'ExponentialLR':
-        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
-    elif args.scheduler == 'ReduceLROnPlateau':
-        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, factor=args.lr_factor,
+    if args.scheduler == 'ReduceLROnPlateau':
+        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer,
+                                                                  factor=args.lr_factor,
                                                                   patience=args.scheduler_partience)
+    else:
+        lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=args.lr_scheduler_gamma)
     checkpoint_handler = tools.CheckpointHandler(directory=args.checkpoints_dir, tag=tag, keep=args.keep_checkpoints)
 
     start_epoch = 0

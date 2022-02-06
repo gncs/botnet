@@ -34,9 +34,10 @@ def test_bo_model():
         num_interactions=2,
         atomic_energies=atomic_energies,
         hidden_irreps=o3.Irreps('10x0e + 10x0o + 8x1e + 8x1o + 4x2e + 4x2o'),
+        avg_num_neighbors=1.0,
     )
 
-    assert tools.count_parameters(model) == 2408
+    assert tools.count_parameters(model) == 2772
 
     atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
@@ -83,6 +84,7 @@ def test_isolated_atom():
         num_interactions=2,
         atomic_energies=atomic_energies,
         hidden_irreps=o3.Irreps('5x0e + 5x1o + 5x2e + 5x3o'),
+        avg_num_neighbors=1.0,
     )
 
     batch = next(iter(data_loader))

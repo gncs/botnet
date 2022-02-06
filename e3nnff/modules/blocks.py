@@ -96,7 +96,7 @@ class InteractionBlock(ABC, torch.nn.Module):
         edge_attrs_irreps: o3.Irreps,
         edge_feats_irreps: o3.Irreps,
         target_irreps: o3.Irreps,
-        num_avg_neighbors: float,
+        avg_num_neighbors: float,
     ) -> None:
         super().__init__()
         self.node_attrs_irreps = node_attrs_irreps
@@ -104,7 +104,7 @@ class InteractionBlock(ABC, torch.nn.Module):
         self.edge_attrs_irreps = edge_attrs_irreps
         self.edge_feats_irreps = edge_feats_irreps
         self.target_irreps = target_irreps
-        self.num_avg_neighbors = num_avg_neighbors
+        self.avg_num_neighbors = avg_num_neighbors
 
         self._setup()
 
@@ -160,7 +160,7 @@ class SimpleInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)/self.num_avg_neighbors
+        message = self.linear(message) / self.avg_num_neighbors
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
@@ -222,7 +222,7 @@ class ElementDependentInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(node_attrs[sender], edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)/self.num_avg_neighbors
+        message = self.linear(message) / self.avg_num_neighbors
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
@@ -293,7 +293,7 @@ class NonlinearInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(torch.cat([node_attrs[sender], edge_feats], dim=-1))
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)/self.num_avg_neighbors
+        message = self.linear(message) / self.avg_num_neighbors
         return self.skip_tp(message, node_attrs)  # [n_nodes, irreps]
 
 
@@ -309,14 +309,10 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
                                         shared_weights=False,
                                         internal_weights=False)
 
-
-        #Convolution weights
+        # Convolution weights
         input_dim = self.edge_feats_irreps.num_irreps
-        self.conv_tp_weights = nn.FullyConnectedNet([input_dim]
-            + 3 * [64]
-            + [self.conv_tp.weight_numel],
-            torch.nn.functional.silu)
-
+        self.conv_tp_weights = nn.FullyConnectedNet([input_dim] + 3 * [64] + [self.conv_tp.weight_numel],
+                                                    torch.nn.functional.silu)
 
         # Linear
         irreps_mid = irreps_mid.simplify()
@@ -341,17 +337,18 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)/self.num_avg_neighbors
+        message = self.linear(message) / self.avg_num_neighbors
         message = self.skip_tp(message, node_attrs)
         return message  # [n_nodes, irreps]
 
 
-
-
 class AgnosticResidualNonlinearInteractionBlock(InteractionBlock):
     def _setup(self) -> None:
-        #First linear
-        self.linear_up = o3.Linear(self.node_feats_irreps,self.node_feats_irreps, internal_weights=True, shared_weights=True)
+        # First linear
+        self.linear_up = o3.Linear(self.node_feats_irreps,
+                                   self.node_feats_irreps,
+                                   internal_weights=True,
+                                   shared_weights=True)
         # TensorProduct
         irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
                                                                    self.target_irreps)
@@ -362,14 +359,10 @@ class AgnosticResidualNonlinearInteractionBlock(InteractionBlock):
                                         shared_weights=False,
                                         internal_weights=False)
 
-
-        #Convolution weights
+        # Convolution weights
         input_dim = self.edge_feats_irreps.num_irreps
-        self.conv_tp_weights = nn.FullyConnectedNet([input_dim]
-            + 3 * [64]
-            + [self.conv_tp.weight_numel],
-            torch.nn.functional.silu)
-
+        self.conv_tp_weights = nn.FullyConnectedNet([input_dim] + 3 * [64] + [self.conv_tp.weight_numel],
+                                                    torch.nn.functional.silu)
 
         # Linear
         irreps_mid = irreps_mid.simplify()
@@ -395,21 +388,21 @@ class AgnosticResidualNonlinearInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)/self.num_avg_neighbors
+        message = self.linear(message) / self.avg_num_neighbors
         message = message + sc
         return message  # [n_nodes, irreps]
 
 
+nonlinearities = {1: torch.nn.functional.silu, -1: torch.tanh}
 
-nonlinearities = { 1 : torch.nn.functional.silu,
-                   -1 : torch.tanh}
 
 class NequIPInteractionBlock(InteractionBlock):
-    def _setup(self,) -> None:
-    
-
-        #First linear
-        self.linear_up = o3.Linear(self.node_feats_irreps,self.node_feats_irreps, internal_weights=True, shared_weights=True)
+    def _setup(self, ) -> None:
+        # First linear
+        self.linear_up = o3.Linear(self.node_feats_irreps,
+                                   self.node_feats_irreps,
+                                   internal_weights=True,
+                                   shared_weights=True)
 
         # TensorProduct
         irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
@@ -423,32 +416,22 @@ class NequIPInteractionBlock(InteractionBlock):
 
         irreps_mid = irreps_mid.simplify()
 
-        #Convolution weights
+        # Convolution weights
         input_dim = self.edge_feats_irreps.num_irreps
-        self.conv_tp_weights = nn.FullyConnectedNet([input_dim]
-            + 3 * [64]
-            + [self.conv_tp.weight_numel],
-            torch.nn.functional.silu)
+        self.conv_tp_weights = nn.FullyConnectedNet([input_dim] + 3 * [64] + [self.conv_tp.weight_numel],
+                                                    torch.nn.functional.silu)
 
-        #equivariant non linearity
-        irreps_scalars = o3.Irreps([
-                (mul, ir)
-                for mul, ir in self.target_irreps
-                if ir.l == 0
-                and ir in irreps_mid
-            ]
+        # equivariant non linearity
+        irreps_scalars = o3.Irreps([(mul, ir) for mul, ir in self.target_irreps if ir.l == 0 and ir in irreps_mid])
+        irreps_gated = o3.Irreps([(mul, ir) for mul, ir in self.target_irreps if ir.l > 0 and ir in irreps_mid])
+        irreps_gates = o3.Irreps([mul, "0e"] for mul, _ in irreps_gated)
+        self.equivariant_nonlin = nn.Gate(
+            irreps_scalars=irreps_scalars,
+            act_scalars=[nonlinearities[ir.p] for _, ir in irreps_scalars],
+            irreps_gates=irreps_gates,
+            act_gates=[torch.nn.functional.silu] * len(irreps_gates),
+            irreps_gated=irreps_gated,
         )
-        irreps_gated = o3.Irreps(
-            [
-                (mul, ir)
-                for mul, ir in self.target_irreps
-                if ir.l > 0
-                and ir in irreps_mid
-            ]
-        )
-        irreps_gates = o3.Irreps([mul,"0e"] for mul,_ in irreps_gated)
-        self.equivariant_nonlin = nn.Gate(irreps_scalars=irreps_scalars,act_scalars=[nonlinearities[ir.p] for _,ir in irreps_scalars],
-                irreps_gates=irreps_gates, act_gates=[torch.nn.functional.silu] * len(irreps_gates),irreps_gated=irreps_gated,)
         self.irreps_nonlin = self.equivariant_nonlin.irreps_in.simplify()
         self.irreps_out = self.equivariant_nonlin.irreps_out.simplify()
 
@@ -456,9 +439,8 @@ class NequIPInteractionBlock(InteractionBlock):
         self.linear = o3.Linear(irreps_mid, self.irreps_nonlin, internal_weights=True, shared_weights=True)
 
         # Selector TensorProduct
-        self.skip_tp = o3.FullyConnectedTensorProduct(self.node_feats_irreps, self.node_attrs_irreps, self.irreps_nonlin)
-
-
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.node_feats_irreps, self.node_attrs_irreps,
+                                                      self.irreps_nonlin)
 
     def forward(
         self,
@@ -475,10 +457,9 @@ class NequIPInteractionBlock(InteractionBlock):
         tp_weights = self.conv_tp_weights(edge_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
-        message = self.linear(message)/self.num_avg_neighbors
+        message = self.linear(message) / self.avg_num_neighbors
         message = message + sc
-        return self.equivariant_nonlin(message) # [n_nodes, irreps]
-
+        return self.equivariant_nonlin(message)  # [n_nodes, irreps]
 
 
 class ScaleShiftBlock(torch.nn.Module):

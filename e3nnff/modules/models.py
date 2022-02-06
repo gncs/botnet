@@ -23,7 +23,7 @@ class BodyOrderedModel(torch.nn.Module):
         num_elements: int,
         hidden_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
-        num_avg_neighbors: float,
+        avg_num_neighbors: float,
     ):
         super().__init__()
 
@@ -53,7 +53,7 @@ class BodyOrderedModel(torch.nn.Module):
             edge_attrs_irreps=sh_irreps,
             edge_feats_irreps=edge_feats_irreps,
             target_irreps=hidden_irreps,
-            num_avg_neighbors=num_avg_neighbors,
+            avg_num_neighbors=avg_num_neighbors,
         )
         self.interactions.append(inter)
         self.readouts.append(LinearReadoutBlock(inter.irreps_out))
@@ -65,7 +65,7 @@ class BodyOrderedModel(torch.nn.Module):
                 edge_attrs_irreps=sh_irreps,
                 edge_feats_irreps=edge_feats_irreps,
                 target_irreps=hidden_irreps,
-                num_avg_neighbors=num_avg_neighbors,
+                avg_num_neighbors=avg_num_neighbors,
             )
             self.interactions.append(inter)
             self.readouts.append(LinearReadoutBlock(inter.irreps_out))
@@ -125,7 +125,7 @@ class NonLinearBodyOrderedModel(torch.nn.Module):
         MLP_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
         gate: Callable,
-        num_avg_neighbors: float,
+        avg_num_neighbors: float,
     ):
         super().__init__()
 
@@ -155,7 +155,7 @@ class NonLinearBodyOrderedModel(torch.nn.Module):
             edge_attrs_irreps=sh_irreps,
             edge_feats_irreps=edge_feats_irreps,
             target_irreps=hidden_irreps,
-            num_avg_neighbors=num_avg_neighbors,
+            avg_num_neighbors=avg_num_neighbors,
         )
         self.interactions.append(inter)
         self.readouts.append(LinearReadoutBlock(inter.irreps_out))
@@ -167,7 +167,7 @@ class NonLinearBodyOrderedModel(torch.nn.Module):
                 edge_attrs_irreps=sh_irreps,
                 edge_feats_irreps=edge_feats_irreps,
                 target_irreps=hidden_irreps,
-                num_avg_neighbors=num_avg_neighbors,
+                avg_num_neighbors=avg_num_neighbors,
             )
             self.interactions.append(inter)
             if i == num_interactions - 2:
@@ -228,7 +228,7 @@ class SingleReadoutModel(torch.nn.Module):
         num_elements: int,
         hidden_irreps: o3.Irreps,
         atomic_energies: np.ndarray,
-        num_avg_neighbors: float,
+        avg_num_neighbors: float,
     ):
         super().__init__()
 
@@ -255,7 +255,7 @@ class SingleReadoutModel(torch.nn.Module):
             edge_attrs_irreps=sh_irreps,
             edge_feats_irreps=edge_feats_irreps,
             target_irreps=hidden_irreps,
-            num_avg_neighbors=num_avg_neighbors,
+            avg_num_neighbors=avg_num_neighbors,
         )
         self.interactions = torch.nn.ModuleList([inter])
 
@@ -266,7 +266,7 @@ class SingleReadoutModel(torch.nn.Module):
                 edge_attrs_irreps=sh_irreps,
                 edge_feats_irreps=edge_feats_irreps,
                 target_irreps=hidden_irreps,
-                num_avg_neighbors=num_avg_neighbors,
+                avg_num_neighbors=avg_num_neighbors,
             )
             self.interactions.append(inter)
 
@@ -323,7 +323,7 @@ class NonLinearSingleReadoutModel(torch.nn.Module):
         atomic_energies: np.ndarray,
         MLP_irreps: o3.Irreps,
         gate: Callable,
-        num_avg_neighbors: float,
+        avg_num_neighbors: float,
     ):
         super().__init__()
 
@@ -350,7 +350,7 @@ class NonLinearSingleReadoutModel(torch.nn.Module):
             edge_attrs_irreps=sh_irreps,
             edge_feats_irreps=edge_feats_irreps,
             target_irreps=hidden_irreps,
-            num_avg_neighbors=num_avg_neighbors,
+            avg_num_neighbors=avg_num_neighbors,
         )
         self.interactions = torch.nn.ModuleList([inter])
 
@@ -361,7 +361,7 @@ class NonLinearSingleReadoutModel(torch.nn.Module):
                 edge_attrs_irreps=sh_irreps,
                 edge_feats_irreps=edge_feats_irreps,
                 target_irreps=hidden_irreps,
-                num_avg_neighbors=num_avg_neighbors,
+                avg_num_neighbors=avg_num_neighbors,
             )
             self.interactions.append(inter)
 
@@ -513,6 +513,7 @@ class ScaleShiftNonLinearBodyOrderedModel(NonLinearBodyOrderedModel):
 
         return output
 
+
 class ScaleShiftSingleReadoutModel(SingleReadoutModel):
     def __init__(
         self,
@@ -561,7 +562,6 @@ class ScaleShiftSingleReadoutModel(SingleReadoutModel):
         }
 
         return output
-
 
 
 class ScaleShiftNonLinearSingleReadoutModel(NonLinearSingleReadoutModel):
