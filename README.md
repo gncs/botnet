@@ -1,1 +1,1 @@
-# E3NN Force Field
+# BOTNet
