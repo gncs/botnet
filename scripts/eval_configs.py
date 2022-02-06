@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch_geometric
 
-from e3nnff import data, tools, modules
+from botnet import data, tools, modules
 
 
 def parse_args() -> argparse.Namespace:

@@ -2,8 +2,8 @@
 import numpy as np
 import torch_geometric
 
-from e3nnff.data import Configuration, AtomicData, get_neighborhood
-from e3nnff.tools import AtomicNumberTable
+from botnet.data import Configuration, AtomicData, get_neighborhood
+from botnet.tools import AtomicNumberTable
 
 config = Configuration(
     atomic_numbers=np.array([8, 1, 1]),

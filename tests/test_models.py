@@ -2,7 +2,7 @@ import numpy as np
 import torch_geometric
 from e3nn import o3
 
-from e3nnff import data, modules, tools
+from botnet import data, modules, tools
 
 config = data.Configuration(
     atomic_numbers=np.array([8, 1, 1]),

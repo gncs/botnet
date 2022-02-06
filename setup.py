@@ -10,11 +10,11 @@ def readme() -> str:
 
 
 version_dict = {}  # type: Dict[str, str]
-with open(os.path.join('e3nnff', '_version.py')) as file:
+with open(os.path.join('botnet', '_version.py')) as file:
     exec(file.read(), version_dict)
 
 setup(
-    name='e3nnff',
+    name='botnet',
     version=version_dict['__version__'],
     description='',
     long_description=readme(),

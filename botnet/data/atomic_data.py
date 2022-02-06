@@ -3,7 +3,7 @@ from typing import Optional
 import torch.utils.data
 import torch_geometric
 
-from e3nnff.tools import to_one_hot, AtomicNumberTable, atomic_numbers_to_indices
+from botnet.tools import to_one_hot, AtomicNumberTable, atomic_numbers_to_indices
 from .neighborhood import get_neighborhood
 from .utils import Configuration
 

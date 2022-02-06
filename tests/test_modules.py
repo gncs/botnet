@@ -3,9 +3,9 @@ import torch
 import torch_geometric
 import torch_scatter
 
-from e3nnff.data import Configuration, AtomicData
-from e3nnff.modules import PolynomialCutoff, AtomicEnergiesBlock, BesselBasis
-from e3nnff.tools import AtomicNumberTable, to_numpy
+from botnet.data import Configuration, AtomicData
+from botnet.modules import PolynomialCutoff, AtomicEnergiesBlock, BesselBasis
+from botnet.tools import AtomicNumberTable, to_numpy
 
 config = Configuration(
     atomic_numbers=np.array([8, 1, 1]),

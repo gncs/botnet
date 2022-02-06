@@ -5,7 +5,7 @@ import torch.nn
 from e3nn import o3
 from torch_scatter import scatter_sum
 
-from e3nnff.data import AtomicData
+from botnet.data import AtomicData
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock, ScaleShiftBlock,
                      LinearNodeEmbeddingBlock, NonLinearReadoutBlock)
 from .utils import get_edge_vectors_and_lengths, compute_forces

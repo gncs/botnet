@@ -7,7 +7,7 @@ import os
 import ase
 import numpy as np
 
-from e3nnff import data
+from botnet import data
 
 from ase import units
 from ase.calculators.calculator import Calculator, all_changes

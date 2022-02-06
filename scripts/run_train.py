@@ -10,7 +10,7 @@ from e3nn import o3
 from torch.optim.swa_utils import AveragedModel, SWALR
 from torch_ema import ExponentialMovingAverage
 
-from e3nnff import data, tools, modules
+from botnet import data, tools, modules
 
 
 @dataclasses.dataclass

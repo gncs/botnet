@@ -6,7 +6,7 @@ import torch.nn
 import torch.utils.data
 from torch_scatter import scatter_sum
 
-from e3nnff.tools import to_numpy
+from botnet.tools import to_numpy
 from .blocks import AtomicEnergiesBlock
 
 

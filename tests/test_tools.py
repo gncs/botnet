@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional
 from torch import nn, optim
 
-from e3nnff.tools import AtomicNumberTable, atomic_numbers_to_indices, CheckpointState, CheckpointHandler
+from botnet.tools import AtomicNumberTable, atomic_numbers_to_indices, CheckpointState, CheckpointHandler
 
 
 def test_atomic_number_table():
