@@ -209,7 +209,7 @@ def main() -> None:
             'name': 'embedding',
             'params': model.node_embedding.parameters(),
             'weight_decay': 0.0,
-        },{
+        }, {
             'name': 'interactions',
             'params': model.interactions.parameters(),
             'weight_decay': args.weight_decay,
