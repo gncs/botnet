@@ -393,6 +393,53 @@ class AgnosticResidualNonlinearInteractionBlock(InteractionBlock):
         return message  # [n_nodes, irreps]
 
 
+
+class AgnosticNoScNonlinearInteractionBlock(InteractionBlock):
+    def _setup(self) -> None:
+        # First linear
+        self.linear_up = o3.Linear(self.node_feats_irreps,
+                                   self.node_feats_irreps,
+                                   internal_weights=True,
+                                   shared_weights=True)
+        # TensorProduct
+        irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
+                                                                   self.target_irreps)
+        self.conv_tp = o3.TensorProduct(self.node_feats_irreps,
+                                        self.edge_attrs_irreps,
+                                        irreps_mid,
+                                        instructions=instructions,
+                                        shared_weights=False,
+                                        internal_weights=False)
+
+        # Convolution weights
+        input_dim = self.edge_feats_irreps.num_irreps
+        self.conv_tp_weights = nn.FullyConnectedNet([input_dim] + 3 * [64] + [self.conv_tp.weight_numel],
+                                                    torch.nn.functional.silu)
+
+        # Linear
+        irreps_mid = irreps_mid.simplify()
+        self.irreps_out = linear_out_irreps(irreps_mid, self.target_irreps)
+        self.irreps_out = self.irreps_out.simplify()
+        self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
+
+
+    def forward(
+        self,
+        node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
+    ) -> torch.Tensor:
+        sender, receiver = edge_index
+        num_nodes = node_feats.shape[0]
+        node_feats = self.linear_up(node_feats)
+        tp_weights = self.conv_tp_weights(edge_feats)
+        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
+        message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
+        message = self.linear(message) / self.avg_num_neighbors
+        return message  # [n_nodes, irreps]
+
 nonlinearities = {1: torch.nn.functional.silu, -1: torch.tanh}
 
 
