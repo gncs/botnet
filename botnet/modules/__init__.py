@@ -16,6 +16,7 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'ElementDependentInteractionBlock': ElementDependentInteractionBlock,
     'NonlinearInteractionBlock': NonlinearInteractionBlock,
     'AgnosticNonlinearInteractionBlock': AgnosticNonlinearInteractionBlock,
+    'AgnosticNoScNonlinearInteractionBlock': AgnosticNoScNonlinearInteractionBlock,
     'AgnosticResidualNonlinearInteractionBlock': AgnosticResidualNonlinearInteractionBlock,
     'NequIPInteractionBlock': NequIPInteractionBlock,
 }
