@@ -119,6 +119,7 @@ class NonLinearBodyOrderedModel(torch.nn.Module):
         num_polynomial_cutoff: int,
         max_ell: int,
         interaction_cls: Type[InteractionBlock],
+        interaction_cls_first : Type[InteractionBlock],
         num_interactions: int,
         num_elements: int,
         hidden_irreps: o3.Irreps,
@@ -149,7 +150,7 @@ class NonLinearBodyOrderedModel(torch.nn.Module):
         self.interactions = torch.nn.ModuleList()
         self.readouts = torch.nn.ModuleList()
 
-        inter = interaction_cls(
+        inter = interaction_cls_first(
             node_attrs_irreps=node_attr_irreps,
             node_feats_irreps=node_feats_irreps,
             edge_attrs_irreps=sh_irreps,
@@ -612,3 +613,4 @@ class ScaleShiftNonLinearSingleReadoutModel(NonLinearSingleReadoutModel):
         }
 
         return output
+

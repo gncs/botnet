@@ -30,7 +30,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         default='body_ordered',
                         choices=[
                             'body_ordered', 'scale_shift', 'single_readout', 'scale_shift_non_linear',
-                            'scale_shift_single_readout', 'scale_shift_non_linear_single_readout'
+                            'scale_shift_single_readout', 'scale_shift_non_linear_single_readout',
                         ])
     parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=4.0)
     parser.add_argument('--num_radial_basis', help='number of radial basis functions', type=int, default=8)
@@ -40,6 +40,10 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         help='name of interaction block',
                         type=str,
                         default='ElementDependentInteractionBlock')
+    parser.add_argument('--interaction_first',
+                        help='name of interaction block',
+                        type=str,
+                        default='AgnosticNonlinearInteractionBlock')
     parser.add_argument('--num_interactions', help='number of interactions', type=int, default=5)
     parser.add_argument('--hidden_irreps',
                         help='irreps for hidden node states',
