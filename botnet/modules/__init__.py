@@ -2,7 +2,7 @@ from typing import Callable, Dict, Type
 
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, SimpleInteractionBlock,
                      ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock,
-                     NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock,
+                     NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, ResidualElementDependentInteractionBlock,
                      AgnosticResidualNonlinearInteractionBlock, NequIPInteractionBlock, AgnosticNoScNonlinearInteractionBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
@@ -14,6 +14,7 @@ from .utils import compute_mean_std_atomic_inter_energy, compute_mean_rms_energy
 interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'SimpleInteractionBlock': SimpleInteractionBlock,
     'ElementDependentInteractionBlock': ElementDependentInteractionBlock,
+    'ResidualElementDependentInteractionBlock': ResidualElementDependentInteractionBlock,
     'NonlinearInteractionBlock': NonlinearInteractionBlock,
     'AgnosticNonlinearInteractionBlock': AgnosticNonlinearInteractionBlock,
     'AgnosticNoScNonlinearInteractionBlock': AgnosticNoScNonlinearInteractionBlock,
