@@ -7,7 +7,7 @@ from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlo
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
                      ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel,
-                     ScaleShiftNonLinearSingleReadoutModel)
+                     ScaleShiftNonLinearSingleReadoutModel, NonLinearBodyOrderedModel)
 from .radial import BesselBasis, PolynomialCutoff
 from .utils import compute_mean_std_atomic_inter_energy, compute_mean_rms_energy_forces, compute_avg_num_neighbors
 
@@ -30,6 +30,6 @@ __all__ = [
     'AtomicEnergiesBlock', 'RadialEmbeddingBlock', 'LinearReadoutBlock', 'SimpleInteractionBlock', 'PolynomialCutoff',
     'AgnosticNoScNonlinearInteractionBlock','BesselBasis', 'EnergyForcesLoss', 'ACELoss', 'WeightedEnergyForcesLoss', 
     'interaction_classes', 'InteractionBlock','BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 'SingleReadoutModel', 
-    'ScaleShiftSingleReadoutModel','ScaleShiftNonLinearSingleReadoutModel', 'compute_mean_std_atomic_inter_energy',
-    'compute_avg_num_neighbors',
+    'ScaleShiftSingleReadoutModel','ScaleShiftNonLinearSingleReadoutModel', 'NonLinearBodyOrderedModel',
+    'ScaleShiftNonLinearBodyOrderedModel','compute_mean_std_atomic_inter_energy', 'compute_avg_num_neighbors',
 ]
