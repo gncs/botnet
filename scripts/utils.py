@@ -23,7 +23,6 @@ style_dict: Dict[str, Dict[str, Any]] = {
     'nequip': {
         'color': colors[1],
         'label': 'NequIP',
-        'linestyle': dashed,
     },
     'nequip-linear': {
         'color': colors[3],
@@ -64,6 +63,10 @@ style_dict: Dict[str, Dict[str, Any]] = {
     'botnet': {
         'color': colors[0],
         'label': 'BOTNet',
+    },
+    'botnet-e0': {
+        'color': colors[0],
+        'label': 'BOTNet E0',
     },
     'botnet-ssh': {
         'color': colors[8],

@@ -346,6 +346,10 @@ class NonlinearInteractionBlock(InteractionBlock):
 
 class AgnosticNonlinearInteractionBlock(InteractionBlock):
     def _setup(self) -> None:
+        self.linear_up = o3.Linear(self.node_feats_irreps,
+                                   self.node_feats_irreps,
+                                   internal_weights=True,
+                                   shared_weights=True)
         # TensorProduct
         irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
                                                                    self.target_irreps)
@@ -381,6 +385,7 @@ class AgnosticNonlinearInteractionBlock(InteractionBlock):
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]
         tp_weights = self.conv_tp_weights(edge_feats)
+        node_feats = self.linear_up(node_feats)
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
         message = self.linear(message) / self.avg_num_neighbors
