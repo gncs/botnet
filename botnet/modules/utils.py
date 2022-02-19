@@ -34,7 +34,7 @@ def compute_forces(energy: torch.Tensor, positions: torch.Tensor, training=True)
         only_inputs=True,  # Diff only w.r.t. inputs
         allow_unused=False,
     )[0]  # [n_nodes, 3]
-    if gradient == None:
+    if gradient is None:
         return torch.zeros_like(positions)
     return -1 * gradient
 

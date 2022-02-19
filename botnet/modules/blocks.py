@@ -336,7 +336,7 @@ class NonlinearInteractionBlock(InteractionBlock):
     ) -> torch.Tensor:
         sender, receiver = edge_index
         num_nodes = node_feats.shape[0]
-    
+
         tp_weights = self.conv_tp_weights(torch.cat([node_attrs[sender], edge_feats], dim=-1))
         mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
@@ -444,7 +444,6 @@ class AgnosticResidualNonlinearInteractionBlock(InteractionBlock):
         return message  # [n_nodes, irreps]
 
 
-
 class AgnosticNoScNonlinearInteractionBlock(InteractionBlock):
     def _setup(self) -> None:
         # First linear
@@ -473,7 +472,6 @@ class AgnosticNoScNonlinearInteractionBlock(InteractionBlock):
         self.irreps_out = self.irreps_out.simplify()
         self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
 
-
     def forward(
         self,
         node_attrs: torch.Tensor,
@@ -490,6 +488,7 @@ class AgnosticNoScNonlinearInteractionBlock(InteractionBlock):
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
         message = self.linear(message) / self.avg_num_neighbors
         return message  # [n_nodes, irreps]
+
 
 nonlinearities = {1: torch.nn.functional.silu, -1: torch.tanh}
 
