@@ -176,7 +176,7 @@ def main() -> None:
         model = modules.ScaleShiftNonLinearBodyOrderedModel(
             **model_config,
             gate=gate_dict[args.gate],
-            interaction_cls_first = modules.interaction_classes[args.interaction_first],
+            interaction_cls_first=modules.interaction_classes[args.interaction_first],
             MLP_irreps=o3.Irreps(args.MLP_irreps),
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
@@ -185,7 +185,7 @@ def main() -> None:
         model = modules.NonLinearBodyOrderedModel(
             **model_config,
             gate=gate_dict[args.gate],
-            interaction_cls_first = modules.interaction_classes[args.interaction_first],
+            interaction_cls_first=modules.interaction_classes[args.interaction_first],
             MLP_irreps=o3.Irreps(args.MLP_irreps),
         )
     elif args.model == 'scale_shift_non_linear_single_readout':
