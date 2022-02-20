@@ -65,8 +65,10 @@ def get_dataset(downloads_dir: str, dataset: str, subset: Optional[str], split: 
                                 tests=[(key, configs_dict[key]) for key in ['test_MD_300K', 'test_MD_600K']])
 
     if dataset == 'ethanol':
+        if not subset:
+            raise RuntimeError('Specify subset')
         configs_dict = data.load_ethanol(directory=downloads_dir)
-        train_valid_configs = configs_dict['train']
+        train_valid_configs = configs_dict[subset]
         train_configs, valid_configs = data.random_train_valid_split(items=train_valid_configs,
                                                                      valid_fraction=0.05,
                                                                      seed=1)
