@@ -14,11 +14,13 @@ colors = [
 ]
 
 dashed = (0, (5, 1))
+dotted = (0, (1, 1))
 
 style_dict: Dict[str, Dict[str, Any]] = {
     'dft': {
         'color': 'black',
         'label': 'DFT',
+        'linestyle': dotted,
     },
     'nequip': {
         'color': colors[1],
