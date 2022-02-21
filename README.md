@@ -40,10 +40,10 @@ python3 ./botnet-main/scripts/run_train.py \
     --restart_latest \
 ```
 
-### BOTNet Scale Shifted
-### BOTNet E0
-### NequIP 
-### NequIP Linear
+#### BOTNet Scale Shifted
+#### BOTNet E0
+#### NequIP 
+#### NequIP Linear
 
 
 ## Contacts
