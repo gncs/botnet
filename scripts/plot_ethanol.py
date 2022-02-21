@@ -83,7 +83,7 @@ def main():
     ax.hist(training['distance'], bins=d_range, color='black', label='Training data')
     ax.set_ylabel('Count')
     ax.set_xlabel('Distance [Å]')
-    ax.legend()
+
 
     # Soft
     ax = axes[0, 1]
@@ -109,6 +109,7 @@ def main():
 
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
     ax.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.1f}"))
+    ax.legend(bbox_to_anchor=(1.04,1), loc="upper left")
 
     ax = axes[1, 2]
     ax.set_xlabel('Displacement')
