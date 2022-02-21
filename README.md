@@ -40,11 +40,71 @@ python3 ./botnet-main/scripts/run_train.py \
     --restart_latest \
 ```
 
-#### BOTNet Scale Shifted
-#### BOTNet E0
-#### NequIP 
-#### NequIP Linear
+### BOTNet Scale Shifted
+To run **Agnostic Scale Shifted BOTNet** (meaning **no** chemical dependency in the radial basis) select,
 
+```bash
+    --model="scale_shift_non_linear" #Select the type of model to use
+    --interaction_first="AgnosticNonlinearInteractionBlock" \ #The type of interaction to use at the first layer
+    --interaction="AgnosticResidualNonlinearInteractionBlock" \ #The type of interaction to use for all the subsequent layers
+```
+
+To run **Element Dependent Scale Shifted BOTNet** (meaning chemical dependency in the radial basis) select,
+
+```bash
+    --model="scale_shift_non_linear" #Select the type of model to use
+    --interaction_first="AgnosticNonlinearInteractionBlock" \ #The type of interaction to use at the first layer
+    --interaction="ResidualElementDependentInteractionBlock" \ #The type of interaction to use for all the subsequent layers
+```
+
+To run **Fully Residual Element Dependent Scale Shifted BOTNet** (meaning chemical dependency in the radial basis and residual even at the first layer) select,
+
+```bash
+    --model="scale_shift_non_linear" #Select the type of model to use
+    --interaction_first="ResidualElementDependentInteractionBlock" \ #The type of interaction to use at the first layer
+    --interaction="ResidualElementDependentInteractionBlock" \ #The type of interaction to use for all the subsequent layers
+```
+
+### BOTNet E0
+
+To run **Agnostic BOTNet** (meaning **no** chemical dependency in the radial basis and residual even at the first layer) select,
+
+```bash
+    --model="body_ordered_non_linear" #Select the type of model to use
+    --interaction_first="AgnosticNonlinearInteractionBlock" \ #The type of interaction to use at the first layer
+    --interaction="AgnosticResidualNonlinearInteractionBlock" \ #The type of interaction to use for all the subsequent layers
+```
+
+To run **Element Depedent BOTNet** (meaning chemical dependency in the radial basis and residual even at the first layer) select,
+
+```bash
+    --model="body_ordered_non_linear" #Select the type of model to use
+    --interaction_first="AgnosticNonlinearInteractionBlock" \ #The type of interaction to use at the first layer
+    --interaction="ResidualElementDependentInteractionBlock" \ #The type of interaction to use for all the subsequent layers
+```
+
+
+### NequIP 
+
+To run **NequIP** select,
+
+```bash
+    --model="scale_shift_non_linear_single_readout" #Select the type of model to use
+    --interaction_first="NequIPInteractionBlock" \ #The type of interaction to use at the first layer
+    --interaction="NequIPInteractionBlock" \ #The type of interaction to use for all the subsequent layers
+    --gate="None" \
+```
+
+### NequIP Linear
+
+To run **NequIP Linear** (meaning no non linearities except in the radial basis) select,
+
+```bash
+    --model="scale_shift_non_linear_single_readout" #Select the type of model to use
+    --interaction_first="AgnosticResidualNonlinearInteractionBlock" \ #The type of interaction to use at the first layer
+    --interaction="AgnosticResidualNonlinearInteractionBlock" \ #The type of interaction to use for all the subsequent layers
+    --gate="None" \
+```
 
 ## Figures
 
