@@ -46,6 +46,8 @@ python3 ./botnet-main/scripts/run_train.py \
 #### NequIP Linear
 
 
+## Figures
+
 ## Contacts
 
 Ilyes Batatia: ilyes.batatia@ens-paris-saclay.fr 
