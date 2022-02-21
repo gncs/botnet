@@ -14,7 +14,7 @@ For cuda depdencies, edit the second line of the file from "CUDA"=cpu to the pre
 
 ## Experiments
 
-All the experiments of the paper can be reproduced from the command line using the parser script. We first give a detail example on how to train a BOTNet on 3BPA configurations at 300K :
+All the experiments of the paper can be reproduced from the command line using the parser script. We first give a detail example on how to train a scale shifted BOTNet on 3BPA configurations at 300K :
 
 ```bash
 # Run command
@@ -39,6 +39,11 @@ python3 ./botnet-main/scripts/run_train.py \
     --weight_decay=0.0 \ #Weight decay, recommanded to keep at 0
     --restart_latest \
 ```
+
+### BOTNet Scale Shifted
+### BOTNet E0
+### NequIP 
+### NequIP Linear
 
 
 ## Contacts
