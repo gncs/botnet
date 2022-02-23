@@ -31,7 +31,7 @@ def build_default_arg_parser() -> argparse.ArgumentParser:
                         choices=[
                             'body_ordered', 'scale_shift', 'single_readout', 'scale_shift_non_linear',
                             'scale_shift_single_readout', 'scale_shift_non_linear_single_readout',
-                            'body_ordered_non_linear'
+                            'body_ordered_non_linear','ScaleShiftFourierBodyOrderedModel',
                         ])
     parser.add_argument('--r_max', help='distance cutoff (in Ang)', type=float, default=4.0)
     parser.add_argument('--num_radial_basis', help='number of radial basis functions', type=int, default=8)

@@ -4,11 +4,12 @@ from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlo
                      ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock,
                      NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, ResidualElementDependentInteractionBlock,
                      AgnosticResidualNonlinearInteractionBlock, NequIPInteractionBlock,
-                     AgnosticNoScNonlinearInteractionBlock)
+                     AgnosticNoScNonlinearInteractionBlock,FourierReadoutBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
                      ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel,
-                     ScaleShiftNonLinearSingleReadoutModel, NonLinearBodyOrderedModel)
+                     ScaleShiftNonLinearSingleReadoutModel, NonLinearBodyOrderedModel,
+                     ScaleShiftFourierBodyOrderedModel)
 from .radial import BesselBasis, PolynomialCutoff
 from .utils import compute_mean_std_atomic_inter_energy, compute_mean_rms_energy_forces, compute_avg_num_neighbors
 
@@ -31,7 +32,8 @@ scaling_classes: Dict[str, Callable] = {
 __all__ = [
     'AtomicEnergiesBlock', 'RadialEmbeddingBlock', 'LinearReadoutBlock', 'SimpleInteractionBlock', 'PolynomialCutoff',
     'AgnosticNoScNonlinearInteractionBlock', 'BesselBasis', 'EnergyForcesLoss', 'ACELoss', 'WeightedEnergyForcesLoss',
-    'interaction_classes', 'InteractionBlock', 'BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 'SingleReadoutModel',
-    'ScaleShiftSingleReadoutModel', 'ScaleShiftNonLinearSingleReadoutModel', 'NonLinearBodyOrderedModel',
-    'ScaleShiftNonLinearBodyOrderedModel', 'compute_mean_std_atomic_inter_energy', 'compute_avg_num_neighbors'
+    'FourierReadoutBlock', 'interaction_classes', 'InteractionBlock', 'BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 
+    'SingleReadoutModel', 'ScaleShiftSingleReadoutModel', 'ScaleShiftNonLinearSingleReadoutModel', 'NonLinearBodyOrderedModel',
+    'ScaleShiftNonLinearBodyOrderedModel', 'ScaleShiftFourierBodyOrderedModel','compute_mean_std_atomic_inter_energy', 
+    'compute_avg_num_neighbors'
 ]

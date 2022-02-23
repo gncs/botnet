@@ -183,6 +183,16 @@ def main() -> None:
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )
+    elif args.model == 'ScaleShiftFourierBodyOrderedModel':
+        mean, std = modules.scaling_classes[args.scaling](train_loader, atomic_energies)
+        model = modules.ScaleShiftFourierBodyOrderedModel(
+            **model_config,
+            gate=gate_dict[args.gate],
+            interaction_cls_first=modules.interaction_classes[args.interaction_first],
+            MLP_irreps=o3.Irreps(args.MLP_irreps),
+            atomic_inter_scale=std,
+            atomic_inter_shift=mean,
+        )
     elif args.model == 'body_ordered_non_linear':
         model = modules.NonLinearBodyOrderedModel(
             **model_config,

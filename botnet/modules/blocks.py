@@ -67,15 +67,29 @@ class NonLinearReadoutBlock(torch.nn.Module):
         return self.linear_2(x)  # [n_nodes, 1]
 
 class FourierReadoutBlock(torch.nn.Module):
-    def __init__(self,irreps_in: o3.Irreps, MLP_irreps: o3.Irreps, gate: Callable):
+    def __init__(self,irreps_in: o3.Irreps, MLP_irreps: o3.Irreps, gate: Callable, bias=True):
         super().__init__()
-    
+        self.hidden_irreps = MLP_irreps
+        self.linear_rff_1 = o3.Linear(irreps_in=irreps_in, irreps_out=self.hidden_irreps)
+        self.non_linearity_cos = nn.Activation(irreps_in=self.hidden_irreps, acts=[torch.cos])
+        self.linear_rff_2 = o3.Linear(irreps_in=self.hidden_irreps, irreps_out=o3.Irreps('0e'))
+        self.bias = torch.nn.Parameter(torch.empty(MLP_irreps.count((0,1))))
+        if bias :
+            torch.nn.init.uniform_(self.bias, 0, 2 * torch.tensor(np.pi))
+        self.linear_sig_1 = o3.Linear(irreps_in=irreps_in, irreps_out=self.hidden_irreps)
+        self.non_linearity_sig = nn.Activation(irreps_in=self.hidden_irreps, acts=[gate])
+        self.linear_sig_2 = o3.Linear(irreps_in=self.hidden_irreps, irreps_out=o3.Irreps('0e'))
+
     def forward(
             self,
             x: torch.Tensor
     ) -> torch.Tensor:
-        
-        return x
+        x_rff = self.linear_rff_1(x) + self.bias
+        x_rff = self.linear_rff_2(self.non_linearity_cos(x_rff))
+
+        x_sig = self.linear_sig_1(x)
+        x_sig = self.linear_sig_2(self.non_linearity_sig(x_sig))
+        return x_rff * x_sig
 
 
 class AtomicEnergiesBlock(torch.nn.Module):
