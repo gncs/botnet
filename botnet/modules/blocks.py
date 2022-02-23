@@ -66,6 +66,17 @@ class NonLinearReadoutBlock(torch.nn.Module):
         x = self.non_linearity(self.linear_1(x))
         return self.linear_2(x)  # [n_nodes, 1]
 
+class FourierReadoutBlock(torch.nn.Module):
+    def __init__(self,irreps_in: o3.Irreps, MLP_irreps: o3.Irreps, gate: Callable):
+        super().__init__()
+    
+    def forward(
+            self,
+            x: torch.Tensor
+    ) -> torch.Tensor:
+        
+        return x
+
 
 class AtomicEnergiesBlock(torch.nn.Module):
     atomic_energies: torch.Tensor
