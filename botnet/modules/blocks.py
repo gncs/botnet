@@ -302,6 +302,89 @@ class ResidualElementDependentInteractionBlock(InteractionBlock):
         return message + sc  # [n_nodes, irreps]
 
 
+class FourierWeightsBlock(torch.nn.Module):
+    def __init__(self, irreps_in: o3.Irreps, 
+                 MLP_irreps: o3.Irreps, 
+                 irreps_out: o3.Irreps, 
+                 gate: Callable,
+                 bias=True
+    ) -> None:
+        super().__init__()
+        self.hidden_irreps = MLP_irreps
+        self.linear_rff_1 = o3.Linear(irreps_in=irreps_in, irreps_out=self.hidden_irreps)
+        self.non_linearity_cos = nn.Activation(irreps_in=self.hidden_irreps, acts=[torch.cos])
+        self.linear_rff_2 = o3.Linear(irreps_in=self.hidden_irreps, irreps_out=irreps_out)
+        self.bias = torch.nn.Parameter(torch.empty(MLP_irreps.count((0,1))))
+        if bias :
+            torch.nn.init.uniform_(self.bias, 0, 2 * torch.tensor(np.pi))
+        self.linear_sig_1 = o3.Linear(irreps_in=irreps_in, irreps_out=self.hidden_irreps)
+        self.non_linearity_sig = nn.Activation(irreps_in=self.hidden_irreps, acts=[gate])
+        self.linear_sig_2 = o3.Linear(irreps_in=self.hidden_irreps, irreps_out=irreps_out)
+
+    def forward(
+            self,
+            x: torch.Tensor
+    ) -> torch.Tensor:
+        x_rff = self.linear_rff_1(x) + self.bias
+        x_rff = self.linear_rff_2(self.non_linearity_cos(x_rff))
+
+        x_sig = self.linear_sig_1(x)
+        x_sig = self.linear_sig_2(self.non_linearity_sig(x_sig))
+        return x_rff * x_sig
+
+class FourierInteractionBlock(InteractionBlock):
+    def _setup(self) -> None:
+        self.linear_up = o3.Linear(self.node_feats_irreps,
+                                   self.node_feats_irreps,
+                                   internal_weights=True,
+                                   shared_weights=True)
+        # TensorProduct
+        irreps_mid, instructions = tp_out_irreps_with_instructions(self.node_feats_irreps, self.edge_attrs_irreps,
+                                                                   self.target_irreps)
+        self.conv_tp = o3.TensorProduct(self.node_feats_irreps,
+                                        self.edge_attrs_irreps,
+                                        irreps_mid,
+                                        instructions=instructions,
+                                        shared_weights=False,
+                                        internal_weights=False)
+        self.conv_tp_weights = TensorProductWeightsBlock(num_elements=self.node_attrs_irreps.num_irreps,
+                                                         num_edge_feats=self.edge_feats_irreps.num_irreps,
+                                                         num_feats_out=64)
+
+        self.fourier_weights = FourierWeightsBlock(irreps_in=o3.Irreps('64x0e'),
+                                                   MLP_irreps=o3.Irreps('64x0e'),
+                                                   irreps_out=o3.Irreps(f'{self.conv_tp.weight_numel}x0e'),
+                                                   gate=torch.tanh,)
+
+        # Linear
+        irreps_mid = irreps_mid.simplify()
+        self.irreps_out = linear_out_irreps(irreps_mid, self.target_irreps)
+        self.irreps_out = self.irreps_out.simplify()
+        self.linear = o3.Linear(irreps_mid, self.irreps_out, internal_weights=True, shared_weights=True)
+
+        # Selector TensorProduct
+        self.skip_tp = o3.FullyConnectedTensorProduct(self.node_feats_irreps, self.node_attrs_irreps, self.irreps_out)
+
+    def forward(
+        self,
+        node_attrs: torch.Tensor,
+        node_feats: torch.Tensor,
+        edge_attrs: torch.Tensor,
+        edge_feats: torch.Tensor,
+        edge_index: torch.Tensor,
+    ) -> torch.Tensor:
+        sender, receiver = edge_index
+        num_nodes = node_feats.shape[0]
+        sc = self.skip_tp(node_feats, node_attrs)
+        node_feats = self.linear_up(node_feats)
+        tp_weights = self.fourier_weights(self.conv_tp_weights(node_attrs[sender], edge_feats))
+        mji = self.conv_tp(node_feats[sender], edge_attrs, tp_weights)  # [n_edges, irreps]
+        message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
+        message = self.linear(message) / self.avg_num_neighbors
+        return message + sc  # [n_nodes, irreps]
+
+
+
 def init_layer(layer: torch.nn.Linear, w_scale=1.0) -> torch.nn.Linear:
     torch.nn.init.orthogonal_(layer.weight.data)
     layer.weight.data.mul_(w_scale)  # type: ignore
@@ -517,6 +600,9 @@ class AgnosticNoScNonlinearInteractionBlock(InteractionBlock):
         message = scatter_sum(src=mji, index=receiver, dim=0, dim_size=num_nodes)  # [n_nodes, irreps]
         message = self.linear(message) / self.avg_num_neighbors
         return message  # [n_nodes, irreps]
+
+
+
 
 
 nonlinearities = {1: torch.nn.functional.silu, -1: torch.tanh}
