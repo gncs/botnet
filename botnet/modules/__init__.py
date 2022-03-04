@@ -4,7 +4,7 @@ from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlo
                      ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock,
                      NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, ResidualElementDependentInteractionBlock,
                      AgnosticResidualNonlinearInteractionBlock, NequIPInteractionBlock,
-                     AgnosticNoScNonlinearInteractionBlock,FourierReadoutBlock,FourierElementInteractionBlock,
+                     AgnosticNoScNonlinearInteractionBlock,FourierReadoutBlock,FourierElementDependentInteractionBlock,
                      FourierAgnosticInteractionBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
@@ -23,7 +23,7 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'AgnosticNoScNonlinearInteractionBlock': AgnosticNoScNonlinearInteractionBlock,
     'AgnosticResidualNonlinearInteractionBlock': AgnosticResidualNonlinearInteractionBlock,
     'NequIPInteractionBlock': NequIPInteractionBlock,
-    'FourierElementInteractionBlock': FourierElementInteractionBlock,
+    'FourierElementDependentInteractionBlock': FourierElementDependentInteractionBlock,
     'FourierAgnosticInteractionBlock': FourierAgnosticInteractionBlock,
 }
 
