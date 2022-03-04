@@ -189,7 +189,8 @@ def main() -> None:
             **model_config,
             gate=gate_dict[args.gate],
             interaction_cls_first=modules.interaction_classes[args.interaction_first],
-            MLP_irreps=o3.Irreps(args.MLP_irreps),
+            MLP_irreps_cos=o3.Irreps(args.MLP_irreps_cos),
+            MLP_irreps_sig=o3.Irreps(args.MLP_irreps_sig),
             atomic_inter_scale=std,
             atomic_inter_shift=mean,
         )

@@ -230,7 +230,8 @@ class FourierBodyOrderedModel(torch.nn.Module):
         num_interactions: int,
         num_elements: int,
         hidden_irreps: o3.Irreps,
-        MLP_irreps: o3.Irreps,
+        MLP_irreps_cos: o3.Irreps,
+        MLP_irreps_sig: o3.Irreps,
         atomic_energies: np.ndarray,
         gate: Callable,
         avg_num_neighbors: float,
@@ -279,7 +280,10 @@ class FourierBodyOrderedModel(torch.nn.Module):
             )
             self.interactions.append(inter)
             if i == num_interactions - 2:
-                self.readouts.append(FourierReadoutBlock(inter.irreps_out, MLP_irreps, gate))
+                self.readouts.append(FourierReadoutBlock(irreps_in=inter.irreps_out,
+                                                         MLP_irreps_cos=MLP_irreps_cos, 
+                                                         MLP_irreps_sig=MLP_irreps_sig,
+                                                         gate=gate))
             else:
                 self.readouts.append(LinearReadoutBlock(inter.irreps_out))
 

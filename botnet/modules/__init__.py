@@ -4,7 +4,8 @@ from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlo
                      ElementDependentInteractionBlock, InteractionBlock, NonlinearInteractionBlock,
                      NonLinearReadoutBlock, AgnosticNonlinearInteractionBlock, ResidualElementDependentInteractionBlock,
                      AgnosticResidualNonlinearInteractionBlock, NequIPInteractionBlock,
-                     AgnosticNoScNonlinearInteractionBlock,FourierReadoutBlock)
+                     AgnosticNoScNonlinearInteractionBlock,FourierReadoutBlock,FourierElementInteractionBlock,
+                     FourierAgnosticInteractionBlock)
 from .loss import EnergyForcesLoss, ACELoss, WeightedEnergyForcesLoss
 from .models import (BodyOrderedModel, ScaleShiftBodyOrderedModel, SingleReadoutModel,
                      ScaleShiftNonLinearBodyOrderedModel, ScaleShiftSingleReadoutModel,
@@ -22,6 +23,8 @@ interaction_classes: Dict[str, Type[InteractionBlock]] = {
     'AgnosticNoScNonlinearInteractionBlock': AgnosticNoScNonlinearInteractionBlock,
     'AgnosticResidualNonlinearInteractionBlock': AgnosticResidualNonlinearInteractionBlock,
     'NequIPInteractionBlock': NequIPInteractionBlock,
+    'FourierElementInteractionBlock': FourierElementInteractionBlock,
+    'FourierAgnosticInteractionBlock': FourierAgnosticInteractionBlock,
 }
 
 scaling_classes: Dict[str, Callable] = {
@@ -35,5 +38,5 @@ __all__ = [
     'FourierReadoutBlock', 'interaction_classes', 'InteractionBlock', 'BodyOrderedModel', 'ScaleShiftBodyOrderedModel', 
     'SingleReadoutModel', 'ScaleShiftSingleReadoutModel', 'ScaleShiftNonLinearSingleReadoutModel', 'NonLinearBodyOrderedModel',
     'ScaleShiftNonLinearBodyOrderedModel', 'ScaleShiftFourierBodyOrderedModel','compute_mean_std_atomic_inter_energy', 
-    'compute_avg_num_neighbors'
+    'compute_avg_num_neighbors','NonLinearReadoutBlock'
 ]
