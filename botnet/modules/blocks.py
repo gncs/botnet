@@ -340,7 +340,7 @@ class FourierWeightsBlock(torch.nn.Module):
         x_sig = self.linear_sig_2(self.non_linearity_sig(x_sig))
         return x_rff * x_sig
 
-class FourierElementInteractionBlock(InteractionBlock):
+class FourierElementDependentInteractionBlock(InteractionBlock):
     def _setup(self) -> None:
         self.linear_up = o3.Linear(self.node_feats_irreps,
                                    self.node_feats_irreps,
