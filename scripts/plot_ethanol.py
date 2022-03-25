@@ -30,21 +30,32 @@ def parse_train_configs(path: str) -> pd.DataFrame:
 
 
 def parse_removal_configs(parse_removal_path: str) -> Tuple[str, pd.DataFrame]:
-    name, path = parse_removal_path.split(',')
-    atoms_list = ase.io.read(path, format='extxyz', index=':')
-    return name, pd.DataFrame({
-        'distance': [atoms.info['OH_dist'] for atoms in atoms_list],
-        'energy': [atoms.info['energy'] for atoms in atoms_list],
-    })
+    name, *paths = parse_removal_path.split(',')
+    frames = pd.DataFrame([{
+        'distance': atoms.info['OH_dist'],
+        'energy': atoms.info['energy'],
+    } for path in paths for atoms in ase.io.read(path, format='extxyz', index=':')])
 
+    df = pd.DataFrame(frames).groupby(['distance']).aggregate(
+        mean_energy=pd.NamedAgg(column='energy', aggfunc='mean'),
+        std_energy=pd.NamedAgg(column='energy', aggfunc='std'),
+    ).reset_index()
+
+    return name, df
 
 def parse_displacement_path(name_path_tuple: str) -> Tuple[str, pd.DataFrame]:
-    name, path = name_path_tuple.split(',')
-    atoms_list = ase.io.read(path, format='extxyz', index=':')
-    return name, pd.DataFrame({
-        'displacement': [atoms.info['displacement'] for atoms in atoms_list],
-        'energy': [atoms.info['energy'] for atoms in atoms_list],
-    })
+    name, *paths = name_path_tuple.split(',')
+    frames = pd.DataFrame([{
+        'displacement': atoms.info['displacement'],
+        'energy': atoms.info['energy'],
+    } for path in paths for atoms in ase.io.read(path, format='extxyz', index=':')])
+
+    df = pd.DataFrame(frames).groupby(['displacement']).aggregate(
+        mean_energy=pd.NamedAgg(column='energy', aggfunc='mean'),
+        std_energy=pd.NamedAgg(column='energy', aggfunc='std'),
+    ).reset_index()
+
+    return name, df
 
 
 def main():
@@ -64,9 +75,17 @@ def main():
 
     # Removal energies
     ax = axes[0, 0]
-    for name, df in removal_predictions:
+    for index, (name, df) in enumerate(removal_predictions):
         selection = df[df['distance'] <= 5.0]
-        ax.plot(selection['distance'], selection['energy'], **style_dict[name])
+        ax.plot(selection['distance'], selection['mean_energy'], **style_dict[name])
+        ax.fill_between(
+            x=selection['distance'],
+            y1=selection['mean_energy'] - selection['std_energy'],
+            y2=selection['mean_energy'] + selection['std_energy'],
+            alpha=0.3,
+            zorder=2 * index,
+            **style_dict[name],
+        )
 
     ax.set_xticks([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
 
@@ -75,7 +94,7 @@ def main():
 
     ax.set_title('Hydrogen Abstraction')
     ax.set_ylabel(r'$E$ [eV]')
-    ax.legend()
+    
 
     # Removal histogram
     ax = axes[1, 0]
@@ -87,8 +106,17 @@ def main():
 
     # Soft
     ax = axes[0, 1]
-    for name, df in soft_predictions:
-        ax.plot(df['displacement'], df['energy'], **style_dict[name])
+    for index, (name, df) in enumerate(soft_predictions):
+        ax.plot(df['displacement'], df['mean_energy'], **style_dict[name])
+        ax.fill_between(
+            x=df['displacement'],
+            y1=df['mean_energy'] - df['std_energy'],
+            y2=df['mean_energy'] + df['std_energy'],
+            alpha=0.3,
+            zorder=2 * index,
+            **style_dict[name],
+        )
+
 
     ax.set_title(r'$\tilde{\nu} = 874 \, \mathrm{cm}^{-1}$')
     ax.set_xticks([-1.0, 0.0, 1.0, 2.0])
@@ -101,8 +129,16 @@ def main():
 
     # Hard
     ax = axes[0, 2]
-    for name, df in hard_predictions:
-        ax.plot(df['displacement'], df['energy'], **style_dict[name])
+    for index, (name, df) in enumerate(hard_predictions):
+        ax.plot(df['displacement'], df['mean_energy'], **style_dict[name])
+        ax.fill_between(
+            x=df['displacement'],
+            y1=df['mean_energy'] - df['std_energy'],
+            y2=df['mean_energy'] + df['std_energy'],
+            alpha=0.3,
+            zorder=2 * index,
+            **style_dict[name],
+        )
 
     ax.set_title(r'$\tilde{\nu} = 3005 \, \mathrm{cm}^{-1}$')
     ax.set_xticks([-1.0, -0.5, 0.0, 0.5])

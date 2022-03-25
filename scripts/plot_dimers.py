@@ -23,13 +23,19 @@ def parse_args() -> argparse.Namespace:
 
 
 def parse_config_path(name_path_tuple: str) -> Tuple[str, pd.DataFrame]:
-    name, path = name_path_tuple.split(',')
-    atoms_list = ase.io.read(path, format='extxyz', index=':')
-    return name, pd.DataFrame({
-        'distance': [atoms.info['distance'] for atoms in atoms_list],
-        'energy': [atoms.info['energy'] for atoms in atoms_list],
-        'config_type': [atoms.info['config_type'] for atoms in atoms_list],
-    })
+    name, *paths = name_path_tuple.split(',')
+    frames = pd.DataFrame([{
+        'distance': atoms.info['distance'],
+        'energy': atoms.info['energy'],
+        'config_type': atoms.info['config_type'],
+    } for path in paths for atoms in ase.io.read(path, format='extxyz', index=':')])
+
+    df = pd.DataFrame(frames).groupby(['distance','config_type']).aggregate(
+        mean_energy=pd.NamedAgg(column='energy', aggfunc='mean'),
+        std_energy=pd.NamedAgg(column='energy', aggfunc='std'),
+    ).reset_index()
+
+    return name, df
 
 
 def main():
@@ -41,10 +47,19 @@ def main():
 
     config_types = ['HC', 'CC', 'CO', 'HO', 'HH', 'OO']
     for ax, config_type in zip(axes, config_types):
-        for name, df in predictions:
+        dft_ref = predictions[0][1]
+        for index, (name, df) in enumerate(predictions):
             selection = df[df['config_type'] == config_type]
-            ax.plot(selection['distance'], selection['energy'] - np.min(selection['energy']), **style_dict[name])
-
+            ref_energy = selection['mean_energy'].iloc[-1]
+            ax.plot(selection['distance'], selection['mean_energy'] - ref_energy, **style_dict[name])
+            ax.fill_between(
+                x=selection['distance'],
+                y1=selection['mean_energy'] - selection['std_energy'] - ref_energy,
+                y2=selection['mean_energy'] + selection['std_energy'] - ref_energy,
+                alpha=0.3,
+                zorder=2 * index,
+                **style_dict[name],
+        )
         ax.set_xticks([0.0, 1.5, 3.0, 4.5])
         ax.set_xlabel('Distance [Å]')
 
@@ -53,7 +68,7 @@ def main():
         ax.set_title(r'$\mathrm{' + config_type[0] + r'}-\mathrm{' + config_type[1] + '}$')
 
     axes[0].set_ylabel(r'$\Delta E$ [eV]')
-    axes[0].legend()
+    ax.legend(bbox_to_anchor=(1.04,1), loc="upper left")
 
     fig.savefig('dimers.pdf')
 
