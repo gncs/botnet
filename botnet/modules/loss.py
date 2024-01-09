@@ -1,5 +1,5 @@
 import torch
-from torch_geometric.data import Batch
+from botnet.tools.torch_geometric.batch import Batch
 
 from botnet.tools import TensorDict
 
