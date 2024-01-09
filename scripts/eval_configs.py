@@ -4,7 +4,7 @@ import ase.data
 import ase.io
 import numpy as np
 import torch
-import torch_geometric
+from botnet.tools import torch_geometric
 
 from botnet import data, tools, modules
 

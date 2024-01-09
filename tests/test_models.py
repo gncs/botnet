@@ -1,5 +1,5 @@
 import numpy as np
-import torch_geometric
+from botnet.tools import torch_geometric
 from e3nn import o3
 
 from botnet import data, modules, tools

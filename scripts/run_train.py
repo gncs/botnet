@@ -5,7 +5,7 @@ from typing import Optional, Tuple, Dict, List
 
 import numpy as np
 import torch.nn.functional
-import torch_geometric
+from botnet.tools import torch_geometric
 from e3nn import o3
 from torch.optim.swa_utils import AveragedModel, SWALR
 from torch_ema import ExponentialMovingAverage

@@ -3,7 +3,7 @@ from typing import Dict, Any, Type, Callable
 import numpy as np
 import torch.nn
 from e3nn import o3
-from torch_scatter import scatter_sum
+from botnet.tools.scatter import scatter_sum
 
 from botnet.data import AtomicData
 from .blocks import (AtomicEnergiesBlock, RadialEmbeddingBlock, LinearReadoutBlock, InteractionBlock, ScaleShiftBlock,

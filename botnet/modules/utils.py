@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn
 import torch.utils.data
-from torch_scatter import scatter_sum
+from botnet.tools.scatter import scatter_sum
 
 from botnet.tools import to_numpy
 from .blocks import AtomicEnergiesBlock

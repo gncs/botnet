@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-import torch_geometric
-import torch_scatter
+from botnet.tools.scatter import scatter_sum
+from botnet.tools import torch_geometric
 
 from botnet.data import Configuration, AtomicData
 from botnet.modules import PolynomialCutoff, AtomicEnergiesBlock, BesselBasis
@@ -52,6 +52,6 @@ def test_atomic_energies():
     batch = next(iter(data_loader))
 
     energies = energies_block(batch.node_attrs)
-    out = torch_scatter.scatter(src=energies, index=batch.batch, dim=-1, reduce='sum')
+    out = scatter_sum(src=energies, index=batch.batch, dim=-1)
     out = to_numpy(out)
     assert np.allclose(out, np.array([5., 5.]))

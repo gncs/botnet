@@ -1,6 +1,6 @@
 # pylint: disable=no-self-use
 import numpy as np
-import torch_geometric
+from botnet.tools import torch_geometric
 
 from botnet.data import Configuration, AtomicData, get_neighborhood
 from botnet.tools import AtomicNumberTable
