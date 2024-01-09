@@ -41,7 +41,7 @@ def test_bo_model():
 
     atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
-    data_loader = torch_geometric.data.DataLoader(
+    data_loader = torch_geometric.dataloader.DataLoader(
         dataset=[atomic_data, atomic_data],
         batch_size=2,
         shuffle=True,
@@ -66,7 +66,7 @@ def test_isolated_atom():
     r_cutoff = 3.0
     isolated_data = data.AtomicData.from_config(isolated_config, z_table=table, cutoff=r_cutoff)
     atomic_data = data.AtomicData.from_config(config, z_table=table, cutoff=r_cutoff)
-    data_loader = torch_geometric.data.DataLoader(
+    data_loader = torch_geometric.dataloader.DataLoader(
         dataset=[isolated_data, atomic_data],
         batch_size=2,
         shuffle=False,

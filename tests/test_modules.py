@@ -43,7 +43,7 @@ def test_atomic_energies():
     energies_block = AtomicEnergiesBlock(atomic_energies=np.array([1.0, 3.0]))
 
     data = AtomicData.from_config(config, z_table=table, cutoff=3.0)
-    data_loader = torch_geometric.data.DataLoader(
+    data_loader = torch_geometric.dataloader.DataLoader(
         dataset=[data, data],
         batch_size=2,
         shuffle=True,

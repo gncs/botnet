@@ -35,7 +35,7 @@ class TestAtomicData:
         data1 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
         data2 = AtomicData.from_config(config, z_table=table, cutoff=3.0)
 
-        data_loader = torch_geometric.data.DataLoader(
+        data_loader = torch_geometric.dataloader.DataLoader(
             dataset=[data1, data2],
             batch_size=2,
             shuffle=True,
