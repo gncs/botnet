@@ -1,7 +1,19 @@
+
 # BOTNet
 
-Implementation of a set of interatomic potentials in the design space of equivariant message passing. (very badly said).
+This repository provides the BOTNet code used in the paper: *"The Design Space of E(3)-Equivariant Atom-Centered Interatomic Potentials."* **This repository is intended solely for reproducing the results presented in the paper.**  
+Refer to the [Experiments](#experiments) section for instructions on defining and running the different models used in the study.
 
+
+## Table of Contents 
+1. [Installation](#installation) 
+2. [Experiments](#experiments) 
+	- [BOTNet Scale Shifted](#botnet-scale-shifted) 
+	- [BOTNet E0](#botnet-e0) 
+	- [NequIP](#nequip)
+	- [NequIP Linear](#nequip-linear) 
+3. [References](#references) 
+4. [Contacts](#contacts)
 
 ## Installation
 
@@ -106,11 +118,23 @@ To run **NequIP Linear** (meaning no non linearities except in the radial basis)
     --gate="None" \
 ```
 
-## Figures
+## References
+
+```bibtex
+@misc{batatia2022designspacee3equivariantatomcentered,
+      title={The Design Space of E(3)-Equivariant Atom-Centered Interatomic Potentials}, 
+      author={Ilyes Batatia and Simon Batzner and Dávid Péter Kovács and Albert Musaelian and Gregor N. C. Simm and Ralf Drautz and Christoph Ortner and Boris Kozinsky and Gábor Csányi},
+      year={2022},
+      eprint={2205.06643},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML},
+      url={https://arxiv.org/abs/2205.06643}, 
+}
+```
 
 ## Contacts
 
 Ilyes Batatia: ilyes.batatia@ens-paris-saclay.fr 
 
-Gregor Simm: 
+Gregor Simm: gncsimm@gmail.com
 
