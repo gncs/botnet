@@ -139,7 +139,7 @@ To run **NequIP Linear** (meaning no non linearities except in the radial basis)
 
 ## Contacts
 
-Ilyes Batatia: ilyes.batatia@ens-paris-saclay.fr 
+Ilyes Batatia: ib467@cam.ac.uk
 
 Gregor Simm: gncsimm@gmail.com
 
