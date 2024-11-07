@@ -17,12 +17,17 @@ Refer to the [Experiments](#experiments) section for instructions on defining an
 
 ## Installation
 
-To install the dependencies on cpu run following line,
+### 1. Install Pytorch
+To install the package, **make sure to install PyTorch.** Please refer to the [official PyTorch installation](https://pytorch.org/get-started/locally/) for the installation instructions. Select the appropriate options for your system.
+
+### 2. Install dependencies
 
 ```bash
-sbatch ./scripts/setup_env.sh
+pip install pip --upgrade
+pip install e3nn==0.4.4 opt_einsum ase torch_ema prettytable
+git clone https://github.com/gncs/botnet
+pip install botnet/
 ```
-For cuda depdencies, edit the second line of the file from "CUDA"=cpu to the prefered version of cuda (eg. cu102).
 
 ## Experiments
 
