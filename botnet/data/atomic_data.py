@@ -1,7 +1,7 @@
 from typing import Optional
 
 import torch.utils.data
-import torch_geometric
+from botnet.tools import torch_geometric
 
 from botnet.tools import to_one_hot, AtomicNumberTable, atomic_numbers_to_indices
 from .neighborhood import get_neighborhood

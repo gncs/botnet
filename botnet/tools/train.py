@@ -5,7 +5,7 @@ from typing import Dict, Any, Tuple, Optional
 
 import numpy as np
 import torch
-import torch_geometric
+from botnet.tools import torch_geometric
 from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.utils.data import DataLoader
 from torch_ema import ExponentialMovingAverage
@@ -102,7 +102,7 @@ def train(
 def take_step(
     model: torch.nn.Module,
     loss_fn: torch.nn.Module,
-    batch: torch_geometric.data.Batch,
+    batch: torch_geometric.batch.Batch,
     optimizer: torch.optim.Optimizer,
     ema: Optional[ExponentialMovingAverage],
     device: torch.device,

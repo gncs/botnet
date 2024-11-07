@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn.functional
 from e3nn import nn, o3
-from torch_scatter import scatter_sum
+from botnet.tools.scatter import scatter_sum
 
 from .irreps_tools import tp_out_irreps_with_instructions, linear_out_irreps
 from .radial import BesselBasis, PolynomialCutoff
